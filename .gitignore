@@ -13,3 +13,15 @@ Thumbs.db
 coverage/
 artifacts/
 test-results/
+
+**/*.rs.bk
+*.swp
+*.swo
+/test-logs/
+# DragonForge vaults and per-vault sync credentials/state
+*.dfvault
+*.dfvault.bak
+*.dfvault.tmp
+*.dfvault.sync.json
+*.dfvault.sync.json.tmp
+*.dfvault.sync.json.bak

@@ -1,0 +1,52 @@
+[package]
+name = "dragonforge-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+build = "build.rs"
+description = "DragonForge Password Manager desktop application"
+
+[lib]
+name = "dragonforge_desktop"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dragonforge-desktop"
+path = "src/main.rs"
+
+[[bin]]
+name = "dragonforge-native-host"
+path = "src/bin/native_host.rs"
+
+[dependencies]
+dragonforge-vault = { path = "../../crates/dragonforge-vault" }
+dragonforge-crypto = { path = "../../crates/dragonforge-crypto" }
+hex = "0.4.3"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+sha2 = "0.10"
+rfd = { version = "0.17.2", default-features = false, features = ["xdg-portal"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri = { version = "2.11.5", features = [] }
+thiserror = "2.0"
+url = "2.5"
+uuid = { version = "1.18", features = ["v4", "serde"] }
+zeroize = { version = "1.8", features = ["zeroize_derive"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3.6.3", features = ["windows-native"] }
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dev-dependencies]
+axum = "0.8"
+dragonforge-sync-server = { path = "../../services/password-manager-sync" }
+tempfile = "3.27"
+tokio = { version = "1.47", features = ["rt-multi-thread", "net"] }
+
+[lints]
+workspace = true
