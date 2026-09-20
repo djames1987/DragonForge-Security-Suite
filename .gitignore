@@ -1,0 +1,15 @@
+/target/
+**/target/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+coverage/
+artifacts/
+test-results/
