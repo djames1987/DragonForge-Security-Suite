@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace intended to host a family of interoperable applications and shared security components.
 
-> **Current status:** Architecture foundation only. The existing DragonForge Password Manager has **not** been migrated into this repository.
+> **Current status:** Password Manager migration is in progress on `migration/password-manager-1ee25e7`, using tested source commit `1ee25e751da094577a9c6bbe10af5bdca92e96ba`.
 
 ## Design goals
 
@@ -20,13 +20,13 @@ DragonForge Security Suite is a security-focused Rust workspace intended to host
 DragonForge-Security-Suite/
 ├── apps/
 │   ├── security-center/               # Unified desktop dashboard
-│   └── password-manager/              # Reserved migration destination (future)
+│   └── password-manager/              # DragonForge Password Manager desktop app
 ├── crates/
 │   └── dragonforge-core/              # Suite-wide non-cryptographic foundation
 ├── services/
 │   └── dragonforge-agent/             # Future background service
 ├── extensions/
-│   └── password-manager-browser/      # Future browser extension destination
+│   └── password-manager-browser/      # Password Manager browser extension
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── MIGRATION_PLAN.md
@@ -46,7 +46,7 @@ The current password manager remains in its existing repository while active tes
 - Source repository: https://github.com/djames1987/DragonForge-Password-Manager
 - Suite repository: https://github.com/djames1987/DragonForge-Security-Suite
 
-No password-manager files are copied by this architecture phase.
+The Password Manager is being migrated from the tested standalone baseline. The original repository remains available as the historical source until post-migration verification is complete.
 
 See [docs/MIGRATION_PLAN.md](docs/MIGRATION_PLAN.md) for the staged migration procedure.
 
@@ -67,5 +67,5 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
 ## Development status
 
-This repository currently provides the suite architecture and migration foundation. Product functionality will be added in later phases.
+This repository contains the suite architecture plus the in-progress Password Manager migration. The migration must pass its original regression suite before the suite becomes the canonical development location.
 

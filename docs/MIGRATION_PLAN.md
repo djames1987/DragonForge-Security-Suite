@@ -2,20 +2,20 @@
 
 ## Status
 
-**Not started.**
+**M0 complete; M1/M2 in progress.**
 
 The Password Manager remains in:
 https://github.com/djames1987/DragonForge-Password-Manager
 
-No Password Manager source files have been migrated into this suite repository.
+The tested Password Manager snapshot is now being imported on `migration/password-manager-1ee25e7` and normalized into the reserved suite paths.
 
 ## Why migration is deliberately deferred
 
-The Password Manager is actively being tested and may receive additional commits. Migrating before that work stabilizes would create two moving targets and make it harder to identify whether a failure came from product development or repository restructuring.
+Testing is complete for the selected baseline. Migration now proceeds from the frozen tested commit so repository restructuring can be verified independently from product development.
 
-## Source snapshot observed while preparing this repository
+## Selected migration source snapshot
 
-At architecture setup time, the Password Manager was already a Rust workspace with:
+Selected tested source commit: `1ee25e751da094577a9c6bbe10af5bdca92e96ba` (2026-09-20). The Password Manager is a Rust workspace with:
 - `apps/desktop`
 - `apps/sync-server`
 - `apps/browser-extension`
@@ -24,7 +24,7 @@ At architecture setup time, the Password Manager was already a Rust workspace wi
 
 Its workspace forbids unsafe Rust and targets Rust 1.85 / edition 2024.
 
-This information is used only to reserve compatible migration boundaries. The actual migration must re-inspect the source repository and use the then-current tested commit.
+This commit is the immutable pre-suite migration baseline. See `docs/password-manager/MIGRATION_BASELINE.md`.
 
 ## Migration gate
 

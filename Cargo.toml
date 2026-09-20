@@ -1,7 +1,11 @@
 [workspace]
 members = [
     "apps/security-center",
+    "apps/password-manager",
+    "services/password-manager-sync",
     "crates/dragonforge-core",
+    "crates/dragonforge-crypto",
+    "crates/dragonforge-vault",
 ]
 resolver = "2"
 
