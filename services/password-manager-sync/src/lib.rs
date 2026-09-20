@@ -1,0 +1,23 @@
+#![forbid(unsafe_code)]
+//! Zero-knowledge sync-server foundation for DragonForge Password Manager.
+
+mod api;
+mod auth;
+mod error;
+mod model;
+mod recovery;
+mod store;
+
+pub use api::{AppState, build_router};
+pub use auth::{hash_sync_token, new_sync_token};
+pub use error::{ApiError, StoreError};
+pub use model::{
+    AccountRecord, AccountResponse, DeviceDecisionRequest, DeviceRecord, DeviceStatus,
+    DeviceSummary, EnrollDeviceRequest, EnrollDeviceResponse, HealthResponse,
+    MAX_RECOVERY_ENVELOPE_BYTES, MAX_SYNC_BLOB_BYTES, RecoveryRecord, SYNC_PROTOCOL_VERSION,
+    StoredVault, SyncMetadata,
+};
+pub use store::{InMemoryStore, SyncStore};
+
+#[cfg(feature = "postgres")]
+pub use store::PostgresStore;
