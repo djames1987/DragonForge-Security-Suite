@@ -1,0 +1,14 @@
+[package]
+name = "dragonforge-network-guard"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+description = "Windows-first network visibility engine for DragonForge Security Suite"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+[lints]
+workspace = true
