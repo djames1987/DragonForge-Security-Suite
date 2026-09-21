@@ -74,8 +74,14 @@ mod tests {
 
     #[test]
     fn error_code_ids_are_stable() {
-        assert_eq!(ErrorCode::AuthenticationRequired.as_str(), "authentication-required");
-        assert_eq!(ErrorCode::ProtocolMismatch.as_str(), "protocol-mismatch");
+        assert_eq!(
+            ErrorCode::AuthenticationRequired.as_str(),
+            "authentication-required"
+        );
+        assert_eq!(
+            ErrorCode::ProtocolMismatch.as_str(),
+            "protocol-mismatch"
+        );
     }
 
     #[test]
