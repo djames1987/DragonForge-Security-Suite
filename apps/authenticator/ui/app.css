@@ -66,3 +66,5 @@ input:focus, textarea:focus, select:focus { border-color: #7c8796; }
 .toast { max-width: 360px; padding: 12px 14px; background: var(--surface-3); border: 1px solid var(--border); border-radius: 10px; }
 .toast.error { border-color: rgba(255,101,119,.45); }
 @media (max-width: 1000px) { .account-grid { grid-template-columns: repeat(2, minmax(230px, 1fr)); } .unlock { grid-template-columns: 1fr 1fr; } .unlock-actions { grid-column: 1 / -1; } }
+
+.password-change { max-width: 680px; margin: 16px auto 45px; text-align: left; }
