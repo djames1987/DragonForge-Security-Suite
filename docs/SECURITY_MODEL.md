@@ -116,7 +116,7 @@ Security requirements:
 - settings are preferences, not a secret store;
 - dashboard events and log messages use safe/redaction-oriented text;
 - invalid local settings fall back to safe defaults instead of disabling the dashboard;
-- the future DragonForge Agent remains explicitly unavailable until a real authenticated transport/service exists.
+- Phase 11 reports Agent availability only after an authenticated health exchange; a stopped or unreachable Agent is shown as unavailable.
 
 The current in-memory activity view is not a tamper-resistant audit log and must not be represented as one.
 
