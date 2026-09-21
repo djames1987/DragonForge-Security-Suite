@@ -3,6 +3,7 @@ use std::{error::Error, fmt};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FileVaultError {
     InvalidPassword,
+    PasswordTooShort,
     InvalidContainer,
     UnsupportedFormat,
     InvalidPath,
@@ -20,6 +21,7 @@ impl FileVaultError {
     pub const fn safe_message(self) -> &'static str {
         match self {
             Self::InvalidPassword => "the password is incorrect or the container is corrupted",
+            Self::PasswordTooShort => "File Vault passwords must be at least 12 characters",
             Self::InvalidContainer => "the File Vault container is invalid or corrupted",
             Self::UnsupportedFormat => "the File Vault container version is unsupported",
             Self::InvalidPath => "a file path is invalid for a secure container",
