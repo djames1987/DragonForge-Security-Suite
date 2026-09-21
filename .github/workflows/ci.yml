@@ -20,10 +20,13 @@ on:
     paths:
       - "apps/security-center/**"
       - "apps/file-vault/**"
+      - "apps/authenticator/**"
       - "crates/dragonforge-core/**"
       - "crates/dragonforge-file-vault/**"
+      - "crates/dragonforge-authenticator/**"
       - "scripts/run-phase3-security-center-tests.ps1"
       - "scripts/run-phase4-file-vault-tests.ps1"
+      - "scripts/run-phase5-authenticator-tests.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
