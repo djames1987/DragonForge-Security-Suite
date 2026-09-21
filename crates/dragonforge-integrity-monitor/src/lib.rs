@@ -214,7 +214,7 @@ Get-ScheduledTask |
   ForEach-Object {
     $actions = ($_.Actions | ForEach-Object { "$($_.Execute);$($_.Arguments);$($_.WorkingDirectory)" }) -join ';'
     $triggers = ($_.Triggers | ConvertTo-Json -Compress -Depth 5)
-    $value = "$($_.Principal.UserId);$($_.LogonType);$($_.Principal.RunLevel);$actions;$triggers;$($_.Settings.Enabled);$($_.Settings.Hidden)" -replace '[\r\n]+', ' '
+    $value = "$($_.Principal.UserId);$($_.Principal.LogonType);$($_.Principal.RunLevel);$actions;$triggers;$($_.Settings.Enabled);$($_.Settings.Hidden)" -replace '[\r\n]+', ' '
     "$($_.TaskPath)$($_.TaskName)|$value"
   }
 "#
