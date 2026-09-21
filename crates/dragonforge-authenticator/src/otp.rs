@@ -21,7 +21,7 @@ pub enum OtpKind {
     Hotp { counter: u64 },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct GeneratedCode {
     pub code: String,
     pub valid_for_seconds: Option<u64>,
