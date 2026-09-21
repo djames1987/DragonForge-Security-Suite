@@ -112,7 +112,7 @@ No Rust, Cargo, Node.js, Git, or source checkout is required on the test machine
 FIRST RUN
 1. Extract this entire ZIP to a normal writable folder.
 2. Keep every EXE in the same folder. Security Center launches suite apps and the Agent by exact sibling path.
-3. Run Check-Prerequisites.ps1 with PowerShell.
+3. Run Check-Prerequisites.cmd.
 4. Start the suite with Launch-Security-Center.cmd.
 5. In Security Center, start DragonForge Agent when prompted.
 
@@ -211,6 +211,13 @@ exit 2
 '@
     Set-Content -LiteralPath (Join-Path $StageRoot "Check-Prerequisites.ps1") -Value $Prereq -Encoding UTF8
 
+    $PrereqCmd = @'
+@echo off
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Check-Prerequisites.ps1"
+pause
+'@
+    Set-Content -LiteralPath (Join-Path $StageRoot "Check-Prerequisites.cmd") -Value $PrereqCmd -Encoding ASCII
+
     $Launch = @'
 @echo off
 cd /d "%~dp0"
@@ -249,7 +256,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Stop-DragonForge-A
         }
     Set-Content -LiteralPath (Join-Path $StageRoot "SHA256SUMS.txt") -Value $HashLines -Encoding ASCII
 
-    Compress-Archive -Path (Join-Path $StageRoot "*") -DestinationPath $ZipPath -CompressionLevel Optimal
+    Compress-Archive -Path $StageRoot -DestinationPath $ZipPath -CompressionLevel Optimal
 
     $ZipHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ZipPath).Hash
     "$ZipHash  $(Split-Path -Leaf $ZipPath)" | Set-Content -LiteralPath $ZipHashPath -Encoding ASCII
