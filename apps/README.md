@@ -3,8 +3,9 @@
 Interactive DragonForge applications live here.
 
 Current:
-- `security-center/`
+- `security-center/` — suite dashboard/orchestration foundation.
+- `password-manager/` — migrated DragonForge Password Manager desktop application.
 
-Reserved future products include the Password Manager migration, File Vault, Authenticator, Security Scanner, and other user-facing applications.
+Future user-facing products include File Vault, Authenticator, Security Scanner, Network Guard UI, and other suite applications.
 
-Do not create duplicate Password Manager implementations here before the existing tested repository is migrated.
+Application UI/orchestration code should depend downward on product/shared crates and should not own reusable cryptographic primitives.

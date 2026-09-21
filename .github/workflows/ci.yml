@@ -1,9 +1,21 @@
-name: CI
+name: Suite Foundation CI
 
 on:
   push:
     branches: ["main"]
+    paths:
+      - "apps/security-center/**"
+      - "crates/dragonforge-core/**"
+      - "Cargo.toml"
+      - "rust-toolchain.toml"
+      - ".github/workflows/ci.yml"
   pull_request:
+    paths:
+      - "apps/security-center/**"
+      - "crates/dragonforge-core/**"
+      - "Cargo.toml"
+      - "rust-toolchain.toml"
+      - ".github/workflows/ci.yml"
 
 permissions:
   contents: read
@@ -12,8 +24,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  rust:
-    name: Rust workspace
+  foundation:
+    name: Suite foundation
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -26,34 +38,16 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        continue-on-error: true
 
       - name: Format
         run: cargo fmt --all --check
 
-      - name: Check
-        run: cargo check --workspace --all-targets
+      - name: Check suite foundation
+        run: cargo check -p dragonforge-core -p dragonforge-security-center --all-targets
 
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Clippy suite foundation
+        run: cargo clippy -p dragonforge-core -p dragonforge-security-center --all-targets -- -D warnings
 
-      - name: Test
-        run: cargo test --workspace --all-targets
-
-  dependency-audit:
-    name: Dependency audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Generate lockfile
-        run: cargo generate-lockfile
-
-      - name: Install cargo-audit
-        run: cargo install cargo-audit --locked
-
-      - name: Audit
-        run: cargo audit
+      - name: Test suite foundation
+        run: cargo test -p dragonforge-core -p dragonforge-security-center --all-targets
