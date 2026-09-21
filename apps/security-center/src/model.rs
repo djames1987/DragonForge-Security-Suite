@@ -113,9 +113,9 @@ impl ComponentRegistry {
                     Component::IntegrityMonitor,
                     "Integrity Monitor",
                     "File and system configuration baseline monitoring.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 7.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 7 local baseline and change-detection application.",
                 ),
                 ComponentStatus::new(
                     Component::NetworkGuard,

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge Integrity Monitor</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">DF</div>
+        <div><strong>DragonForge</strong><span>Integrity Monitor</span></div>
+      </div>
+      <nav>
+        <button class="nav active" data-view="monitor">Monitor</button>
+        <button class="nav" data-view="about">About</button>
+      </nav>
+      <div class="sidebar-note">
+        <strong>Baseline comparison</strong>
+        <span>Phase 7 records fingerprints and compares them on demand. Continuous background monitoring arrives with the future Agent.</span>
+      </div>
+      <div class="phase">Phase 7</div>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h1 id="page-title">Integrity baseline</h1>
+        </div>
+        <button id="check-button" class="primary" disabled>Check integrity</button>
+      </header>
+
+      <section id="view-monitor" class="view active">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">Local change detection</div>
+            <h2 id="baseline-state">Checking baseline…</h2>
+            <p id="baseline-copy">Loading the current Integrity Monitor state.</p>
+          </div>
+          <div id="platform-pill" class="pill">Windows-first</div>
+        </div>
+
+        <div class="actions">
+          <button id="baseline-button" class="secondary">Create baseline</button>
+          <div class="action-copy">
+            <strong id="baseline-meta">No baseline loaded.</strong>
+            <span>Replacing a baseline is explicit and resets the comparison reference point.</span>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <article><span>Unchanged</span><strong id="metric-unchanged">—</strong></article>
+          <article><span>Added</span><strong id="metric-added">—</strong></article>
+          <article><span>Removed</span><strong id="metric-removed">—</strong></article>
+          <article><span>Changed</span><strong id="metric-changed">—</strong></article>
+        </div>
+
+        <div id="warnings" class="warnings"></div>
+
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Detected changes</div>
+            <h2>Baseline comparison</h2>
+          </div>
+          <span id="check-time" class="muted">No comparison run yet.</span>
+        </div>
+        <div id="changes" class="changes">
+          <div class="empty">Create a baseline, then run an integrity check to compare the current system state.</div>
+        </div>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about">
+          <div class="mark large">DF</div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h2>Integrity Monitor</h2>
+          <p>Phase 7 fingerprints selected Windows startup, persistence, service, scheduled-task, hosts-file, and security-configuration surfaces and compares them against a local baseline.</p>
+          <p>The baseline stores identifiers and SHA-256 fingerprints, not command contents or monitored file contents. A detected change is evidence for review, not proof of malicious activity.</p>
+          <p>Phase 7 is on-demand. Continuous monitoring while the UI is closed requires the future DragonForge Agent and is not claimed here.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -45,6 +45,7 @@ Current:
 - `file-vault/`
 - `authenticator/`
 - `security-scanner/`
+- `integrity-monitor/`
 
 Future:
 - Network Guard UI
@@ -69,6 +70,7 @@ Current:
 - `dragonforge-file-vault`: File Vault product-owned encrypted-container engine.
 - `dragonforge-authenticator`: Authenticator product-owned OTP and encrypted-store engine.
 - `dragonforge-security-scanner`: Security Scanner product-owned posture assessment engine.
+- `dragonforge-integrity-monitor`: Integrity Monitor product-owned baseline/change engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -287,3 +289,25 @@ Phase 6 is intentionally a one-shot assessment component, not a privileged backg
 5. Phase 6 does not mutate firewall, encryption, update, Defender, UAC, SMB1, Remote Desktop, service, or network configuration.
 6. Listening ports are posture evidence, not proof of vulnerability.
 7. Latest-hotfix metadata is informational and does not claim that no newer update is available.
+
+
+## 14. Phase 7 Integrity Monitor
+
+Integrity Monitor is split into a product-owned baseline/change engine and a Tauri desktop UI:
+
+- `crates/dragonforge-integrity-monitor/` owns baseline format, collection limits, hashing, validation, persistence, and comparison semantics.
+- `apps/integrity-monitor/` exposes narrow commands for baseline status, baseline creation/replacement, and on-demand integrity comparison.
+- Security Center marks Integrity Monitor as Integrated and launches only the expected sibling executable.
+
+Phase 7 remains user-session scoped and on-demand. It does not claim continuous monitoring when the UI is closed; that requires the future DragonForge Agent.
+
+### Integrity trust rules
+
+1. The webview cannot submit PowerShell, arbitrary registry paths, service/task names, filesystem roots, or remediation commands.
+2. Fixed Windows probes are defined in native code.
+3. Baselines persist identifiers and SHA-256 fingerprints, not monitored command contents or file contents.
+4. Baseline files are versioned, bounded, validated, and reject symbolic-link targets.
+5. Baseline replacement is explicit because it resets the trusted comparison reference.
+6. Startup collection skips symbolic links and limits recursion, file count, and hashed file size.
+7. Probe/collection failures mark affected surfaces unavailable so they do not create false removal findings.
+8. Detected differences are review signals, not malware verdicts.

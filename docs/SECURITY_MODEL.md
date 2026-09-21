@@ -169,3 +169,20 @@ Security requirements:
 - Security Center starts the scanner only by its exact co-located sibling executable path.
 
 The scanner is not a traditional antivirus engine, exploit scanner, EDR agent, or authenticated vulnerability-feed service. Those capabilities are outside the Phase 6 trust boundary.
+
+
+## Integrity Monitor baseline boundary
+
+Phase 7 introduces local integrity baselines and on-demand change detection.
+
+Security requirements:
+- collection is limited to fixed Windows persistence/configuration surfaces and bounded Startup/hosts file hashing;
+- the UI cannot inject shell commands, registry locations, service/task selectors, or arbitrary filesystem paths;
+- persisted baselines contain identifiers and SHA-256 fingerprints rather than monitored command or file contents;
+- malformed, oversized, duplicate-entry, unsupported-version, and symlink baseline inputs are rejected;
+- baseline replacement is explicit and uses staged replacement rather than in-place partial writes;
+- unavailable collection surfaces are tracked and excluded from comparison so probe failure does not become a false removal;
+- a fingerprint difference is evidence of change only and must not be represented as proof of compromise;
+- Phase 7 does not remediate changes, quarantine files, or provide privileged/tamper-resistant monitoring.
+
+Continuous monitoring outside the desktop application remains a future DragonForge Agent responsibility.

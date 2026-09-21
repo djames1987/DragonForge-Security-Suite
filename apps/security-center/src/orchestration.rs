@@ -32,6 +32,10 @@ pub fn security_scanner_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-security-scanner")
 }
 
+pub fn integrity_monitor_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-integrity-monitor")
+}
+
 fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
     if !target.is_file() {
         return Err(CoreError::new_safe(
@@ -100,6 +104,23 @@ pub fn launch_security_scanner() -> CoreResult<()> {
     launch_sibling(target, "Security Scanner")
 }
 
+pub fn launch_integrity_monitor() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = integrity_monitor_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Integrity Monitor sibling path",
+        )
+    })?;
+
+    launch_sibling(target, "Integrity Monitor")
+}
+
 pub fn launch_file_vault() -> CoreResult<()> {
     let current = env::current_exe().map_err(|_| {
         CoreError::new_safe(
@@ -122,8 +143,8 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use super::{
-        authenticator_sibling, file_vault_sibling, password_manager_sibling,
-        security_scanner_sibling,
+        authenticator_sibling, file_vault_sibling, integrity_monitor_sibling,
+        password_manager_sibling, security_scanner_sibling,
     };
 
     #[test]
@@ -175,6 +196,23 @@ mod tests {
         };
 
         assert_eq!(security_scanner_sibling(center), Some(expected));
+    }
+
+    #[test]
+    fn integrity_monitor_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-integrity-monitor.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-integrity-monitor")
+        };
+
+        assert_eq!(integrity_monitor_sibling(center), Some(expected));
     }
 
     #[test]

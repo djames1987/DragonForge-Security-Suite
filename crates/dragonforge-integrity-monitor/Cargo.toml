@@ -1,0 +1,19 @@
+[package]
+name = "dragonforge-integrity-monitor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+description = "Local integrity baseline and change-detection engine for DragonForge Security Suite"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

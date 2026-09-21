@@ -130,11 +130,23 @@ Delivered:
 See [PHASE_6_SECURITY_SCANNER.md](PHASE_6_SECURITY_SCANNER.md).
 
 ## Phase 7 — Integrity Monitor
-**Status: Next**
+**Status: Implementation Complete — Local Verification Pending**
 
-Baseline and monitor important files, startup locations, services, tasks, and system configuration.
+Delivered:
+- dedicated Integrity Monitor engine crate and Tauri desktop application;
+- versioned local baseline with explicit creation/replacement;
+- SHA-256 fingerprinting for monitored values and selected files;
+- Startup folder, Run/RunOnce, service, scheduled-task, hosts-file, and selected system-configuration coverage;
+- Added / Removed / Changed comparison reporting;
+- bounded collection and baseline validation;
+- fixed Windows probes with no arbitrary command input;
+- Security Center integration with strict sibling-app launch;
+- Phase 7 verification script, documentation, and CI coverage.
+
+See [PHASE_7_INTEGRITY_MONITOR.md](PHASE_7_INTEGRITY_MONITOR.md).
 
 ## Phase 8 — Network Guard
+**Status: Next**
 
 Per-process network visibility, DNS monitoring, and eventually application-level firewall controls.
 

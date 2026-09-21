@@ -5,11 +5,13 @@ members = [
     "apps/file-vault",
     "apps/authenticator",
     "apps/security-scanner",
+    "apps/integrity-monitor",
     "services/password-manager-sync",
     "crates/dragonforge-core",
     "crates/dragonforge-file-vault",
     "crates/dragonforge-authenticator",
     "crates/dragonforge-security-scanner",
+    "crates/dragonforge-integrity-monitor",
     "crates/dragonforge-crypto",
     "crates/dragonforge-vault",
 ]

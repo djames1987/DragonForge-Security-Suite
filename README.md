@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 6 Security Scanner verified complete. DragonForge now includes the Security Center, Password Manager, File Vault, Authenticator, and a read-only Windows-first security posture scanner.
+> **Current status:** Phase 7 Integrity Monitor implemented; local verification is pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, and an on-demand Windows-first integrity baseline monitor.
 
 ## Canonical repository
 
@@ -22,12 +22,14 @@ DragonForge-Security-Suite/
 │   ├── password-manager/              # Migrated Password Manager desktop application
 │   ├── file-vault/                    # Encrypted file/folder container application
 │   ├── authenticator/                 # Encrypted TOTP/HOTP desktop application
-│   └── security-scanner/              # Read-only system posture scanner
+│   ├── security-scanner/              # Read-only system posture scanner
+│   └── integrity-monitor/             # Integrity baseline/change monitor
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
 │   ├── dragonforge-authenticator/     # Authenticator OTP + encrypted store engine
 │   ├── dragonforge-security-scanner/  # Security posture assessment engine
+│   ├── dragonforge-integrity-monitor/ # Integrity baseline/change engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -45,7 +47,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_3_SECURITY_CENTER.md
 │   ├── PHASE_4_FILE_VAULT.md
 │   ├── PHASE_5_AUTHENTICATOR.md
-│   └── PHASE_6_SECURITY_SCANNER.md
+│   ├── PHASE_6_SECURITY_SCANNER.md
+│   └── PHASE_7_INTEGRITY_MONITOR.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -90,8 +93,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 4 — File Vault: **Complete**
 - Phase 5 — Authenticator: **Verified Complete**
 - Phase 6 — Security Scanner: **Verified Complete**
-- Phase 7 — Integrity Monitor: **Next**
-- Phase 8 — Network Guard
+- Phase 7 — Integrity Monitor: **Implementation Complete — Local Verification Pending**
+- Phase 8 — Network Guard: **Next**
 - Phase 9 — Backup & Recovery
 - Phase 10 — Secure Share
 - Phase 11 — DragonForge Agent
@@ -186,3 +189,24 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase6-sec
 ```
 
 See [docs/PHASE_6_SECURITY_SCANNER.md](docs/PHASE_6_SECURITY_SCANNER.md).
+
+
+## Integrity Monitor
+
+Phase 7 adds an on-demand Windows-first integrity baseline monitor under `apps/integrity-monitor/`.
+
+Current capabilities:
+- create and explicitly replace a versioned local integrity baseline;
+- fingerprint user/common Startup folders and the Windows hosts file;
+- fingerprint Run/RunOnce persistence, services, scheduled tasks, and selected security configuration;
+- compare current state with the saved baseline and report Added / Removed / Changed entries;
+- store hashes and identifiers rather than monitored command/file contents;
+- integrate with Security Center using an exact sibling executable path.
+
+Run Phase 7 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase7-integrity-monitor-tests.ps1
+```
+
+See [docs/PHASE_7_INTEGRITY_MONITOR.md](docs/PHASE_7_INTEGRITY_MONITOR.md).
