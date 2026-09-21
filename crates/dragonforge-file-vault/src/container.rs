@@ -223,10 +223,10 @@ fn collect_directory(
     let relative = directory
         .strip_prefix(root)
         .map_err(|_| FileVaultError::InvalidPath)?;
-    let archive_path = archive_path(root_name, relative)?;
+    let directory_archive_path = archive_path(root_name, relative)?;
     insert_entry(
         DecodedEntry {
-            path: archive_path,
+            path: directory_archive_path,
             is_directory: true,
             data: Vec::new(),
         },
