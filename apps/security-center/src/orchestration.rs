@@ -28,6 +28,10 @@ pub fn authenticator_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-authenticator")
 }
 
+pub fn security_scanner_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-security-scanner")
+}
+
 fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
     if !target.is_file() {
         return Err(CoreError::new_safe(
@@ -79,6 +83,23 @@ pub fn launch_authenticator() -> CoreResult<()> {
     launch_sibling(target, "Authenticator")
 }
 
+pub fn launch_security_scanner() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = security_scanner_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Scanner sibling path",
+        )
+    })?;
+
+    launch_sibling(target, "Security Scanner")
+}
+
 pub fn launch_file_vault() -> CoreResult<()> {
     let current = env::current_exe().map_err(|_| {
         CoreError::new_safe(
@@ -100,7 +121,10 @@ pub fn launch_file_vault() -> CoreResult<()> {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{authenticator_sibling, file_vault_sibling, password_manager_sibling};
+    use super::{
+        authenticator_sibling, file_vault_sibling, password_manager_sibling,
+        security_scanner_sibling,
+    };
 
     #[test]
     fn password_manager_path_is_strictly_sibling_scoped() {
@@ -134,6 +158,23 @@ mod tests {
         };
 
         assert_eq!(authenticator_sibling(center), Some(expected));
+    }
+
+    #[test]
+    fn security_scanner_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-security-scanner.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-security-scanner")
+        };
+
+        assert_eq!(security_scanner_sibling(center), Some(expected));
     }
 
     #[test]
