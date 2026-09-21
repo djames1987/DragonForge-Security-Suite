@@ -8,14 +8,17 @@ on:
       - "apps/file-vault/**"
       - "apps/authenticator/**"
       - "apps/security-scanner/**"
+      - "apps/integrity-monitor/**"
       - "crates/dragonforge-core/**"
       - "crates/dragonforge-file-vault/**"
       - "crates/dragonforge-authenticator/**"
       - "crates/dragonforge-security-scanner/**"
+      - "crates/dragonforge-integrity-monitor/**"
       - "scripts/run-phase3-security-center-tests.ps1"
       - "scripts/run-phase4-file-vault-tests.ps1"
       - "scripts/run-phase5-authenticator-tests.ps1"
       - "scripts/run-phase6-security-scanner-tests.ps1"
+      - "scripts/run-phase7-integrity-monitor-tests.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
@@ -45,7 +48,7 @@ env:
 
 jobs:
   suite-applications:
-    name: Security Center + File Vault + Authenticator + Scanner
+    name: Security Center + File Vault + Authenticator + Scanner + Integrity
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -69,13 +72,13 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Check suite applications
-        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app --all-targets
+        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app --all-targets
 
       - name: Clippy suite applications
-        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app --all-targets -- -D warnings
+        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app --all-targets -- -D warnings
 
       - name: Test suite applications
-        run: cargo test -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app --all-targets
+        run: cargo test -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app --all-targets
 
       - name: Check application JavaScript
         shell: pwsh
@@ -84,6 +87,7 @@ jobs:
           node --check apps/file-vault/ui/app.js
           node --check apps/authenticator/ui/app.js
           node --check apps/security-scanner/ui/app.js
+          node --check apps/integrity-monitor/ui/app.js
 
       - name: Build suite applications
         shell: pwsh
@@ -93,3 +97,4 @@ jobs:
           cargo build -p dragonforge-file-vault-app
           cargo build -p dragonforge-authenticator-app
           cargo build -p dragonforge-security-scanner-app
+          cargo build -p dragonforge-integrity-monitor-app
