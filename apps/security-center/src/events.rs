@@ -89,6 +89,13 @@ impl EventStore {
     pub fn clear(&mut self) {
         self.events.clear();
     }
+
+    pub fn set_capacity(&mut self, capacity: usize) {
+        self.capacity = capacity.max(1);
+        while self.events.len() > self.capacity {
+            self.events.pop_front();
+        }
+    }
 }
 
 impl Default for EventStore {
