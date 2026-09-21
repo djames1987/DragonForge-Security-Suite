@@ -137,9 +137,9 @@ impl ComponentRegistry {
                     Component::SecureShare,
                     "Secure Share",
                     "Encrypted recipient-oriented packages and secrets.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 10.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 10 offline encrypted recipient-oriented sharing application.",
                 ),
             ],
         }
