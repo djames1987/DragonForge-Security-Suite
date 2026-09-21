@@ -76,10 +76,7 @@ fn create_container(
 }
 
 #[tauri::command]
-fn inspect_container(
-    vault_path: String,
-    mut password: String,
-) -> Result<Vec<EntryDto>, String> {
+fn inspect_container(vault_path: String, mut password: String) -> Result<Vec<EntryDto>, String> {
     let vault = checked_path(&vault_path)?;
     let result = list_vault(vault, password.as_bytes())
         .map(|entries| entries.into_iter().map(EntryDto::from).collect())
