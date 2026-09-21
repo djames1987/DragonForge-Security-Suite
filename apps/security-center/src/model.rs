@@ -120,10 +120,10 @@ impl ComponentRegistry {
                 ComponentStatus::new(
                     Component::NetworkGuard,
                     "Network Guard",
-                    "Per-process network visibility and enforcement foundation.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 8.",
+                    "Per-process TCP/UDP and DNS visibility foundation.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 8 Windows-first network visibility application.",
                 ),
                 ComponentStatus::new(
                     Component::BackupRecovery,
