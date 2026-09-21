@@ -801,7 +801,12 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
     let current_map = current
         .entries
         .iter()
-        .map(|entry| ((entry.surface, entry.key.as_str()), entry.fingerprint.as_str()))
+        .map(|entry| {
+            (
+                (entry.surface, entry.key.as_str()),
+                entry.fingerprint.as_str(),
+            )
+        })
         .collect::<BTreeMap<_, _>>();
 
     let unavailable_surfaces = baseline
