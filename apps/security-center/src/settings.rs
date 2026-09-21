@@ -1,6 +1,6 @@
 use std::fs;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use dragonforge_core::{Component, CoreError, CoreResult, ErrorCode, SuitePaths};
 use serde::{Deserialize, Serialize};
@@ -65,11 +65,6 @@ impl SettingsStore {
         Self {
             path: directory.into().join(SETTINGS_FILE),
         }
-    }
-
-    #[must_use]
-    pub fn path(&self) -> &Path {
-        &self.path
     }
 
     pub fn load(&self) -> CoreResult<SecurityCenterSettings> {
