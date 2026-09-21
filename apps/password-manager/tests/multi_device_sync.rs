@@ -5,7 +5,7 @@ use dragonforge_sync_server::{
 use sha2::{Digest, Sha256};
 use std::{
     fs,
-    sync::{Arc, mpsc},
+    sync::{Arc, Mutex, MutexGuard, OnceLock, mpsc},
     thread,
 };
 use tempfile::tempdir;
@@ -13,6 +13,14 @@ use uuid::Uuid;
 
 const MASTER: &str = "phase-eight-multi-device-master";
 const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+fn sync_test_guard() -> MutexGuard<'static, ()> {
+    static SYNC_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    SYNC_TEST_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 fn start_sync_server() -> String {
     let store = InMemoryStore::default();
@@ -81,6 +89,7 @@ fn login(name: &str, username: &str) -> ItemDraft {
 
 #[test]
 fn encrypted_vault_syncs_between_two_devices_and_detects_conflicts() {
+    let _test_guard = sync_test_guard();
     let server = start_sync_server();
     let temp = tempdir().unwrap();
     let device_a_path = temp.path().join("device-a.dfvault");
@@ -185,6 +194,7 @@ fn encrypted_vault_syncs_between_two_devices_and_detects_conflicts() {
 
 #[test]
 fn explicit_keep_local_conflict_resolution_uploads_new_revision() {
+    let _test_guard = sync_test_guard();
     let server = start_sync_server();
     let temp = tempdir().unwrap();
     let device_a_path = temp.path().join("local-a.dfvault");
@@ -237,6 +247,7 @@ fn explicit_keep_local_conflict_resolution_uploads_new_revision() {
 
 #[test]
 fn tampered_remote_snapshot_is_rejected_before_local_replacement() {
+    let _test_guard = sync_test_guard();
     let (server, store, account_id) = start_sync_server_with_store();
     let temp = tempdir().unwrap();
     let vault_path = temp.path().join("tamper-test.dfvault");
