@@ -70,7 +70,9 @@
             ? '<button class="component-action" data-launch="authenticator">Open Authenticator</button>'
             : component.id === "security-scanner"
               ? '<button class="component-action" data-launch="security-scanner">Open Security Scanner</button>'
-              : "";
+              : component.id === "integrity-monitor"
+                ? '<button class="component-action" data-launch="integrity-monitor">Open Integrity Monitor</button>'
+                : "";
     return `
       <article class="component-card">
         <div class="component-card-top">
@@ -101,6 +103,9 @@
     });
     document.querySelectorAll('[data-launch="security-scanner"]').forEach((button) => {
       button.addEventListener("click", launchSecurityScanner);
+    });
+    document.querySelectorAll('[data-launch="integrity-monitor"]').forEach((button) => {
+      button.addEventListener("click", launchIntegrityMonitor);
     });
   }
   
@@ -203,6 +208,16 @@
     try {
       await invoke("launch_security_scanner");
       toast("Security Scanner launch requested.");
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function launchIntegrityMonitor() {
+    try {
+      await invoke("launch_integrity_monitor");
+      toast("Integrity Monitor launch requested.");
       await loadSnapshot();
     } catch (error) {
       toast(String(error), true);
