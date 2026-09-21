@@ -59,8 +59,6 @@ Long-running or server-side processes.
 
 Current:
 - `password-manager-sync/`
-
-Current:
 - `dragonforge-agent/`
 
 ### crates/
