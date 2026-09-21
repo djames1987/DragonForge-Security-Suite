@@ -453,6 +453,11 @@ fn read_u32(bytes: &[u8], offset: usize) -> Result<u32> {
 fn load_store(path: &Path, password: &[u8]) -> Result<StoreData> {
     validate_password(password)?;
     recover_interrupted_replace(path)?;
+    let symlink_metadata =
+        fs::symlink_metadata(path).map_err(|_| AuthenticatorError::StoreNotFound)?;
+    if symlink_metadata.file_type().is_symlink() {
+        return Err(AuthenticatorError::SymlinkNotAllowed);
+    }
     let metadata = fs::metadata(path).map_err(|_| AuthenticatorError::StoreNotFound)?;
     if metadata.len() > MAX_STORE_BYTES {
         return Err(AuthenticatorError::InvalidStore);
@@ -524,6 +529,12 @@ fn save_store(path: &Path, password: &[u8], store: &StoreData) -> Result<()> {
 }
 
 fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
+    if path.exists() {
+        let metadata = fs::symlink_metadata(path).map_err(|_| AuthenticatorError::Io)?;
+        if metadata.file_type().is_symlink() {
+            return Err(AuthenticatorError::SymlinkNotAllowed);
+        }
+    }
     let parent = path.parent().ok_or(AuthenticatorError::Io)?;
     fs::create_dir_all(parent).map_err(|_| AuthenticatorError::Io)?;
     let temporary = temporary_path(path)?;
@@ -573,7 +584,7 @@ fn recover_interrupted_replace(path: &Path) -> Result<()> {
     if !path.exists() && backup.exists() {
         fs::rename(&backup, path).map_err(|_| AuthenticatorError::Io)?;
     } else if path.exists() && backup.exists() {
-        fs::remove_file(&backup).map_err(|_| AuthenticatorError::Io)?;
+        let _ = fs::remove_file(&backup);
     }
     Ok(())
 }
