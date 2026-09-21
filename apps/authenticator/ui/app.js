@@ -217,6 +217,30 @@
     }
   }
 
+  async function changeMasterPassword(event) {
+    event.preventDefault();
+    if (!state.unlocked && !(await unlock())) return;
+    const next = document.getElementById("new-password").value;
+    const confirm = document.getElementById("confirm-new-password").value;
+    if (next.length < 12) return toast("Use a new password of at least 12 characters.", true);
+    if (next !== confirm) return toast("New passwords do not match.", true);
+
+    try {
+      await invoke("change_store_password", {
+        path: storePath(),
+        currentPassword: password(),
+        newPassword: next,
+      });
+      document.getElementById("master-password").value = next;
+      document.getElementById("new-password").value = "";
+      document.getElementById("confirm-new-password").value = "";
+      await unlock();
+      toast("Authenticator store re-encrypted with the new password.");
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
   async function initialize() {
     document.querySelectorAll(".nav").forEach((button) => {
       button.addEventListener("click", () => showView(button.dataset.view));
@@ -228,6 +252,7 @@
     document.getElementById("manual-form").addEventListener("submit", addManual);
     document.getElementById("reveal-recovery").addEventListener("click", revealRecovery);
     document.getElementById("save-recovery").addEventListener("click", saveRecovery);
+    document.getElementById("password-change-form").addEventListener("submit", changeMasterPassword);
     document.getElementById("manual-kind").addEventListener("change", (event) => {
       const hotp = event.target.value === "hotp";
       document.getElementById("period-label").textContent = hotp ? "Initial counter" : "Period (seconds)";
