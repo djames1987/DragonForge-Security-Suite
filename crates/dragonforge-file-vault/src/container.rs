@@ -11,8 +11,8 @@ use zeroize::{Zeroize, Zeroizing};
 
 use crate::error::{FileVaultError, Result};
 use crate::format::{
-    ARGON_ITERATIONS, ARGON_LANES, ARGON_MEMORY_KIB, HEADER_LEN, Header, KEY_LEN, MAX_ENTRIES,
-    MAX_PATH_BYTES, MAX_TOTAL_FILE_BYTES, NONCE_LEN, SALT_LEN,
+    ARGON_ITERATIONS, ARGON_LANES, ARGON_MEMORY_KIB, HEADER_LEN, Header, KEY_LEN,
+    MAX_CONTAINER_BYTES, MAX_ENTRIES, MAX_PATH_BYTES, MAX_TOTAL_FILE_BYTES, NONCE_LEN, SALT_LEN,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -455,6 +455,11 @@ fn decode_entries(bytes: &[u8]) -> Result<Vec<DecodedEntry>> {
 
 fn open_entries(container: &Path, password: &[u8]) -> Result<Vec<DecodedEntry>> {
     validate_password(password)?;
+
+    let metadata = fs::metadata(container).map_err(|_| FileVaultError::Io)?;
+    if metadata.len() > MAX_CONTAINER_BYTES {
+        return Err(FileVaultError::ContainerTooLarge);
+    }
 
     let bytes = fs::read(container).map_err(|_| FileVaultError::Io)?;
     if bytes.len() <= HEADER_LEN {
