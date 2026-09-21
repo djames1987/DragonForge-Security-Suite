@@ -146,7 +146,7 @@ Delivered:
 See [PHASE_7_INTEGRITY_MONITOR.md](PHASE_7_INTEGRITY_MONITOR.md).
 
 ## Phase 8 — Network Guard
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - dedicated Network Guard engine crate and Tauri desktop application;
@@ -159,7 +159,9 @@ Delivered:
 - no packet payload capture, traffic blocking, connection termination, or firewall mutation;
 - Security Center integration with strict sibling-app launch;
 - Phase 8 verification tooling and CI coverage;
-- suite-wide build-all-apps-for-testing script.
+- suite-wide build-all-apps-for-testing script;
+- full local Windows verification passed, including formatting, compile checks, strict Clippy, regression tests, JavaScript checks, and all seven desktop application builds;
+- verified log SHA-256: `B9734604E9E3550B9742C6440FB21B5E6B418CB7E810317B6CB63AC153FA1549`.
 
 Persistent enforcement remains deferred to the future DragonForge Agent so it can be implemented behind an authenticated, narrow privilege boundary.
 
