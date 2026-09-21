@@ -197,8 +197,15 @@ pub fn extract_attachments(
     fs::create_dir(&temporary)
         .map_err(|_| ShareError::Io("temporary extraction directory could not be created"))?;
 
+    if payload.attachments.is_empty() {
+        return Err(ShareError::InvalidInput(
+            "secure share contains no attachments to extract",
+        ));
+    }
+
     let result = (|| {
         for attachment in &payload.attachments {
+            reject_if_expired(&payload)?;
             let relative = validated_relative_path(&attachment.archive_path)?;
             let target = temporary.join(relative);
             if let Some(parent) = target.parent() {
@@ -209,6 +216,7 @@ pub fn extract_attachments(
             fs::write(&target, bytes)
                 .map_err(|_| ShareError::Io("attachment could not be written"))?;
         }
+        reject_if_expired(&payload)?;
         fs::rename(&temporary, destination)
             .map_err(|_| ShareError::Io("attachment extraction could not be finalized"))?;
         summary_from_payload(&payload, true)
