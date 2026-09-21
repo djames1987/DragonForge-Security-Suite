@@ -32,7 +32,10 @@ pub struct AppState {
 impl AppState {
     pub fn initialize() -> CoreResult<Self> {
         let settings_store = SettingsStore::discover()?;
-        let settings = settings_store.load()?;
+        let (settings, settings_warning) = match settings_store.load() {
+            Ok(settings) => (settings, false),
+            Err(_) => (SecurityCenterSettings::default(), true),
+        };
         let logger = SafeLogger::discover(settings.include_diagnostic_identifiers)?;
         let mut events = EventStore::new(settings.retain_event_count);
         events.push(
@@ -42,6 +45,15 @@ impl AppState {
             "security-center.started",
             "Security Center started",
         );
+        if settings_warning {
+            events.push(
+                Component::SecurityCenter,
+                EventKind::Configuration,
+                Severity::Warning,
+                "security-center.settings-fallback",
+                "Invalid local settings were ignored; safe defaults are active",
+            );
+        }
 
         let state = Self {
             registry: ComponentRegistry::phase3_default(),
