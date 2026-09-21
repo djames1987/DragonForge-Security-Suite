@@ -41,6 +41,7 @@ try {
     Invoke-Checked cargo "build" "-p" "dragonforge-network-guard-app" @ReleaseArgs
     Invoke-Checked cargo "build" "-p" "dragonforge-backup-recovery-app" @ReleaseArgs
     Invoke-Checked cargo "build" "-p" "dragonforge-secure-share-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-agent-service" @ReleaseArgs
 
     $Extension = if ($env:OS -eq "Windows_NT") { ".exe" } else { "" }
     $Expected = @(
@@ -52,7 +53,8 @@ try {
         "dragonforge-integrity-monitor$Extension",
         "dragonforge-network-guard$Extension",
         "dragonforge-backup-recovery$Extension",
-        "dragonforge-secure-share$Extension"
+        "dragonforge-secure-share$Extension",
+        "dragonforge-agent$Extension"
     )
 
     $TargetDirectory = Join-Path $RepoRoot "target\$TargetProfile"

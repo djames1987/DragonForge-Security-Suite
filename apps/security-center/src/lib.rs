@@ -56,6 +56,11 @@ fn agent_status(state: State<'_, AppState>) -> AgentStatus {
 }
 
 #[tauri::command]
+fn launch_agent(state: State<'_, AppState>) -> Result<(), String> {
+    state.launch_agent()
+}
+
+#[tauri::command]
 fn launch_authenticator(state: State<'_, AppState>) -> Result<(), String> {
     state.launch_authenticator()
 }
@@ -110,6 +115,7 @@ pub fn run() {
             get_settings,
             save_settings,
             agent_status,
+            launch_agent,
             launch_authenticator,
             launch_security_scanner,
             launch_integrity_monitor,

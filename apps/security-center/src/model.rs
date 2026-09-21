@@ -6,7 +6,6 @@ use serde::Serialize;
 pub enum ComponentState {
     Active,
     Integrated,
-    Unavailable,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -79,10 +78,10 @@ impl ComponentRegistry {
                 ComponentStatus::new(
                     Component::Agent,
                     "DragonForge Agent",
-                    "Future background monitoring and protected local operations.",
-                    ComponentState::Unavailable,
-                    "Not installed",
-                    "Agent transport and service arrive in a later phase.",
+                    "Authenticated per-user background runtime and protected local IPC boundary.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 11 authenticated local background agent.",
                 ),
                 ComponentStatus::new(
                     Component::FileVault,
@@ -153,14 +152,13 @@ impl ComponentRegistry {
     pub fn health_summary(&self) -> HealthSummary {
         let mut active = 0;
         let mut integrated = 0;
-        let mut planned = 0;
+        let planned = 0;
         let attention = 0;
 
         for component in &self.components {
             match component.state {
                 ComponentState::Active => active += 1,
                 ComponentState::Integrated => integrated += 1,
-                ComponentState::Unavailable => planned += 1,
             }
         }
 

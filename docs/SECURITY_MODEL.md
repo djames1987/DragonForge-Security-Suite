@@ -62,7 +62,7 @@ Identifiers should be minimized or pseudonymized where practical. The shared Log
 
 Most UI applications should run as the normal user.
 
-The future DragonForge Agent may need elevated capabilities for selected monitoring/enforcement features. Elevated code must be kept narrow and expose a small authenticated command surface.
+The Phase 11 DragonForge Agent runs as the normal user. Future selected monitoring/enforcement features may require a separate elevated Windows service; any elevated code must remain narrow and expose a small authenticated command surface.
 
 ## Network model
 
@@ -116,7 +116,7 @@ Security requirements:
 - settings are preferences, not a secret store;
 - dashboard events and log messages use safe/redaction-oriented text;
 - invalid local settings fall back to safe defaults instead of disabling the dashboard;
-- the future DragonForge Agent remains explicitly unavailable until a real authenticated transport/service exists.
+- Phase 11 reports Agent availability only after an authenticated health exchange; a stopped or unreachable Agent is shown as unavailable.
 
 The current in-memory activity view is not a tamper-resistant audit log and must not be represented as one.
 
@@ -240,3 +240,24 @@ Security requirements:
 - Security Center starts Secure Share only by its exact co-located sibling executable path.
 
 Offline `.dfshare` files can be copied. Phase 10 therefore does not claim remote revocation, guaranteed deletion after expiration, reliable one-time-open/open-count enforcement, server-authenticated recipients, or delivery tracking. Those properties require an online service with a separate identity, authorization, and availability threat model.
+
+
+## DragonForge Agent local IPC boundary
+
+Phase 11 introduces a real per-user background Agent.
+
+Security requirements:
+- the Agent listens only on IPv4 loopback;
+- each Agent lifetime gets a fresh random 256-bit session credential;
+- request and response payloads are authenticated with HMAC-SHA256;
+- request timestamps are accepted only within a bounded freshness window;
+- random nonces are tracked in a bounded replay cache;
+- authenticated source/destination metadata must still satisfy the Phase 2 `LocalIpcPolicy`;
+- runtime descriptors do not contain the session credential;
+- runtime/credential/lock files are kept in the current user's DragonForge data directory;
+- messages and socket operations are bounded;
+- invalid clients fail per connection rather than terminating the Agent;
+- the exposed Phase 11 action surface is fixed to health/status only;
+- Security Center launches only the exact co-located Agent executable.
+
+The Phase 11 session credential is designed to reject unauthenticated local socket clients and spoofed protocol traffic. It is not a defense against a process that has already compromised the same user account and can read that user's runtime files. Phase 11 does not claim elevated/tamper-resistant enforcement.

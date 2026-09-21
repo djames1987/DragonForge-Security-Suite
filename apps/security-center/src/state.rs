@@ -3,9 +3,7 @@ use std::sync::{Mutex, MutexGuard};
 use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
 
-use crate::agent::{
-    AgentClient, AgentStatus, UnavailableAgentClient, validate_future_agent_request,
-};
+use crate::agent::{AgentClient, AgentStatus};
 use crate::events::{DashboardEvent, EventStore};
 use crate::logging::SafeLogger;
 use crate::model::{ComponentRegistry, ComponentStatus, HealthSummary};
@@ -28,7 +26,7 @@ pub struct AppState {
     settings: Mutex<SecurityCenterSettings>,
     settings_store: SettingsStore,
     logger: SafeLogger,
-    agent: Box<dyn AgentClient>,
+    agent: AgentClient,
 }
 
 impl AppState {
@@ -56,23 +54,13 @@ impl AppState {
                 "Invalid local settings were ignored; safe defaults are active",
             );
         }
-        if !validate_future_agent_request(1) {
-            events.push(
-                Component::SecurityCenter,
-                EventKind::Ipc,
-                Severity::Critical,
-                "security-center.agent-policy-invalid",
-                "Future Agent IPC policy validation failed",
-            );
-        }
-
         let state = Self {
             registry: ComponentRegistry::phase3_default(),
             events: Mutex::new(events),
             settings: Mutex::new(settings),
             settings_store,
             logger,
-            agent: Box::<UnavailableAgentClient>::default(),
+            agent: AgentClient::discover(),
         };
         let _ = state
             .logger
@@ -89,16 +77,34 @@ impl AppState {
             settings: Mutex::new(settings),
             settings_store,
             logger,
-            agent: Box::<UnavailableAgentClient>::default(),
+            agent: AgentClient::unavailable(),
         }
     }
 
     pub fn snapshot(&self) -> Result<DashboardSnapshot, String> {
+        let agent = self.agent.status();
+        let mut components = self.registry.all().to_vec();
+        let mut health = self.registry.health_summary();
+
+        if agent.available {
+            if let Some(component) = components.iter_mut().find(|item| item.id == "agent") {
+                component.state = crate::model::ComponentState::Active;
+                component.state_label = "Active";
+                component.detail = "Authenticated Phase 11 background agent is running.";
+            }
+            health.active += 1;
+            health.integrated = health.integrated.saturating_sub(1);
+        } else {
+            health.attention += 1;
+            health.state = "attention";
+            health.label = "Agent attention required";
+        }
+
         Ok(DashboardSnapshot {
-            health: self.registry.health_summary(),
-            components: self.registry.all().to_vec(),
+            health,
+            components,
             events: self.lock_events()?.recent(12),
-            agent: self.agent.status(),
+            agent,
             platform: Platform::current().as_str(),
             settings: self.lock_settings()?.clone(),
         })
@@ -166,6 +172,23 @@ impl AppState {
 
     pub fn agent_status(&self) -> AgentStatus {
         self.agent.status()
+    }
+
+    pub fn launch_agent(&self) -> Result<(), String> {
+        orchestration::launch_agent().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.agent-launched",
+            "DragonForge Agent start requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.agent-launched",
+            "DragonForge Agent start requested",
+        );
+        Ok(())
     }
 
     pub fn launch_authenticator(&self) -> Result<(), String> {
@@ -336,6 +359,7 @@ mod tests {
         let snapshot = state.snapshot().expect("snapshot");
         assert_eq!(snapshot.components.len(), 10);
         assert!(!snapshot.agent.available);
+        assert_eq!(snapshot.health.attention, 1);
         let encoded = serde_json::to_string(&snapshot).expect("serialize snapshot");
         assert!(encoded.contains("security-center"));
     }

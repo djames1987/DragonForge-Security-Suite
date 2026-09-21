@@ -1,67 +1,89 @@
-use dragonforge_core::{
-    AuthenticationMechanism, Component, IpcEnvelope, LocalIpcPolicy, PeerContext, RequestId,
-};
+use dragonforge_agent::{AgentClient as RuntimeAgentClient, AgentHealth};
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct AgentStatus {
     pub available: bool,
-    pub state: &'static str,
-    pub label: &'static str,
-    pub detail: &'static str,
-    pub transport: &'static str,
+    pub state: String,
+    pub label: String,
+    pub detail: String,
+    pub transport: String,
+    pub pid: Option<u32>,
+    pub uptime_ms: Option<u64>,
+    pub capabilities: Vec<String>,
 }
 
-pub trait AgentClient: Send + Sync {
-    fn status(&self) -> AgentStatus;
+#[derive(Debug, Clone)]
+pub struct AgentClient {
+    runtime: Option<RuntimeAgentClient>,
 }
 
-#[derive(Debug, Default)]
-pub struct UnavailableAgentClient;
+impl AgentClient {
+    #[must_use]
+    pub fn discover() -> Self {
+        Self {
+            runtime: RuntimeAgentClient::discover().ok(),
+        }
+    }
 
-impl AgentClient for UnavailableAgentClient {
-    fn status(&self) -> AgentStatus {
+    #[cfg(test)]
+    #[must_use]
+    pub const fn unavailable() -> Self {
+        Self { runtime: None }
+    }
+
+    #[must_use]
+    pub fn status(&self) -> AgentStatus {
+        let health = match &self.runtime {
+            Some(client) => client
+                .health()
+                .unwrap_or_else(|error| AgentHealth::unavailable(error.to_string())),
+            None => AgentHealth::unavailable("DragonForge Agent runtime paths are unavailable."),
+        };
+        status_from_health(health)
+    }
+}
+
+fn status_from_health(health: AgentHealth) -> AgentStatus {
+    if health.available {
+        let pid = health.pid.unwrap_or_default();
+        let uptime = health.uptime_ms.unwrap_or_default();
+        AgentStatus {
+            available: true,
+            state: health.state,
+            label: "Agent connected".to_owned(),
+            detail: format!(
+                "Authenticated local agent is healthy (PID {pid}, uptime {}s).",
+                uptime / 1_000
+            ),
+            transport: health.transport,
+            pid: health.pid,
+            uptime_ms: health.uptime_ms,
+            capabilities: health.capabilities,
+        }
+    } else {
         AgentStatus {
             available: false,
-            state: "unavailable",
-            label: "Agent not installed",
-            detail: "Background agent transport is reserved for a later phase.",
-            transport: "none",
+            state: "unavailable".to_owned(),
+            label: "Agent not running".to_owned(),
+            detail: health.detail,
+            transport: health.transport,
+            pid: None,
+            uptime_ms: None,
+            capabilities: Vec::new(),
         }
     }
 }
 
-pub fn validate_future_agent_request(request_id: u128) -> bool {
-    let envelope = IpcEnvelope::new(
-        RequestId::new(request_id),
-        Component::SecurityCenter,
-        Component::Agent,
-        "health",
-    );
-    let peer = PeerContext::authenticated(
-        Component::SecurityCenter,
-        1,
-        AuthenticationMechanism::OperatingSystemPeer,
-    );
-
-    LocalIpcPolicy::new(Component::Agent, [Component::SecurityCenter])
-        .authorize(peer, &envelope)
-        .is_ok()
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{AgentClient, UnavailableAgentClient, validate_future_agent_request};
+    use super::AgentClient;
 
     #[test]
     fn unavailable_agent_is_reported_without_false_connection() {
-        let status = UnavailableAgentClient.status();
+        let status = AgentClient::unavailable().status();
         assert!(!status.available);
-        assert_eq!(status.transport, "none");
-    }
-
-    #[test]
-    fn future_agent_request_matches_phase2_policy() {
-        assert!(validate_future_agent_request(7));
+        assert_eq!(status.state, "unavailable");
+        assert!(status.pid.is_none());
     }
 }

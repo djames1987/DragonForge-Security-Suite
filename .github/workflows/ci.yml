@@ -12,7 +12,9 @@ on:
       - "apps/network-guard/**"
       - "apps/backup-recovery/**"
       - "apps/secure-share/**"
+      - "services/dragonforge-agent/**"
       - "crates/dragonforge-core/**"
+      - "crates/dragonforge-agent/**"
       - "crates/dragonforge-file-vault/**"
       - "crates/dragonforge-authenticator/**"
       - "crates/dragonforge-security-scanner/**"
@@ -28,6 +30,7 @@ on:
       - "scripts/run-phase8-network-guard-tests.ps1"
       - "scripts/run-phase9-backup-recovery-tests.ps1"
       - "scripts/run-phase10-secure-share-tests.ps1"
+      - "scripts/run-phase11-agent-tests.ps1"
       - "scripts/build-all-apps-for-testing.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
@@ -42,7 +45,9 @@ on:
       - "apps/network-guard/**"
       - "apps/backup-recovery/**"
       - "apps/secure-share/**"
+      - "services/dragonforge-agent/**"
       - "crates/dragonforge-core/**"
+      - "crates/dragonforge-agent/**"
       - "crates/dragonforge-file-vault/**"
       - "crates/dragonforge-authenticator/**"
       - "crates/dragonforge-security-scanner/**"
@@ -58,6 +63,7 @@ on:
       - "scripts/run-phase8-network-guard-tests.ps1"
       - "scripts/run-phase9-backup-recovery-tests.ps1"
       - "scripts/run-phase10-secure-share-tests.ps1"
+      - "scripts/run-phase11-agent-tests.ps1"
       - "scripts/build-all-apps-for-testing.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
@@ -71,7 +77,7 @@ env:
 
 jobs:
   suite-applications:
-    name: Security Center + File Vault + Authenticator + Scanner + Integrity + Network + Backup + Share
+    name: Security Center + File Vault + Authenticator + Scanner + Integrity + Network + Backup + Share + Agent
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -95,13 +101,13 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Check suite applications
-        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
+        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
 
       - name: Clippy suite applications
-        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets -- -D warnings
+        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
 
       - name: Test suite applications
-        run: cargo test -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
+        run: cargo test -p dragonforge-core -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
 
       - name: Check application JavaScript
         shell: pwsh
