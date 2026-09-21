@@ -12,7 +12,7 @@ The current runtime/repository model is:
                  +------------------+------------------+
                  |                                     |
           User-facing apps                    DragonForge Agent
-                 |                              (future service)
+                 |                         (Phase 11 background service)
      +-----------+-----------+
      |           |           |
  Password     File Vault  Authenticator  Security Scanner
@@ -31,7 +31,7 @@ Shared libraries sit below applications and services:
 
 The Security Center is an orchestration and visibility layer. It must not become a dumping ground for security-sensitive implementation details.
 
-The future DragonForge Agent will be responsible for protections that need to continue when the Security Center UI is closed.
+The Phase 11 DragonForge Agent provides the authenticated per-user background runtime for work that must continue when the Security Center UI is closed. Privileged enforcement remains a later hardening step.
 
 ## 2. Repository zones
 
@@ -60,7 +60,7 @@ Long-running or server-side processes.
 Current:
 - `password-manager-sync/`
 
-Planned:
+Current:
 - `dragonforge-agent/`
 
 ### crates/
@@ -69,6 +69,7 @@ Reusable Rust libraries.
 
 Current:
 - `dragonforge-core`: suite-wide, non-cryptographic foundation.
+- `dragonforge-agent`: authenticated Agent transport/client/runtime engine.
 - `dragonforge-file-vault`: File Vault product-owned encrypted-container engine.
 - `dragonforge-authenticator`: Authenticator product-owned OTP and encrypted-store engine.
 - `dragonforge-security-scanner`: Security Scanner product-owned posture assessment engine.
@@ -383,3 +384,25 @@ The Phase 10 format remains independent from File Vault, Backup & Recovery, Auth
 7. Symbolic links, traversal-like paths, duplicate paths, malformed packages, and bounded-limit violations are rejected.
 8. Extraction never overwrites an existing destination and is staged through a randomized sibling temporary directory.
 9. Offline packages do not claim remote revocation, guaranteed post-expiration deletion, one-time-open enforcement, open-count enforcement, or delivery tracking.
+
+
+## 18. Phase 11 DragonForge Agent
+
+Phase 11 establishes the real background-agent boundary:
+
+- `crates/dragonforge-agent/` owns the local wire protocol, session authentication, client, runtime paths, replay handling, and server loop.
+- `services/dragonforge-agent/` owns the long-running `dragonforge-agent` executable.
+- Security Center uses the Agent client for live health and launches only the exact sibling Agent executable.
+
+### Agent trust rules
+
+1. The listener binds only to `127.0.0.1`; no remote-network listener is exposed.
+2. Each Agent start creates a fresh random 256-bit session credential.
+3. Requests and responses are HMAC-SHA256 authenticated.
+4. Requests carry timestamps and random nonces; stale and replayed requests are rejected.
+5. Authenticated requests still pass through the Phase 2 destination/source/caller policy.
+6. Wire messages and socket waits are bounded.
+7. Malformed clients cannot terminate the server loop.
+8. A single-instance lock prevents concurrent Agent runtimes from racing runtime state.
+9. The current command surface contains only health/status; there is no arbitrary command execution.
+10. The Agent is normal-user/per-user in Phase 11. It is not a privileged Windows service and must not be represented as a tamper-resistant enforcement boundary.
