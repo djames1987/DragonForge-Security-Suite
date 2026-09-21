@@ -242,6 +242,9 @@ async function initialize() {
 
   try {
     await loadSnapshot();
+    if (state.settings && !state.settings.start_on_overview) {
+      showView("components");
+    }
   } catch (error) {
     toast(`Security Center failed to load: ${String(error)}`, true);
     document.getElementById("health-label").textContent = "Dashboard unavailable";
