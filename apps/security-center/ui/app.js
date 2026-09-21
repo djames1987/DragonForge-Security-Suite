@@ -76,7 +76,9 @@
                   ? '<button class="component-action" data-launch="network-guard">Open Network Guard</button>'
                   : component.id === "backup-recovery"
                     ? '<button class="component-action" data-launch="backup-recovery">Open Backup & Recovery</button>'
-                    : "";
+                    : component.id === "secure-share"
+                      ? '<button class="component-action" data-launch="secure-share">Open Secure Share</button>'
+                      : "";
     return `
       <article class="component-card">
         <div class="component-card-top">
@@ -116,6 +118,9 @@
     });
     document.querySelectorAll('[data-launch="backup-recovery"]').forEach((button) => {
       button.addEventListener("click", launchBackupRecovery);
+    });
+    document.querySelectorAll('[data-launch="secure-share"]').forEach((button) => {
+      button.addEventListener("click", launchSecureShare);
     });
   }
   
@@ -238,6 +243,16 @@
     try {
       await invoke("launch_network_guard");
       toast("Network Guard launch requested.");
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function launchSecureShare() {
+    try {
+      await invoke("launch_secure_share");
+      toast("Secure Share launch requested.");
       await loadSnapshot();
     } catch (error) {
       toast(String(error), true);
