@@ -23,7 +23,7 @@ DragonForge-Security-Suite/
 │   ├── file-vault/                    # Encrypted file/folder container application
 │   ├── authenticator/                 # Encrypted TOTP/HOTP desktop application
 │   ├── security-scanner/              # Read-only system posture scanner
-│   └── integrity-monitor/              # Integrity baseline/change monitor
+│   └── integrity-monitor/             # Integrity baseline/change monitor
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
