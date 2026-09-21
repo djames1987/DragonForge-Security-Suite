@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 11 DragonForge Agent is implementation complete with local verification pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, Secure Share, and an authenticated per-user background Agent.
+> **Current status:** Phase 11 DragonForge Agent is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, Secure Share, and an authenticated per-user background Agent.
 
 ## Canonical repository
 
@@ -109,7 +109,7 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 8 — Network Guard: **Verified Complete**
 - Phase 9 — Backup & Recovery: **Verified Complete**
 - Phase 10 — Secure Share: **Verified Complete**
-- Phase 11 — DragonForge Agent: **Implementation Complete — Local Verification Pending**
+- Phase 11 — DragonForge Agent: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -336,5 +336,8 @@ Run Phase 11 verification on Windows with:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase11-agent-tests.ps1
 ```
+
+Phase 11 local verification result: **PASS**  
+Verified log SHA-256: `171A70C3496BA8FFADAD42597E23D44E39F66078457982EB0933C0BC069E38BE`
 
 See [docs/PHASE_11_DRAGONFORGE_AGENT.md](docs/PHASE_11_DRAGONFORGE_AGENT.md).
