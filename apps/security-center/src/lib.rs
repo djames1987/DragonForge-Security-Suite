@@ -61,6 +61,11 @@ fn launch_authenticator(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn launch_security_scanner(state: State<'_, AppState>) -> Result<(), String> {
+    state.launch_security_scanner()
+}
+
+#[tauri::command]
 fn launch_file_vault(state: State<'_, AppState>) -> Result<(), String> {
     state.launch_file_vault()
 }
@@ -86,6 +91,7 @@ pub fn run() {
             save_settings,
             agent_status,
             launch_authenticator,
+            launch_security_scanner,
             launch_file_vault,
             launch_password_manager
         ])
