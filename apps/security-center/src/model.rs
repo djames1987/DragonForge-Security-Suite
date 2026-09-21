@@ -6,7 +6,6 @@ use serde::Serialize;
 pub enum ComponentState {
     Active,
     Integrated,
-    Unavailable,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -160,7 +159,6 @@ impl ComponentRegistry {
             match component.state {
                 ComponentState::Active => active += 1,
                 ComponentState::Integrated => integrated += 1,
-                ComponentState::Unavailable => planned += 1,
             }
         }
 
