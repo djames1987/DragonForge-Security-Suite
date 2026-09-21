@@ -23,6 +23,7 @@ const MAX_STARTUP_FILES: usize = 512;
 const MAX_HASHED_FILE_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_HOSTS_FILE_BYTES: u64 = 4 * 1024 * 1024;
 const MAX_PROBE_LINES: usize = 8_000;
+const MAX_PROBE_OUTPUT_BYTES: usize = 8 * 1024 * 1024;
 
 #[derive(Debug)]
 pub enum IntegrityError {
@@ -174,7 +175,11 @@ $paths = @(
   'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
   'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce',
   'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run',
-  'HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+  'HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce',
+  'HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run',
+  'HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce',
+  'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run',
+  'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce'
 )
 foreach ($path in $paths) {
   if (Test-Path $path) {
@@ -191,7 +196,6 @@ foreach ($path in $paths) {
             Probe::Services => r#"
 Get-CimInstance Win32_Service |
   Sort-Object Name |
-  Select-Object -First 4000 |
   ForEach-Object {
     $value = "$($_.StartMode);$($_.StartName);$($_.PathName)" -replace '[\r\n]+', ' '
     "$($_.Name)|$value"
@@ -200,10 +204,10 @@ Get-CimInstance Win32_Service |
             Probe::ScheduledTasks => r#"
 Get-ScheduledTask |
   Sort-Object TaskPath,TaskName |
-  Select-Object -First 4000 |
   ForEach-Object {
     $actions = ($_.Actions | ForEach-Object { "$($_.Execute);$($_.Arguments);$($_.WorkingDirectory)" }) -join ';'
-    $value = "$($_.State);$($_.Principal.UserId);$($_.Principal.LogonType);$($_.Principal.RunLevel);$actions" -replace '[\r\n]+', ' '
+    $triggers = ($_.Triggers | ConvertTo-Json -Compress -Depth 5)
+    $value = "$($_.Principal.UserId);$($_.Principal.LogonType);$($_.Principal.RunLevel);$actions;$triggers;$($_.Settings.Enabled);$($_.Settings.Hidden)" -replace '[\r\n]+', ' '
     "$($_.TaskPath)$($_.TaskName)|$value"
   }
 "#,
@@ -236,6 +240,9 @@ try {
 
         if !output.status.success() {
             return Err("fixed integrity probe did not complete successfully".to_owned());
+        }
+        if output.stdout.len() > MAX_PROBE_OUTPUT_BYTES {
+            return Err("fixed integrity probe exceeded the safe output limit".to_owned());
         }
 
         String::from_utf8(output.stdout)
@@ -385,7 +392,18 @@ fn collect_with_runner(runner: &impl ProbeRunner) -> CollectedSnapshot {
     entries.dedup_by(|left, right| left.surface == right.surface && left.key == right.key);
     if entries.len() > MAX_ENTRIES {
         entries.truncate(MAX_ENTRIES);
-        warnings.push("Integrity entry limit reached; additional entries were omitted.".to_owned());
+        unavailable_surfaces.extend([
+            SurfaceKind::Startup,
+            SurfaceKind::RegistryPersistence,
+            SurfaceKind::Services,
+            SurfaceKind::ScheduledTasks,
+            SurfaceKind::HostsFile,
+            SurfaceKind::SystemConfiguration,
+        ]);
+        warnings.push(
+            "Integrity entry limit reached; comparison surfaces were marked unavailable."
+                .to_owned(),
+        );
     }
 
     CollectedSnapshot {
