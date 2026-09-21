@@ -38,18 +38,25 @@ Goals:
 See [PHASE_1_1_BASELINE.md](PHASE_1_1_BASELINE.md).
 
 ## Phase 2 — Shared foundation
-**Status: Next**
+**Status: Complete**
 
-Extract only proven cross-product capabilities such as:
-- configuration primitives;
-- error/event types;
-- platform abstraction;
-- logging/redaction policies;
-- authenticated IPC foundations.
+Delivered:
+- validated component-scoped configuration keys and source metadata;
+- stable shared error codes and redaction-safe error messaging contract;
+- shared event severity/kind/record primitives;
+- cross-platform suite path discovery without implicit filesystem mutation;
+- secret-formatting redaction wrapper and conservative log policy;
+- versioned local IPC envelopes, authenticated peer context, and fail-closed caller policy;
+- Security Center adoption of shared platform/event primitives;
+- unit coverage for validation, redaction, event metadata, platform namespacing, and IPC authorization failures;
+- ADR and Phase 2 foundation documentation.
 
-Crypto is not automatically moved into a generic core crate. Any reuse of Password Manager cryptography must retain clear ownership and receive a dedicated security review.
+No Password Manager cryptography, vault format, sync protocol, recovery flow, or credential-storage implementation was moved into the shared core.
+
+See [PHASE_2_SHARED_FOUNDATION.md](PHASE_2_SHARED_FOUNDATION.md).
 
 ## Phase 3 — Security Center
+**Status: Next**
 
 Build the unified dashboard and orchestration layer.
 
