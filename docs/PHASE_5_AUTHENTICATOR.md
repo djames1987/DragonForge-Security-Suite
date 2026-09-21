@@ -2,7 +2,7 @@
 
 ## Status
 
-**Complete**
+**Verified Complete**
 
 Phase 5 adds DragonForge Authenticator as a dedicated local TOTP/HOTP application with its own encrypted store.
 
@@ -69,6 +69,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase5-aut
 ```
 
 The verifier runs rustfmt, compile checks, strict Clippy, Authenticator/File Vault/Security Center regression tests, JavaScript syntax checks, and builds all integrated desktop applications so Security Center can launch them as sibling executables.
+
+Authoritative Windows verification passed on 2026-09-21 using `dragonforge-phase5-authenticator-20260921-105934.log`.
 
 ## Phase 6 handoff
 
