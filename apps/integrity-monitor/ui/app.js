@@ -131,6 +131,14 @@
 
   async function createOrReplaceBaseline() {
     const replace = Boolean(state.baseline?.exists);
+    if (
+      replace &&
+      !window.confirm(
+        "Replace the current integrity baseline? This resets the trusted comparison reference point."
+      )
+    ) {
+      return;
+    }
     const button = document.getElementById("baseline-button");
     button.disabled = true;
     button.textContent = replace ? "Replacing…" : "Creating…";
