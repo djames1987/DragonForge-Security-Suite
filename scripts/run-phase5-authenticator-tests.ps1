@@ -38,7 +38,18 @@ try {
     Invoke-Checked cargo "fmt" "-p" "dragonforge-security-center" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--check"
     Invoke-Checked rustfmt "--edition" "2024" "--check" "crates/dragonforge-authenticator/src/error.rs"
-    Invoke-Checked rustfmt "--edition" "2024" "--check" "crates/dragonforge-authenticator/src/lib.rs"
+    $AuthenticatorLib = "crates/dragonforge-authenticator/src/lib.rs"
+    $AuthenticatorLibTemp = Join-Path $env:TEMP "dragonforge-authenticator-lib-rustfmt.rs"
+    Copy-Item $AuthenticatorLib $AuthenticatorLibTemp -Force
+    Invoke-Checked rustfmt "--edition" "2024" $AuthenticatorLibTemp
+    if ((Get-FileHash $AuthenticatorLib -Algorithm SHA256).Hash -ne (Get-FileHash $AuthenticatorLibTemp -Algorithm SHA256).Hash) {
+        Write-Host ""
+        Write-Host ">>> rustfmt formatted output for $AuthenticatorLib"
+        Get-Content $AuthenticatorLibTemp
+        Remove-Item $AuthenticatorLibTemp -Force -ErrorAction SilentlyContinue
+        throw "rustfmt mismatch: $AuthenticatorLib"
+    }
+    Remove-Item $AuthenticatorLibTemp -Force -ErrorAction SilentlyContinue
     Invoke-Checked rustfmt "--edition" "2024" "--check" "crates/dragonforge-authenticator/src/otp.rs"
     Invoke-Checked rustfmt "--edition" "2024" "--check" "crates/dragonforge-authenticator/src/store.rs"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-authenticator-app" "--check"
