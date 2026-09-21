@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::fs::{self, File, OpenOptions};
+use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Component as PathComponent, Path, PathBuf};
 
