@@ -236,6 +236,23 @@ impl AppState {
         Ok(())
     }
 
+    pub fn launch_backup_recovery(&self) -> Result<(), String> {
+        orchestration::launch_backup_recovery().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.backup-recovery-launched",
+            "Backup & Recovery launch requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.backup-recovery-launched",
+            "Backup & Recovery launch requested",
+        );
+        Ok(())
+    }
+
     pub fn launch_file_vault(&self) -> Result<(), String> {
         orchestration::launch_file_vault().map_err(|error| error.to_string())?;
         self.lock_events()?.push(
