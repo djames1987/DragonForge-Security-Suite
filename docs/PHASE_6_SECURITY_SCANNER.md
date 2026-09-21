@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 6 adds DragonForge Security Scanner as a dedicated read-only local posture assessment application.
 
@@ -83,7 +83,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase6-sec
 
 The verifier checks formatting, compilation, strict Clippy, Scanner regressions, prior suite regressions, JavaScript syntax, and builds all Security Center sibling applications.
 
-A passing local log is required before Phase 6 is marked **Verified Complete**.
+Authoritative Windows verification passed on 2026-09-21 using `dragonforge-phase6-security-scanner-20260921-114027.log`.
+
+SHA-256: `9932DC5308851B74BECEDC510D595752750243E73983EA2AF83E98DE92260D76`.
 
 ## Phase 7 handoff
 
