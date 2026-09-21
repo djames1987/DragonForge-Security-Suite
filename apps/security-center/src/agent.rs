@@ -51,7 +51,7 @@ pub fn validate_future_agent_request(request_id: u128) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{validate_future_agent_request, AgentClient, UnavailableAgentClient};
+    use super::{AgentClient, UnavailableAgentClient, validate_future_agent_request};
 
     #[test]
     fn unavailable_agent_is_reported_without_false_connection() {
