@@ -152,7 +152,13 @@ pub fn create_share(
         return Err(ShareError::Io("encrypted share could not be finalized"));
     }
 
-    verify_share(destination, password)
+    match verify_share(destination, password) {
+        Ok(summary) => Ok(summary),
+        Err(error) => {
+            let _ = fs::remove_file(destination);
+            Err(error)
+        }
+    }
 }
 
 pub fn verify_share(path: &Path, password: &str) -> Result<ShareSummary> {
@@ -305,23 +311,21 @@ fn collect_file(
         ));
     }
 
-    let metadata = fs::metadata(source)
-        .map_err(|_| ShareError::Io("attachment metadata could not be read"))?;
-    if metadata.len() > MAX_FILE_BYTES {
+    let bytes = fs::read(source).map_err(|_| ShareError::Io("attachment could not be read"))?;
+    let actual_size = bytes.len() as u64;
+    if actual_size > MAX_FILE_BYTES {
         return Err(ShareError::InvalidInput(
             "an individual attachment exceeds the safe size limit",
         ));
     }
     let next_total = total_bytes
-        .checked_add(metadata.len())
+        .checked_add(actual_size)
         .ok_or(ShareError::InvalidInput("attachment size overflowed"))?;
     if next_total > MAX_TOTAL_BYTES {
         return Err(ShareError::InvalidInput(
             "share exceeds the safe total attachment-size limit",
         ));
     }
-
-    let bytes = fs::read(source).map_err(|_| ShareError::Io("attachment could not be read"))?;
     let normalized = archive_path.replace('\\', "/");
     validated_relative_path(&normalized)?;
     if attachments
@@ -336,7 +340,7 @@ fn collect_file(
     attachments.push(StoredAttachment {
         archive_path: normalized,
         sha256: digest_hex(&bytes),
-        size: bytes.len() as u64,
+        size: actual_size,
         data_b64: BASE64.encode(bytes),
     });
     *total_bytes = next_total;
@@ -347,7 +351,7 @@ fn decrypt_payload(path: &Path, password: &str) -> Result<SharePayload> {
     validate_password(password)?;
     let metadata =
         fs::metadata(path).map_err(|_| ShareError::Io("share file could not be read"))?;
-    if metadata.len() > MAX_PACKAGE_BYTES + HEADER_LEN as u64 {
+    if metadata.len() > MAX_PACKAGE_BYTES + HEADER_LEN as u64 + TAG_LEN as u64 {
         return Err(ShareError::Format(
             "share file exceeds the safe package limit",
         ));
