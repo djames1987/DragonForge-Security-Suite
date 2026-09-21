@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 1.1 baseline established. DragonForge Password Manager has been migrated into this repository and passed the full post-migration Phase 11 verification suite.
+> **Current status:** Phase 2 shared foundation implemented. The repository now has common configuration, event/error, platform, redaction/logging, and fail-closed IPC primitives ready for Security Center development.
 
 ## Canonical repository
 
@@ -34,7 +34,8 @@ DragonForge-Security-Suite/
 │   ├── MIGRATION_PLAN.md
 │   ├── ROADMAP.md
 │   ├── SECURITY_MODEL.md
-│   └── PHASE_1_1_BASELINE.md
+│   ├── PHASE_1_1_BASELINE.md
+│   └── PHASE_2_SHARED_FOUNDATION.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -74,8 +75,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 0 — Suite architecture and migration readiness: **Complete**
 - Phase 1 — Password Manager migration: **Complete**
 - Phase 1.1 — Post-Migration Baseline Cleanup: **Complete**
-- Phase 2 — Shared foundation: **Next**
-- Phase 3 — Security Center
+- Phase 2 — Shared foundation: **Complete**
+- Phase 3 — Security Center: **Next**
 - Phase 4 — File Vault
 - Phase 5 — Authenticator
 - Phase 6 — Security Scanner
