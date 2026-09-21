@@ -162,6 +162,26 @@ mod tests {
     }
 
     #[test]
+    fn rfc6238_sha256_and_sha512_vectors_match() {
+        const SHA256_SECRET: &str =
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZA";
+        const SHA512_SECRET: &str =
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNA";
+        assert_eq!(
+            generate_totp(SHA256_SECRET, OtpAlgorithm::Sha256, 8, 30, 59)
+                .expect("sha256")
+                .code,
+            "46119246"
+        );
+        assert_eq!(
+            generate_totp(SHA512_SECRET, OtpAlgorithm::Sha512, 8, 30, 59)
+                .expect("sha512")
+                .code,
+            "90693936"
+        );
+    }
+
+    #[test]
     fn secret_normalization_accepts_spacing_and_padding() {
         assert_eq!(
             normalize_secret("GEZD GNBV-GY3TQOJQ====").expect("secret"),
