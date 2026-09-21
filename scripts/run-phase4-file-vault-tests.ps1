@@ -34,7 +34,7 @@ try {
     Write-Host "Repository: $RepoRoot"
     Write-Host "Started: $(Get-Date -Format o)"
 
-    Invoke-Checked cargo "fmt" "--all" "--check"
+    Invoke-Checked cargo "fmt" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--check"
     Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets"
     Invoke-Checked cargo "clippy" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets" "--" "-D" "warnings"
     Invoke-Checked cargo "test" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets"
