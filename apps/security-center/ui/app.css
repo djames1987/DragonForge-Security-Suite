@@ -393,6 +393,20 @@ button { cursor: pointer; }
   color: var(--muted-2);
 }
 
+.component-action {
+  margin-top: 14px;
+  padding: 8px 10px;
+  color: var(--accent-2);
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 138, 43, 0.16);
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+.component-action:hover {
+  background: rgba(255, 138, 43, 0.18);
+}
+
 .overview-lower {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.7fr);
