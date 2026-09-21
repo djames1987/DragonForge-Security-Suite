@@ -38,7 +38,20 @@ try {
     Invoke-Checked cargo "fmt" "-p" "dragonforge-security-center" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--check"
-    Invoke-Checked rustfmt "--edition" "2024" "--check" "crates/dragonforge-security-scanner/src/lib.rs"
+    Write-Host ""
+    Write-Host ">>> rustfmt --edition 2024 --check crates/dragonforge-security-scanner/src/lib.rs"
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        & rustfmt --edition 2024 --check crates/dragonforge-security-scanner/src/lib.rs 2>&1 | ForEach-Object { Write-Host $_ }
+        $ScannerRustfmtExit = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($ScannerRustfmtExit -ne 0) {
+        throw "Command failed with exit code ${ScannerRustfmtExit}: rustfmt --edition 2024 --check crates/dragonforge-security-scanner/src/lib.rs"
+    }
     Invoke-Checked rustfmt "--edition" "2024" "--check" "apps/security-scanner/src/lib.rs"
     Invoke-Checked rustfmt "--edition" "2024" "--check" "apps/security-scanner/src/main.rs"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-security-scanner" "-p" "dragonforge-security-scanner-app" "--check"
