@@ -192,7 +192,7 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
         return Err(BackupError::Io("encrypted backup could not be finalized"));
     }
 
-    summary_from_payload(&payload, true)
+    verify_backup(destination, password)
 }
 
 pub fn inspect_backup(path: &Path, password: &str) -> Result<BackupSummary> {
@@ -590,6 +590,15 @@ mod tests {
     }
 
     #[test]
+    fn short_password_is_rejected() {
+        let dir = tempdir().expect("tempdir");
+        let source = dir.path().join("file.txt");
+        fs::write(&source, b"secret").expect("source");
+        let backup = dir.path().join("sample.dfbackup");
+        assert!(create_backup(&[source], &backup, "too-short").is_err());
+    }
+
+    #[test]
     fn restore_refuses_existing_destination() {
         let dir = tempdir().expect("tempdir");
         let source = dir.path().join("file.txt");
@@ -599,6 +608,18 @@ mod tests {
         let restored = dir.path().join("restored");
         fs::create_dir(&restored).expect("existing");
         assert!(restore_backup(&backup, PASSWORD, &restored).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn sanitized_name_collisions_are_rejected() {
+        let dir = tempdir().expect("tempdir");
+        let source = dir.path().join("source");
+        fs::create_dir(&source).expect("source");
+        fs::write(source.join("a:b"), b"first").expect("first");
+        fs::write(source.join("ab"), b"second").expect("second");
+        let backup = dir.path().join("sample.dfbackup");
+        assert!(create_backup(&[source], &backup, PASSWORD).is_err());
     }
 
     #[cfg(unix)]
