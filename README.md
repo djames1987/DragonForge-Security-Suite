@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 9 Backup & Recovery is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, and encrypted Backup & Recovery.
+> **Current status:** Phase 10 Secure Share is implementation complete with local verification pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, and offline encrypted Secure Share.
 
 ## Canonical repository
 
@@ -25,7 +25,8 @@ DragonForge-Security-Suite/
 │   ├── security-scanner/              # Read-only system posture scanner
 │   ├── integrity-monitor/             # Integrity baseline/change monitor
 │   ├── network-guard/                 # Per-process network visibility
-│   └── backup-recovery/               # Encrypted backup and restore application
+│   ├── backup-recovery/               # Encrypted backup and restore application
+│   └── secure-share/                   # Offline encrypted recipient-oriented sharing
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
@@ -34,6 +35,7 @@ DragonForge-Security-Suite/
 │   ├── dragonforge-integrity-monitor/ # Integrity baseline/change engine
 │   ├── dragonforge-network-guard/     # Network visibility engine
 │   ├── dragonforge-backup-recovery/   # Encrypted backup/recovery engine
+│   ├── dragonforge-secure-share/       # Secure Share encrypted package engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -54,7 +56,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_6_SECURITY_SCANNER.md
 │   ├── PHASE_7_INTEGRITY_MONITOR.md
 │   ├── PHASE_8_NETWORK_GUARD.md
-│   └── PHASE_9_BACKUP_RECOVERY.md
+│   ├── PHASE_9_BACKUP_RECOVERY.md
+│   └── PHASE_10_SECURE_SHARE.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -102,8 +105,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 7 — Integrity Monitor: **Verified Complete**
 - Phase 8 — Network Guard: **Verified Complete**
 - Phase 9 — Backup & Recovery: **Verified Complete**
-- Phase 10 — Secure Share: **Next**
-- Phase 11 — DragonForge Agent
+- Phase 10 — Secure Share: **Implementation Complete — Local Verification Pending**
+- Phase 11 — DragonForge Agent: **Next**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -276,3 +279,29 @@ Phase 9 local verification result: **PASS**
 Verified log SHA-256: `1633B93A38D828757E82FC9C677BEB8A0CA1AB91CC269E9782130B3CBD3BD82B`
 
 See [docs/PHASE_9_BACKUP_RECOVERY.md](docs/PHASE_9_BACKUP_RECOVERY.md).
+
+
+## Secure Share
+
+Phase 10 adds an offline encrypted sharing application under `apps/secure-share/`.
+
+Current capabilities:
+- create versioned `.dfshare` packages for a named recipient;
+- include optional sender label, protected secret text, and file/folder attachments;
+- encrypt recipient/sender labels, expiration, paths, hashes, secret text, and attachment bytes with AES-256-GCM;
+- derive package keys with Argon2id without persisting the password;
+- verify package integrity even after expiration;
+- refuse secret reveal or attachment extraction after expiration;
+- reject symbolic links, traversal-like paths, duplicate paths, malformed/tampered packages, and bounded-limit violations;
+- extract attachments only into a new destination using staged temporary-directory finalization;
+- integrate with Security Center through an exact sibling executable path.
+
+Secure Share is intentionally offline in Phase 10. It does not claim remote revocation, guaranteed deletion after expiration, open-count enforcement, or delivery tracking.
+
+Run Phase 10 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase10-secure-share-tests.ps1
+```
+
+See [docs/PHASE_10_SECURE_SHARE.md](docs/PHASE_10_SECURE_SHARE.md).
