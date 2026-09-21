@@ -146,7 +146,10 @@ pub struct LocalIpcPolicy {
 
 impl LocalIpcPolicy {
     #[must_use]
-    pub fn new(destination: Component, allowed_callers: impl IntoIterator<Item = Component>) -> Self {
+    pub fn new(
+        destination: Component,
+        allowed_callers: impl IntoIterator<Item = Component>,
+    ) -> Self {
         Self {
             destination,
             allowed_callers: allowed_callers.into_iter().collect(),
