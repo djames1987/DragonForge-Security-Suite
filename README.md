@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 5 Authenticator implemented. DragonForge now includes the Security Center, Password Manager, File Vault, and a local encrypted TOTP/HOTP Authenticator.
+> **Current status:** Phase 6 Security Scanner implemented; local verification is pending. DragonForge now includes the Security Center, Password Manager, File Vault, Authenticator, and a read-only Windows-first security posture scanner.
 
 ## Canonical repository
 
@@ -21,11 +21,13 @@ DragonForge-Security-Suite/
 │   ├── security-center/               # Unified Tauri desktop dashboard
 │   ├── password-manager/              # Migrated Password Manager desktop application
 │   ├── file-vault/                    # Encrypted file/folder container application
-│   └── authenticator/                 # Encrypted TOTP/HOTP desktop application
+│   ├── authenticator/                 # Encrypted TOTP/HOTP desktop application
+│   └── security-scanner/              # Read-only system posture scanner
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
 │   ├── dragonforge-authenticator/     # Authenticator OTP + encrypted store engine
+│   ├── dragonforge-security-scanner/  # Security posture assessment engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -42,7 +44,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_2_SHARED_FOUNDATION.md
 │   ├── PHASE_3_SECURITY_CENTER.md
 │   ├── PHASE_4_FILE_VAULT.md
-│   └── PHASE_5_AUTHENTICATOR.md
+│   ├── PHASE_5_AUTHENTICATOR.md
+│   └── PHASE_6_SECURITY_SCANNER.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -85,9 +88,9 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 2 — Shared foundation: **Complete**
 - Phase 3 — Security Center: **Complete**
 - Phase 4 — File Vault: **Complete**
-- Phase 5 — Authenticator: **Complete**
-- Phase 6 — Security Scanner: **Next**
-- Phase 7 — Integrity Monitor
+- Phase 5 — Authenticator: **Verified Complete**
+- Phase 6 — Security Scanner: **Implementation Complete — Local Verification Pending**
+- Phase 7 — Integrity Monitor: **Next**
 - Phase 8 — Network Guard
 - Phase 9 — Backup & Recovery
 - Phase 10 — Secure Share
@@ -161,3 +164,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase5-aut
 ```
 
 See [docs/PHASE_5_AUTHENTICATOR.md](docs/PHASE_5_AUTHENTICATOR.md).
+
+
+## Security Scanner
+
+Phase 6 adds a read-only Windows-first posture scanner under `apps/security-scanner/`.
+
+Current capabilities:
+- assess Windows Firewall profiles and BitLocker/system-volume protection;
+- review Windows Update service posture and latest installed hotfix metadata;
+- inspect Microsoft Defender protection signals, Secure Boot, and UAC;
+- identify SMB1 and Remote Desktop configuration posture;
+- inventory listening TCP endpoints with selected remote-management exposure checks;
+- report Pass / Attention / Unknown / Info findings without automatically changing system settings;
+- launch from Security Center by exact sibling executable path.
+
+Run Phase 6 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase6-security-scanner-tests.ps1
+```
+
+See [docs/PHASE_6_SECURITY_SCANNER.md](docs/PHASE_6_SECURITY_SCANNER.md).
