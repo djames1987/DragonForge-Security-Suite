@@ -10,7 +10,6 @@ pub use error::{AuthenticatorError, Result};
 pub use otp::{OtpAlgorithm, OtpKind};
 pub use store::{
     AccountView, CodeView, NewAccount, add_account, change_password, consume_hotp, create_store,
-    generate_code,
-    import_otpauth_uri, list_accounts, remove_account, reveal_recovery_codes,
+    generate_code, import_otpauth_uri, list_accounts, remove_account, reveal_recovery_codes,
     set_recovery_codes,
 };
