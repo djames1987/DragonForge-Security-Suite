@@ -89,9 +89,9 @@ impl ComponentRegistry {
                     Component::FileVault,
                     "File Vault",
                     "Encrypted files, folders, and secure containers.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 4.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 4 local encrypted container application.",
                 ),
                 ComponentStatus::new(
                     Component::Authenticator,
