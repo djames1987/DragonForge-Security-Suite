@@ -70,20 +70,20 @@ pub(crate) fn generate(
     let message = counter.to_be_bytes();
     let digest = match algorithm {
         OtpAlgorithm::Sha1 => {
-            let mut mac = Hmac::<Sha1>::new_from_slice(&secret)
-                .map_err(|_| AuthenticatorError::Crypto)?;
+            let mut mac =
+                Hmac::<Sha1>::new_from_slice(&secret).map_err(|_| AuthenticatorError::Crypto)?;
             mac.update(&message);
             mac.finalize().into_bytes().to_vec()
         }
         OtpAlgorithm::Sha256 => {
-            let mut mac = Hmac::<Sha256>::new_from_slice(&secret)
-                .map_err(|_| AuthenticatorError::Crypto)?;
+            let mut mac =
+                Hmac::<Sha256>::new_from_slice(&secret).map_err(|_| AuthenticatorError::Crypto)?;
             mac.update(&message);
             mac.finalize().into_bytes().to_vec()
         }
         OtpAlgorithm::Sha512 => {
-            let mut mac = Hmac::<Sha512>::new_from_slice(&secret)
-                .map_err(|_| AuthenticatorError::Crypto)?;
+            let mut mac =
+                Hmac::<Sha512>::new_from_slice(&secret).map_err(|_| AuthenticatorError::Crypto)?;
             mac.update(&message);
             mac.finalize().into_bytes().to_vec()
         }
@@ -98,7 +98,11 @@ pub(crate) fn generate(
         | (u32::from(slice[2]) << 8)
         | u32::from(slice[3]);
     let modulus = 10_u32.pow(digits);
-    Ok(format!("{:0width$}", binary % modulus, width = digits as usize))
+    Ok(format!(
+        "{:0width$}",
+        binary % modulus,
+        width = digits as usize
+    ))
 }
 
 pub(crate) fn generate_totp(
@@ -142,8 +146,8 @@ mod tests {
     #[test]
     fn rfc4226_hotp_vectors_match() {
         let expected = [
-            "755224", "287082", "359152", "969429", "338314",
-            "254676", "287922", "162583", "399871", "520489",
+            "755224", "287082", "359152", "969429", "338314", "254676", "287922", "162583",
+            "399871", "520489",
         ];
         for (counter, expected_code) in expected.iter().enumerate() {
             assert_eq!(
@@ -155,18 +159,15 @@ mod tests {
 
     #[test]
     fn rfc6238_sha1_vector_matches() {
-        let generated =
-            generate_totp(RFC_SECRET, OtpAlgorithm::Sha1, 8, 30, 59).expect("totp");
+        let generated = generate_totp(RFC_SECRET, OtpAlgorithm::Sha1, 8, 30, 59).expect("totp");
         assert_eq!(generated.code, "94287082");
         assert_eq!(generated.valid_for_seconds, Some(1));
     }
 
     #[test]
     fn rfc6238_sha256_and_sha512_vectors_match() {
-        const SHA256_SECRET: &str =
-            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZA";
-        const SHA512_SECRET: &str =
-            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNA";
+        const SHA256_SECRET: &str = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZA";
+        const SHA512_SECRET: &str = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNA";
         assert_eq!(
             generate_totp(SHA256_SECRET, OtpAlgorithm::Sha256, 8, 30, 59)
                 .expect("sha256")
