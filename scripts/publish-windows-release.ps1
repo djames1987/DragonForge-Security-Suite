@@ -52,8 +52,16 @@ try {
         throw "Release notes not found: $NotesPath"
     }
 
-    & gh release view $Tag --repo "djames1987/DragonForge-Security-Suite" 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        & gh release view $Tag --repo "djames1987/DragonForge-Security-Suite" *> $null
+        $ReleaseExists = ($LASTEXITCODE -eq 0)
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($ReleaseExists) {
         throw "GitHub release $Tag already exists."
     }
 
