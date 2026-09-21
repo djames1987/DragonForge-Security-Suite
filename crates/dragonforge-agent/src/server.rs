@@ -240,6 +240,12 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
         .truncate(true)
         .open(&temporary)
         .map_err(|_| AgentError::Io("agent runtime file could not be created"))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(fs::Permissions::from_mode(0o600))
+            .map_err(|_| AgentError::Io("agent runtime permissions could not be restricted"))?;
+    }
     file.write_all(bytes)
         .and_then(|_| file.sync_all())
         .map_err(|_| AgentError::Io("agent runtime file could not be written"))?;
