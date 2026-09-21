@@ -116,6 +116,17 @@ pub fn create_store(path: impl AsRef<Path>, password: &[u8]) -> Result<()> {
     save_store(path, password, &store)
 }
 
+pub fn change_password(
+    path: impl AsRef<Path>,
+    current_password: &[u8],
+    new_password: &[u8],
+) -> Result<()> {
+    validate_password(new_password)?;
+    let path = path.as_ref();
+    let store = load_store(path, current_password)?;
+    save_store(path, new_password, &store)
+}
+
 pub fn list_accounts(path: impl AsRef<Path>, password: &[u8]) -> Result<Vec<AccountView>> {
     let store = load_store(path.as_ref(), password)?;
     Ok(store.accounts.iter().map(StoredAccount::view).collect())
@@ -367,15 +378,24 @@ fn validate_new_account(mut account: NewAccount) -> Result<NewAccount> {
         || account.issuer.len() > MAX_ISSUER_LEN
         || (account.digits != 6 && account.digits != 8)
     {
+        account.secret_base32.zeroize();
         return Err(AuthenticatorError::InvalidAccount);
     }
-    match account.kind {
-        OtpKind::Totp { period } if !(15..=120).contains(&period) => {
-            return Err(AuthenticatorError::InvalidAccount);
-        }
-        _ => {}
+    if let OtpKind::Totp { period } = account.kind
+        && !(15..=120).contains(&period)
+    {
+        account.secret_base32.zeroize();
+        return Err(AuthenticatorError::InvalidAccount);
     }
-    account.secret_base32 = normalize_secret(&account.secret_base32)?;
+    let normalized_secret = match normalize_secret(&account.secret_base32) {
+        Ok(secret) => secret,
+        Err(error) => {
+            account.secret_base32.zeroize();
+            return Err(error);
+        }
+    };
+    account.secret_base32.zeroize();
+    account.secret_base32 = normalized_secret;
     Ok(account)
 }
 
@@ -541,7 +561,10 @@ fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
             return Err(AuthenticatorError::SymlinkNotAllowed);
         }
     }
-    let parent = path.parent().ok_or(AuthenticatorError::Io)?;
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
     fs::create_dir_all(parent).map_err(|_| AuthenticatorError::Io)?;
     let temporary = temporary_path(path)?;
 
@@ -602,7 +625,10 @@ fn recover_interrupted_replace(path: &Path) -> Result<()> {
 }
 
 fn temporary_path(path: &Path) -> Result<PathBuf> {
-    let parent = path.parent().ok_or(AuthenticatorError::Io)?;
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
     let name = path
         .file_name()
         .and_then(|value| value.to_str())
@@ -629,8 +655,8 @@ mod tests {
     use tempfile::tempdir;
 
     use super::{
-        add_account, consume_hotp, create_store, generate_code, import_otpauth_uri, list_accounts,
-        reveal_recovery_codes, set_recovery_codes,
+        add_account, change_password, consume_hotp, create_store, generate_code,
+        import_otpauth_uri, list_accounts, reveal_recovery_codes, set_recovery_codes,
     };
     use crate::{AuthenticatorError, NewAccount, OtpAlgorithm, OtpKind};
 
@@ -661,6 +687,19 @@ mod tests {
         let accounts = list_accounts(&path, PASSWORD).expect("list");
         assert_eq!(accounts.len(), 1);
         assert_eq!(accounts[0].label, "Example");
+    }
+
+    #[test]
+    fn password_rotation_reencrypts_store() {
+        let temp = tempdir().expect("temp");
+        let path = temp.path().join("auth.dfauth");
+        create_store(&path, PASSWORD).expect("create");
+        change_password(&path, PASSWORD, b"rotated-password-456").expect("rotate");
+        assert_eq!(
+            list_accounts(&path, PASSWORD).expect_err("old password"),
+            AuthenticatorError::InvalidPassword
+        );
+        assert!(list_accounts(&path, b"rotated-password-456").is_ok());
     }
 
     #[test]
