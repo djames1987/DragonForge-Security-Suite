@@ -31,11 +31,11 @@
       <div class="agent-card">
         <div class="status-dot muted"></div>
         <div>
-          <strong id="sidebar-agent-label">Agent not installed</strong>
-          <span id="sidebar-agent-detail">Background service is a future phase.</span>
+          <strong id="sidebar-agent-label">Agent status unknown</strong>
+          <span id="sidebar-agent-detail">Checking authenticated local agent.</span>
         </div>
       </div>
-      <div class="phase-badge">Suite Phase 10</div>
+      <div class="phase-badge">Suite Phase 11</div>
     </aside>
 
     <main class="content">
@@ -110,12 +110,15 @@
             <div class="agent-visual">
               <div class="agent-shield">DF</div>
               <div>
-                <strong id="agent-label">Agent not installed</strong>
-                <p id="agent-detail">Background service transport is reserved for a later phase.</p>
+                <strong id="agent-label">Agent status unknown</strong>
+                <p id="agent-detail">Checking authenticated local agent.</p>
               </div>
             </div>
+            <div class="button-row">
+              <button id="start-agent" class="primary-button">Start Agent</button>
+            </div>
             <div class="info-box">
-              Phase 3 does not fabricate an agent connection. The dashboard uses the Phase 2 authenticated IPC policy boundary, while the privileged transport/service remains disabled until its dedicated phase.
+              Phase 11 uses a per-user loopback transport with a random session credential, HMAC-authenticated requests/responses, timestamp freshness, replay rejection, and the Phase 2 caller policy. It is intentionally non-elevated; privileged Windows service enforcement is not claimed in this phase.
             </div>
           </section>
         </div>
