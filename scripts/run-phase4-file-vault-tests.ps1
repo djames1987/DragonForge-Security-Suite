@@ -43,6 +43,7 @@ try {
     Invoke-Checked node "--check" "apps/security-center/ui/app.js"
 
     if (-not $SkipBuild) {
+        Invoke-Checked cargo "build" "-p" "dragonforge-desktop" "--bin" "dragonforge-desktop"
         Invoke-Checked cargo "build" "-p" "dragonforge-file-vault-app"
         Invoke-Checked cargo "build" "-p" "dragonforge-security-center"
     }
