@@ -215,6 +215,8 @@ mod tests {
         let snapshot = state.snapshot().expect("snapshot");
         assert_eq!(snapshot.components.len(), 10);
         assert!(!snapshot.agent.available);
+        let encoded = serde_json::to_string(&snapshot).expect("serialize snapshot");
+        assert!(encoded.contains("security-center"));
     }
 
     #[test]
