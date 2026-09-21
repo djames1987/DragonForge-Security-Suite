@@ -140,10 +140,19 @@ impl SettingsStore {
             })?;
         }
 
+        if self.path.exists() {
+            fs::remove_file(&self.path).map_err(|_| {
+                CoreError::new_safe(
+                    ErrorCode::Internal,
+                    "unable to replace existing Security Center settings",
+                )
+            })?;
+        }
+
         fs::rename(&temporary, &self.path).map_err(|_| {
             CoreError::new_safe(
                 ErrorCode::Internal,
-                "unable to replace Security Center settings atomically",
+                "unable to finalize Security Center settings",
             )
         })?;
 
