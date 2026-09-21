@@ -122,12 +122,7 @@ impl ProbeRunner for PlatformRunner {
         };
 
         let output = Command::new("powershell.exe")
-            .args([
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                script,
-            ])
+            .args(["-NoProfile", "-NonInteractive", "-Command", script])
             .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map_err(|_| "platform probe could not be started".to_owned())?;
@@ -180,8 +175,9 @@ fn scan_with_runner(runner: &impl ProbeRunner) -> ScanReport {
             status: FindingStatus::Unknown,
             summary: "Phase 6 posture probes are currently Windows-first.".to_owned(),
             evidence: "No platform-specific probes were executed.".to_owned(),
-            recommendation: "Use the scanner on Windows; additional platform probes are planned later."
-                .to_owned(),
+            recommendation:
+                "Use the scanner on Windows; additional platform probes are planned later."
+                    .to_owned(),
         });
     }
 
@@ -198,7 +194,9 @@ fn scan_with_runner(runner: &impl ProbeRunner) -> ScanReport {
         },
         timestamp_ms: SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .map_or(0, |duration| duration.as_millis().min(u128::from(u64::MAX)) as u64),
+            .map_or(0, |duration| {
+                duration.as_millis().min(u128::from(u64::MAX)) as u64
+            }),
         summary: summarize(&findings),
         findings,
     }
@@ -242,7 +240,8 @@ fn unknown(
         title,
         severity: FindingSeverity::Info,
         status: FindingStatus::Unknown,
-        summary: "This posture check could not be determined with the current user context.".to_owned(),
+        summary: "This posture check could not be determined with the current user context."
+            .to_owned(),
         evidence: "The fixed local probe returned no usable result.".to_owned(),
         recommendation: recommendation.to_owned(),
     }
@@ -724,30 +723,21 @@ mod tests {
 
     #[test]
     fn enabled_firewall_profiles_pass() {
-        let runner = FakeRunner::default().with(
-            Probe::Firewall,
-            "Domain=True\nPrivate=True\nPublic=True",
-        );
+        let runner =
+            FakeRunner::default().with(Probe::Firewall, "Domain=True\nPrivate=True\nPublic=True");
         assert_eq!(check_firewall(&runner).status, FindingStatus::Pass);
     }
 
     #[test]
     fn disabled_firewall_profile_requires_attention() {
-        let runner =
-            FakeRunner::default().with(Probe::Firewall, "Domain=True\nPublic=False");
-        assert_eq!(
-            check_firewall(&runner).status,
-            FindingStatus::Attention
-        );
+        let runner = FakeRunner::default().with(Probe::Firewall, "Domain=True\nPublic=False");
+        assert_eq!(check_firewall(&runner).status, FindingStatus::Attention);
     }
 
     #[test]
     fn unprotected_system_volume_requires_attention() {
         let runner = FakeRunner::default().with(Probe::BitLocker, "Off");
-        assert_eq!(
-            check_bitlocker(&runner).status,
-            FindingStatus::Attention
-        );
+        assert_eq!(check_bitlocker(&runner).status, FindingStatus::Attention);
     }
 
     #[test]
@@ -764,10 +754,8 @@ mod tests {
 
     #[test]
     fn wildcard_remote_management_listener_requires_attention() {
-        let runner = FakeRunner::default().with(
-            Probe::Listeners,
-            "0.0.0.0|3389\n127.0.0.1|8080\n::|445",
-        );
+        let runner =
+            FakeRunner::default().with(Probe::Listeners, "0.0.0.0|3389\n127.0.0.1|8080\n::|445");
         let finding = check_listeners(&runner);
         assert_eq!(finding.status, FindingStatus::Attention);
         assert!(finding.evidence.contains("3389"));
