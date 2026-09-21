@@ -90,15 +90,20 @@ pub fn launch_agent() -> CoreResult<()> {
         ));
     }
 
-    Command::new(target)
-        .arg("--serve")
-        .spawn()
-        .map_err(|_| {
-            CoreError::new_safe(
-                ErrorCode::Internal,
-                "unable to start the DragonForge Agent",
-            )
-        })?;
+    let mut command = Command::new(target);
+    command.arg("--serve");
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+    command.spawn().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to start the DragonForge Agent",
+        )
+    })?;
     Ok(())
 }
 
