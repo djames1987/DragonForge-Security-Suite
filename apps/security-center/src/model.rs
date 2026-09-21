@@ -152,7 +152,7 @@ impl ComponentRegistry {
     pub fn health_summary(&self) -> HealthSummary {
         let mut active = 0;
         let mut integrated = 0;
-        let mut planned = 0;
+        let planned = 0;
         let attention = 0;
 
         for component in &self.components {
