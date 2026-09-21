@@ -47,7 +47,13 @@ try {
     Invoke-Checked cargo "clippy" "-p" "dragonforge-security-center" "--all-targets" "--" "-D" "warnings"
     Invoke-Checked cargo "clippy" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets" "--" "-D" "warnings"
     Invoke-Checked cargo "clippy" "-p" "dragonforge-authenticator" "--all-targets" "--" "-D" "warnings"
-    Invoke-Checked cargo "clippy" "-p" "dragonforge-authenticator-app" "--all-targets" "--" "-D" "warnings"
+    Write-Host ""
+    Write-Host ">>> cargo clippy -p dragonforge-authenticator-app --all-targets -- -D warnings"
+    & cargo clippy -p dragonforge-authenticator-app --all-targets -- -D warnings 2>&1 | ForEach-Object { Write-Host $_ }
+    $AuthenticatorAppClippyExit = $LASTEXITCODE
+    if ($AuthenticatorAppClippyExit -ne 0) {
+        throw "Command failed with exit code $AuthenticatorAppClippyExit: cargo clippy -p dragonforge-authenticator-app --all-targets -- -D warnings"
+    }
     Invoke-Checked cargo "test" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--all-targets"
     Invoke-Checked cargo "test" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets"
     Invoke-Checked cargo "test" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "--all-targets"
