@@ -4,8 +4,8 @@
 //! exchange. Platform transports must verify the peer before constructing an
 //! authenticated PeerContext.
 
-use crate::error::{CoreError, CoreResult, ErrorCode};
 use crate::Component;
+use crate::error::{CoreError, CoreResult, ErrorCode};
 
 pub const CURRENT_PROTOCOL: ProtocolVersion = ProtocolVersion::new(1, 0);
 
