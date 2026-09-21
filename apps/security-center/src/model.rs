@@ -129,9 +129,9 @@ impl ComponentRegistry {
                     Component::BackupRecovery,
                     "Backup & Recovery",
                     "Encrypted, verifiable suite and user-data recovery.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 9.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 9 encrypted backup and recovery application.",
                 ),
                 ComponentStatus::new(
                     Component::SecureShare,
