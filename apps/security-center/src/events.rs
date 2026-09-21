@@ -6,8 +6,8 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DashboardEvent {
-    pub id: u128,
-    pub timestamp_ms: u128,
+    pub id: u64,
+    pub timestamp_ms: u64,
     pub component: &'static str,
     pub kind: &'static str,
     pub severity: &'static str,
@@ -21,7 +21,9 @@ impl From<EventRecord> for DashboardEvent {
             .timestamp()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
-            .as_millis();
+            .as_millis()
+            .try_into()
+            .unwrap_or(u64::MAX);
 
         Self {
             id: event.event_id(),
@@ -39,7 +41,7 @@ impl From<EventRecord> for DashboardEvent {
 pub struct EventStore {
     events: VecDeque<DashboardEvent>,
     capacity: usize,
-    next_id: u128,
+    next_id: u64,
 }
 
 impl EventStore {
@@ -65,7 +67,7 @@ impl EventStore {
         }
 
         let record = EventRecord::new(
-            self.next_id,
+            u128::from(self.next_id),
             component,
             kind,
             severity,
