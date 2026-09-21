@@ -32,7 +32,7 @@ const MAX_LABEL_LEN: usize = 160;
 const MAX_ISSUER_LEN: usize = 120;
 const MAX_RECOVERY_CODE_LEN: usize = 256;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NewAccount {
     pub label: String,
     pub issuer: String,
@@ -53,7 +53,7 @@ pub struct AccountView {
     pub recovery_code_count: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Clone, PartialEq, Eq, Serialize)]
 pub struct CodeView {
     pub account_id: String,
     pub code: String,
@@ -61,7 +61,7 @@ pub struct CodeView {
     pub counter: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct StoredAccount {
     id: String,
     label: String,
@@ -96,7 +96,7 @@ impl StoredAccount {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct StoreData {
     version: u16,
     accounts: Vec<StoredAccount>,
@@ -138,17 +138,25 @@ pub fn add_account(
     account: NewAccount,
 ) -> Result<AccountView> {
     let path = path.as_ref();
-    let mut store = load_store(path, password)?;
+    let mut normalized = validate_new_account(account)?;
+    let mut store = match load_store(path, password) {
+        Ok(store) => store,
+        Err(error) => {
+            normalized.secret_base32.zeroize();
+            return Err(error);
+        }
+    };
     if store.accounts.len() >= MAX_ACCOUNTS {
+        normalized.secret_base32.zeroize();
         return Err(AuthenticatorError::TooManyAccounts);
     }
 
-    let normalized = validate_new_account(account)?;
+    let secret_base32 = std::mem::take(&mut normalized.secret_base32);
     let stored = StoredAccount {
         id: Uuid::new_v4().to_string(),
         label: normalized.label,
         issuer: normalized.issuer,
-        secret_base32: normalized.secret_base32,
+        secret_base32,
         algorithm: normalized.algorithm,
         digits: normalized.digits,
         kind: normalized.kind,
@@ -381,11 +389,11 @@ fn validate_new_account(mut account: NewAccount) -> Result<NewAccount> {
         account.secret_base32.zeroize();
         return Err(AuthenticatorError::InvalidAccount);
     }
-    if let OtpKind::Totp { period } = account.kind
-        && !(15..=120).contains(&period)
-    {
-        account.secret_base32.zeroize();
-        return Err(AuthenticatorError::InvalidAccount);
+    if let OtpKind::Totp { period } = account.kind {
+        if !(15..=120).contains(&period) {
+            account.secret_base32.zeroize();
+            return Err(AuthenticatorError::InvalidAccount);
+        }
     }
     let normalized_secret = match normalize_secret(&account.secret_base32) {
         Ok(secret) => secret,
@@ -664,6 +672,18 @@ mod tests {
     const PASSWORD: &[u8] = b"test-password-123";
 
     #[test]
+    fn interrupted_replace_backup_is_recovered() {
+        let temp = tempdir().expect("temp");
+        let path = temp.path().join("auth.dfauth");
+        create_store(&path, PASSWORD).expect("create");
+        let backup = path.with_extension("dfauth.bak");
+        fs::rename(&path, &backup).expect("simulate interrupted replace");
+        assert!(list_accounts(&path, PASSWORD).is_ok());
+        assert!(path.is_file());
+        assert!(!backup.exists());
+    }
+
+    #[test]
     fn encrypted_store_round_trip_hides_secret() {
         let temp = tempdir().expect("temp");
         let path = temp.path().join("auth.dfauth");
@@ -700,6 +720,18 @@ mod tests {
             AuthenticatorError::InvalidPassword
         );
         assert!(list_accounts(&path, b"rotated-password-456").is_ok());
+    }
+
+    #[test]
+    fn malformed_otpauth_uri_is_rejected() {
+        let temp = tempdir().expect("temp");
+        let path = temp.path().join("auth.dfauth");
+        create_store(&path, PASSWORD).expect("create");
+        assert_eq!(
+            import_otpauth_uri(&path, PASSWORD, "otpauth://totp/example?issuer=ACME")
+                .expect_err("missing secret"),
+            AuthenticatorError::InvalidOtpUri
+        );
     }
 
     #[test]
