@@ -1,5 +1,8 @@
 # Scripts
 
-Suite-level development, validation, migration, packaging and release scripts belong here.
+Suite-level development, validation, migration, packaging, and release scripts belong here.
 
-The future Password Manager migration should place product-specific scripts under a namespaced location such as `scripts/password-manager/` unless a script is genuinely suite-wide.
+Current product-specific tooling:
+- `password-manager/` — migrated Password Manager test, cleanup, packaging, and native-host scripts.
+
+Keep product-specific scripts namespaced unless a script is genuinely suite-wide.
