@@ -36,7 +36,7 @@ impl ConfigKey {
         if !bytes.iter().all(|byte| {
             byte.is_ascii_lowercase()
                 || byte.is_ascii_digit()
-                || matches!(byte, b'.' | b'_' | b'-')
+                || matches!(*byte, b'.' | b'_' | b'-')
         }) {
             return Err(CoreError::new_safe(
                 ErrorCode::InvalidConfiguration,
