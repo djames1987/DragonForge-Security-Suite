@@ -7,6 +7,7 @@ use crate::agent::{AgentClient, AgentStatus, UnavailableAgentClient};
 use crate::events::{DashboardEvent, EventStore};
 use crate::logging::SafeLogger;
 use crate::model::{ComponentRegistry, ComponentStatus, HealthSummary};
+use crate::orchestration;
 use crate::settings::{SecurityCenterSettings, SettingsStore};
 
 #[derive(Debug, Clone, Serialize)]
@@ -142,6 +143,23 @@ impl AppState {
 
     pub fn agent_status(&self) -> AgentStatus {
         self.agent.status()
+    }
+
+    pub fn launch_password_manager(&self) -> Result<(), String> {
+        orchestration::launch_password_manager().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.password-manager-launched",
+            "Password Manager launch requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.password-manager-launched",
+            "Password Manager launch requested",
+        );
+        Ok(())
     }
 
     fn lock_events(&self) -> Result<MutexGuard<'_, EventStore>, String> {
