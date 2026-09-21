@@ -14,7 +14,9 @@ pub struct SafeLogger {
 impl SafeLogger {
     pub fn discover(include_identifiers: bool) -> CoreResult<Self> {
         let paths = SuitePaths::discover()?;
-        let directory = paths.component_data_dir(Component::SecurityCenter).join("logs");
+        let directory = paths
+            .component_data_dir(Component::SecurityCenter)
+            .join("logs");
         Ok(Self {
             path: directory.join("security-center.log"),
             policy: LogPolicy {
@@ -54,18 +56,11 @@ impl SafeLogger {
             .append(true)
             .open(&self.path)
             .map_err(|_| {
-                CoreError::new_safe(
-                    ErrorCode::Internal,
-                    "unable to open Security Center log",
-                )
+                CoreError::new_safe(ErrorCode::Internal, "unable to open Security Center log")
             })?;
-        file.write_all(line.as_bytes())
-            .map_err(|_| {
-                CoreError::new_safe(
-                    ErrorCode::Internal,
-                    "unable to write Security Center log",
-                )
-            })
+        file.write_all(line.as_bytes()).map_err(|_| {
+            CoreError::new_safe(ErrorCode::Internal, "unable to write Security Center log")
+        })
     }
 }
 
