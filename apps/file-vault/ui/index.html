@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge File Vault</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">DF</div>
+        <div>
+          <strong>DragonForge</strong>
+          <span>File Vault</span>
+        </div>
+      </div>
+
+      <button class="nav active" data-view="create">Create Vault</button>
+      <button class="nav" data-view="open">Open Vault</button>
+      <button class="nav" data-view="about">About</button>
+
+      <div class="sidebar-spacer"></div>
+      <div class="security-note">
+        <strong>Phase 4 container</strong>
+        <span>AES-256-GCM + Argon2id. Filenames and file contents are encrypted together.</span>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header>
+        <div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h1 id="page-title">Create encrypted vault</h1>
+        </div>
+        <div class="format-pill">.dfvault v1</div>
+      </header>
+
+      <section id="view-create" class="view active">
+        <div class="intro">
+          <div>
+            <div class="eyebrow">New secure container</div>
+            <h2>Protect files and folders</h2>
+            <p>File names, folder structure, and contents are encrypted in one authenticated container.</p>
+          </div>
+        </div>
+
+        <form id="create-form" class="panel form-grid">
+          <label>
+            <span>Source files or folders</span>
+            <small>Enter one full local path per line. Symbolic links are rejected.</small>
+            <textarea id="create-sources" rows="7" placeholder="C:\Users\You\Documents\Private&#10;C:\Users\You\Pictures\scan.png" required></textarea>
+          </label>
+
+          <label>
+            <span>Vault output path</span>
+            <small>Use a new .dfvault file. Existing files are never overwritten.</small>
+            <input id="create-output" type="text" placeholder="D:\Secure\private.dfvault" required>
+          </label>
+
+          <div class="password-grid">
+            <label>
+              <span>Password</span>
+              <input id="create-password" type="password" autocomplete="new-password" required>
+            </label>
+            <label>
+              <span>Confirm password</span>
+              <input id="create-confirm" type="password" autocomplete="new-password" required>
+            </label>
+          </div>
+
+          <div class="action-row">
+            <span id="create-state" class="muted">Ready.</span>
+            <button type="submit" class="primary">Create encrypted vault</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="view-open" class="view">
+        <div class="intro">
+          <div>
+            <div class="eyebrow">Existing container</div>
+            <h2>Inspect or extract a vault</h2>
+            <p>The password is used only for the requested native operation and is zeroized from the command-owned String afterward.</p>
+          </div>
+        </div>
+
+        <div class="panel form-grid">
+          <label>
+            <span>Vault path</span>
+            <input id="open-vault" type="text" placeholder="D:\Secure\private.dfvault">
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="open-password" type="password" autocomplete="current-password">
+          </label>
+
+          <div class="button-row">
+            <button id="inspect-button" class="primary" type="button">Unlock & inspect</button>
+            <button id="verify-button" class="secondary" type="button">Verify integrity</button>
+          </div>
+
+          <div id="vault-summary" class="summary hidden"></div>
+
+          <div class="extract-box">
+            <label>
+              <span>Extraction destination</span>
+              <small>The destination must not already exist.</small>
+              <input id="extract-destination" type="text" placeholder="D:\Restored\private">
+            </label>
+            <button id="extract-button" class="secondary" type="button">Extract vault</button>
+          </div>
+        </div>
+
+        <section class="panel entries-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Encrypted manifest</div>
+              <h2>Vault contents</h2>
+            </div>
+            <span id="entry-count" class="muted">Locked</span>
+          </div>
+          <div id="entry-list" class="entry-list">
+            <div class="empty">Unlock a vault to inspect its encrypted manifest.</div>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about-card">
+          <div class="brand-mark large">DF</div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h2>File Vault</h2>
+          <p>
+            Phase 4 provides local encrypted containers for files and folders. The format is deliberately separate from the Password Manager vault format.
+          </p>
+          <div class="facts">
+            <span>AES-256-GCM</span>
+            <span>Argon2id</span>
+            <span>Encrypted paths</span>
+            <span>Tamper detection</span>
+            <span>No overwrite by default</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
