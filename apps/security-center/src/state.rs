@@ -3,9 +3,7 @@ use std::sync::{Mutex, MutexGuard};
 use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
 
-use crate::agent::{
-    AgentClient, AgentStatus, UnavailableAgentClient, validate_future_agent_request,
-};
+use crate::agent::{AgentClient, AgentStatus};
 use crate::events::{DashboardEvent, EventStore};
 use crate::logging::SafeLogger;
 use crate::model::{ComponentRegistry, ComponentStatus, HealthSummary};
@@ -28,7 +26,7 @@ pub struct AppState {
     settings: Mutex<SecurityCenterSettings>,
     settings_store: SettingsStore,
     logger: SafeLogger,
-    agent: Box<dyn AgentClient>,
+    agent: AgentClient,
 }
 
 impl AppState {
@@ -56,23 +54,13 @@ impl AppState {
                 "Invalid local settings were ignored; safe defaults are active",
             );
         }
-        if !validate_future_agent_request(1) {
-            events.push(
-                Component::SecurityCenter,
-                EventKind::Ipc,
-                Severity::Critical,
-                "security-center.agent-policy-invalid",
-                "Future Agent IPC policy validation failed",
-            );
-        }
-
         let state = Self {
             registry: ComponentRegistry::phase3_default(),
             events: Mutex::new(events),
             settings: Mutex::new(settings),
             settings_store,
             logger,
-            agent: Box::<UnavailableAgentClient>::default(),
+            agent: AgentClient::discover(),
         };
         let _ = state
             .logger
@@ -89,7 +77,7 @@ impl AppState {
             settings: Mutex::new(settings),
             settings_store,
             logger,
-            agent: Box::<UnavailableAgentClient>::default(),
+            agent: AgentClient::unavailable(),
         }
     }
 
@@ -166,6 +154,23 @@ impl AppState {
 
     pub fn agent_status(&self) -> AgentStatus {
         self.agent.status()
+    }
+
+    pub fn launch_agent(&self) -> Result<(), String> {
+        orchestration::launch_agent().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.agent-launched",
+            "DragonForge Agent start requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.agent-launched",
+            "DragonForge Agent start requested",
+        );
+        Ok(())
     }
 
     pub fn launch_authenticator(&self) -> Result<(), String> {
