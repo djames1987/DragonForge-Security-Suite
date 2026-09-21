@@ -42,7 +42,9 @@ impl std::fmt::Display for IntegrityError {
             Self::InvalidBaseline(message) => write!(formatter, "{message}"),
             Self::BaselineExists => write!(formatter, "an integrity baseline already exists"),
             Self::BaselineMissing => write!(formatter, "no integrity baseline exists"),
-            Self::SymlinkNotAllowed => write!(formatter, "symbolic-link baseline paths are not allowed"),
+            Self::SymlinkNotAllowed => {
+                write!(formatter, "symbolic-link baseline paths are not allowed")
+            }
             Self::LimitExceeded(message) => write!(formatter, "{message}"),
         }
     }
@@ -170,7 +172,8 @@ impl ProbeRunner for PlatformRunner {
         const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
         let script = match probe {
-            Probe::RegistryPersistence => r#"
+            Probe::RegistryPersistence => {
+                r#"
 $paths = @(
   'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
   'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce',
@@ -192,26 +195,32 @@ foreach ($path in $paths) {
     }
   }
 }
-"#,
-            Probe::Services => r#"
+"#
+            }
+            Probe::Services => {
+                r#"
 Get-CimInstance Win32_Service |
   Sort-Object Name |
   ForEach-Object {
     $value = "$($_.StartMode);$($_.StartName);$($_.PathName)" -replace '[\r\n]+', ' '
     "$($_.Name)|$value"
   }
-"#,
-            Probe::ScheduledTasks => r#"
+"#
+            }
+            Probe::ScheduledTasks => {
+                r#"
 Get-ScheduledTask |
   Sort-Object TaskPath,TaskName |
   ForEach-Object {
     $actions = ($_.Actions | ForEach-Object { "$($_.Execute);$($_.Arguments);$($_.WorkingDirectory)" }) -join ';'
     $triggers = ($_.Triggers | ConvertTo-Json -Compress -Depth 5)
-    $value = "$($_.Principal.UserId);$($_.Principal.LogonType);$($_.Principal.RunLevel);$actions;$triggers;$($_.Settings.Enabled);$($_.Settings.Hidden)" -replace '[\r\n]+', ' '
+    $value = "$($_.Principal.UserId);$($_.LogonType);$($_.Principal.RunLevel);$actions;$triggers;$($_.Settings.Enabled);$($_.Settings.Hidden)" -replace '[\r\n]+', ' '
     "$($_.TaskPath)$($_.TaskName)|$value"
   }
-"#,
-            Probe::SystemConfiguration => r#"
+"#
+            }
+            Probe::SystemConfiguration => {
+                r#"
 try {
   $uac = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableLUA).EnableLUA
   "uac.enable_lua|$uac"
@@ -229,7 +238,8 @@ try {
     "firewall.$($_.Name)|$($_.Enabled);$($_.DefaultInboundAction);$($_.DefaultOutboundAction)"
   }
 } catch {}
-"#,
+"#
+            }
         };
 
         let output = Command::new("powershell.exe")
@@ -490,7 +500,9 @@ fn collect_startup_entries(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<
     for (scope, root) in roots {
         let mut files = Vec::new();
         if let Err(error) = walk_files(&root, &root, &mut files, 0) {
-            warnings.push(format!("Startup folder {scope} could not be fully inspected: {error}."));
+            warnings.push(format!(
+                "Startup folder {scope} could not be fully inspected: {error}."
+            ));
             complete = false;
             continue;
         }
@@ -564,7 +576,8 @@ fn walk_files(
 
 fn collect_hosts_entry(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<String>) -> bool {
     let Some(system_root) = env::var_os("SystemRoot") else {
-        warnings.push("Windows SystemRoot is unavailable; hosts file was not inspected.".to_owned());
+        warnings
+            .push("Windows SystemRoot is unavailable; hosts file was not inspected.".to_owned());
         return false;
     };
     let hosts = PathBuf::from(system_root)
@@ -730,9 +743,9 @@ fn write_baseline(path: &Path, baseline: &IntegrityBaseline, replace: bool) -> I
         ));
     }
 
-    let parent = path
-        .parent()
-        .ok_or(IntegrityError::InvalidBaseline("baseline path has no parent"))?;
+    let parent = path.parent().ok_or(IntegrityError::InvalidBaseline(
+        "baseline path has no parent",
+    ))?;
     fs::create_dir_all(parent)?;
     validate_baseline_path(path)?;
 
@@ -778,7 +791,12 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
     let baseline_map = baseline
         .entries
         .iter()
-        .map(|entry| ((entry.surface, entry.key.as_str()), entry.fingerprint.as_str()))
+        .map(|entry| {
+            (
+                (entry.surface, entry.key.as_str()),
+                entry.fingerprint.as_str(),
+            )
+        })
         .collect::<BTreeMap<_, _>>();
     let current_map = current
         .entries
@@ -807,7 +825,10 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
         if unavailable_surfaces.contains(&surface) {
             continue;
         }
-        match (baseline_map.get(&(surface, key)), current_map.get(&(surface, key))) {
+        match (
+            baseline_map.get(&(surface, key)),
+            current_map.get(&(surface, key)),
+        ) {
             (None, Some(_)) => {
                 added += 1;
                 changes.push(IntegrityChange {
@@ -920,9 +941,12 @@ mod tests {
         assert_eq!(report.summary.added, 1);
         assert_eq!(report.summary.removed, 1);
         assert_eq!(report.summary.changed, 1);
-        assert!(report.changes.iter().any(|change| {
-            change.key == "added" && change.kind == ChangeKind::Added
-        }));
+        assert!(
+            report
+                .changes
+                .iter()
+                .any(|change| { change.key == "added" && change.kind == ChangeKind::Added })
+        );
     }
 
     #[test]
@@ -955,11 +979,7 @@ mod tests {
         let baseline = IntegrityBaseline {
             version: BASELINE_VERSION,
             created_at_ms: 42,
-            entries: vec![entry(
-                SurfaceKind::HostsFile,
-                "windows/hosts",
-                &hash('f'),
-            )],
+            entries: vec![entry(SurfaceKind::HostsFile, "windows/hosts", &hash('f'))],
             unavailable_surfaces: Vec::new(),
         };
 
@@ -1003,7 +1023,7 @@ mod tests {
             &path,
             br#"{"version":99,"created_at_ms":0,"entries":[],"unavailable_surfaces":[]}"#,
         )
-            .expect("write invalid");
+        .expect("write invalid");
         assert!(read_baseline(&path).is_err());
     }
 }
