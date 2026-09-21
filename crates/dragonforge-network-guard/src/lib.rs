@@ -189,7 +189,7 @@ fn collect_with_runner(runner: &impl ProbeRunner) -> NetworkSnapshot {
         warnings.push("Phase 8 Network Guard is currently Windows-first.".to_owned());
     }
 
-    connections.truncate(MAX_CONNECTIONS);
+    connections.truncate(MAX_CONNECTIONS * 2);
     dns_cache.truncate(MAX_DNS_ENTRIES);
 
     let tcp_connections = connections
