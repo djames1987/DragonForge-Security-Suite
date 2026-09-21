@@ -1,0 +1,28 @@
+[package]
+name = "dragonforge-security-scanner-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+build = "build.rs"
+description = "DragonForge Security Scanner desktop application"
+
+[lib]
+name = "dragonforge_security_scanner_app"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dragonforge-security-scanner"
+path = "src/main.rs"
+
+[dependencies]
+dragonforge-security-scanner = { path = "../../crates/dragonforge-security-scanner" }
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.11.5", features = [] }
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[lints]
+workspace = true
