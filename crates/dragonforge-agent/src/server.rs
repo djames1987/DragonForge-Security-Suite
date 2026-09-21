@@ -1,0 +1,295 @@
+use std::collections::{HashSet, VecDeque};
+use std::fs::{self, OpenOptions};
+use std::io::{BufRead, BufReader, Write};
+use std::net::{Ipv4Addr, TcpListener, TcpStream};
+use std::path::Path;
+use std::time::{Duration, Instant};
+
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD as BASE64;
+use rand_core::{OsRng, RngCore};
+
+use crate::client::AgentClient;
+use crate::error::{AgentError, Result};
+use crate::paths::AgentPaths;
+use crate::protocol::{
+    AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, HealthWire, MAX_CLOCK_SKEW_MS, MAX_WIRE_BYTES,
+    RequestWire, ResponseWire, RuntimeDescriptor, SESSION_KEY_BYTES, authorize_request,
+    decode_nonce, now_ms, request_message, response_message, sign_hex, verify_hex,
+};
+
+const READ_TIMEOUT: Duration = Duration::from_secs(2);
+const WRITE_TIMEOUT: Duration = Duration::from_secs(2);
+const MAX_REPLAY_NONCES: usize = 4_096;
+
+#[derive(Debug)]
+pub struct AgentServer {
+    paths: AgentPaths,
+}
+
+impl AgentServer {
+    #[must_use]
+    pub fn from_paths(paths: AgentPaths) -> Self {
+        Self { paths }
+    }
+
+    pub fn discover() -> Result<Self> {
+        Ok(Self::from_paths(AgentPaths::discover()?))
+    }
+
+    pub fn run(&self) -> Result<()> {
+        if AgentClient::from_paths(self.paths.clone()).health().is_ok() {
+            return Err(AgentError::InvalidState(
+                "DragonForge Agent is already running",
+            ));
+        }
+        cleanup_stale_runtime(&self.paths);
+
+        fs::create_dir_all(self.paths.root())
+            .map_err(|_| AgentError::Io("agent runtime directory could not be created"))?;
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+            .map_err(|_| AgentError::Io("agent loopback listener could not be created"))?;
+        let port = listener
+            .local_addr()
+            .map_err(|_| AgentError::Io("agent listener address is unavailable"))?
+            .port();
+
+        let mut session_key = [0_u8; SESSION_KEY_BYTES];
+        OsRng.fill_bytes(&mut session_key);
+        write_runtime_files(&self.paths, port, &session_key)?;
+
+        let started = Instant::now();
+        let mut replay = ReplayCache::default();
+        let run_result = listener.incoming().try_for_each(|incoming| {
+            let mut stream =
+                incoming.map_err(|_| AgentError::Io("agent client connection failed"))?;
+            handle_connection(&mut stream, &session_key, started, &mut replay)
+        });
+        cleanup_stale_runtime(&self.paths);
+        run_result
+    }
+}
+
+#[derive(Debug, Default)]
+struct ReplayCache {
+    order: VecDeque<String>,
+    seen: HashSet<String>,
+}
+
+impl ReplayCache {
+    fn insert_new(&mut self, nonce: String) -> bool {
+        if self.seen.contains(&nonce) {
+            return false;
+        }
+        self.seen.insert(nonce.clone());
+        self.order.push_back(nonce);
+        while self.order.len() > MAX_REPLAY_NONCES {
+            if let Some(oldest) = self.order.pop_front() {
+                self.seen.remove(&oldest);
+            }
+        }
+        true
+    }
+}
+
+fn handle_connection(
+    stream: &mut TcpStream,
+    session_key: &[u8],
+    started: Instant,
+    replay: &mut ReplayCache,
+) -> Result<()> {
+    stream
+        .set_read_timeout(Some(READ_TIMEOUT))
+        .map_err(|_| AgentError::Io("agent read timeout could not be configured"))?;
+    stream
+        .set_write_timeout(Some(WRITE_TIMEOUT))
+        .map_err(|_| AgentError::Io("agent write timeout could not be configured"))?;
+
+    let mut reader = BufReader::new(
+        stream
+            .try_clone()
+            .map_err(|_| AgentError::Io("agent connection could not be cloned"))?,
+    );
+    let mut line = String::new();
+    let count = reader
+        .by_ref()
+        .take(MAX_WIRE_BYTES as u64)
+        .read_line(&mut line)
+        .map_err(|_| AgentError::Io("agent request could not be read"))?;
+    if count == 0 || count >= MAX_WIRE_BYTES {
+        return Err(AgentError::Protocol("agent request is missing or oversized"));
+    }
+    let request: RequestWire = serde_json::from_str(line.trim_end())
+        .map_err(|_| AgentError::Protocol("agent request is malformed"))?;
+
+    let response = match validate_request(&request, session_key, replay) {
+        Ok(()) if request.action == "health" => ResponseWire {
+            request_id: request.request_id,
+            ok: true,
+            health: Some(HealthWire {
+                state: "healthy".to_owned(),
+                pid: std::process::id(),
+                uptime_ms: started.elapsed().as_millis().min(u128::from(u64::MAX)) as u64,
+                capabilities: vec![
+                    "health".to_owned(),
+                    "authenticated-ipc".to_owned(),
+                    "background-lifetime".to_owned(),
+                ],
+            }),
+            error: None,
+            auth_tag_hex: String::new(),
+        },
+        Ok(()) => ResponseWire {
+            request_id: request.request_id,
+            ok: false,
+            health: None,
+            error: Some("unsupported agent action".to_owned()),
+            auth_tag_hex: String::new(),
+        },
+        Err(_) => ResponseWire {
+            request_id: request.request_id,
+            ok: false,
+            health: None,
+            error: Some("agent request rejected".to_owned()),
+            auth_tag_hex: String::new(),
+        },
+    };
+
+    let mut signed = response;
+    signed.auth_tag_hex = sign_hex(session_key, &response_message(&signed))?;
+    let encoded = serde_json::to_vec(&signed)
+        .map_err(|_| AgentError::Protocol("agent response could not be serialized"))?;
+    stream
+        .write_all(&encoded)
+        .and_then(|_| stream.write_all(b"\n"))
+        .map_err(|_| AgentError::Io("agent response could not be written"))
+}
+
+fn validate_request(
+    request: &RequestWire,
+    session_key: &[u8],
+    replay: &mut ReplayCache,
+) -> Result<()> {
+    authorize_request(request)?;
+    decode_nonce(&request.nonce_b64)?;
+    let current = now_ms();
+    let skew = current.abs_diff(request.timestamp_ms);
+    if skew > MAX_CLOCK_SKEW_MS {
+        return Err(AgentError::Authentication("agent request timestamp is stale"));
+    }
+    verify_hex(session_key, &request_message(request), &request.auth_tag_hex)?;
+    if !replay.insert_new(request.nonce_b64.clone()) {
+        return Err(AgentError::Authentication("agent request nonce was replayed"));
+    }
+    Ok(())
+}
+
+fn write_runtime_files(paths: &AgentPaths, port: u16, session_key: &[u8]) -> Result<()> {
+    let descriptor = RuntimeDescriptor {
+        format_version: 1,
+        protocol_major: AGENT_PROTOCOL_MAJOR,
+        protocol_minor: AGENT_PROTOCOL_MINOR,
+        port,
+        pid: std::process::id(),
+        started_at_ms: now_ms(),
+    };
+    let descriptor_bytes = serde_json::to_vec_pretty(&descriptor)
+        .map_err(|_| AgentError::Protocol("agent runtime descriptor could not be serialized"))?;
+
+    atomic_write(
+        &paths.credential_file(),
+        format!("{}\n", BASE64.encode(session_key)).as_bytes(),
+    )?;
+    atomic_write(&paths.runtime_file(), &descriptor_bytes)?;
+    Ok(())
+}
+
+fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
+    let parent = path
+        .parent()
+        .ok_or(AgentError::Io("agent runtime parent directory is unavailable"))?;
+    fs::create_dir_all(parent)
+        .map_err(|_| AgentError::Io("agent runtime directory could not be created"))?;
+    let temporary = path.with_extension("tmp");
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(&temporary)
+        .map_err(|_| AgentError::Io("agent runtime file could not be created"))?;
+    file.write_all(bytes)
+        .and_then(|_| file.sync_all())
+        .map_err(|_| AgentError::Io("agent runtime file could not be written"))?;
+    fs::rename(&temporary, path)
+        .map_err(|_| AgentError::Io("agent runtime file could not be finalized"))
+}
+
+fn cleanup_stale_runtime(paths: &AgentPaths) {
+    let _ = fs::remove_file(paths.runtime_file());
+    let _ = fs::remove_file(paths.credential_file());
+}
+
+#[cfg(test)]
+mod tests {
+    use std::thread;
+    use std::time::Duration;
+
+    use base64::Engine;
+    use base64::engine::general_purpose::STANDARD as BASE64;
+    use tempfile::tempdir;
+
+    use super::{ReplayCache, validate_request};
+    use crate::protocol::{
+        AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, NONCE_BYTES, RequestWire, now_ms,
+        request_message, sign_hex,
+    };
+
+    fn signed_request(key: &[u8], nonce_byte: u8) -> RequestWire {
+        let mut request = RequestWire {
+            protocol_major: AGENT_PROTOCOL_MAJOR,
+            protocol_minor: AGENT_PROTOCOL_MINOR,
+            request_id: 7,
+            source: "security-center".to_owned(),
+            action: "health".to_owned(),
+            timestamp_ms: now_ms(),
+            nonce_b64: BASE64.encode([nonce_byte; NONCE_BYTES]),
+            auth_tag_hex: String::new(),
+        };
+        request.auth_tag_hex = sign_hex(key, &request_message(&request)).expect("sign");
+        request
+    }
+
+    #[test]
+    fn valid_authenticated_request_is_accepted_once() {
+        let key = [9_u8; 32];
+        let request = signed_request(&key, 1);
+        let mut replay = ReplayCache::default();
+        assert!(validate_request(&request, &key, &mut replay).is_ok());
+        assert!(validate_request(&request, &key, &mut replay).is_err());
+    }
+
+    #[test]
+    fn modified_request_authentication_fails() {
+        let key = [9_u8; 32];
+        let mut request = signed_request(&key, 2);
+        request.action = "other".to_owned();
+        assert!(validate_request(&request, &key, &mut ReplayCache::default()).is_err());
+    }
+
+    #[test]
+    fn stale_request_is_rejected() {
+        let key = [9_u8; 32];
+        let mut request = signed_request(&key, 3);
+        request.timestamp_ms = 1;
+        request.auth_tag_hex = sign_hex(&key, &request_message(&request)).expect("sign");
+        assert!(validate_request(&request, &key, &mut ReplayCache::default()).is_err());
+    }
+
+    #[test]
+    fn missing_agent_runtime_remains_unavailable() {
+        let dir = tempdir().expect("tempdir");
+        let paths = crate::AgentPaths::from_root(dir.path());
+        assert!(crate::AgentClient::from_paths(paths).health().is_err());
+        thread::sleep(Duration::from_millis(1));
+    }
+}
