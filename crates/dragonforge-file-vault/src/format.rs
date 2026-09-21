@@ -16,6 +16,11 @@ pub(crate) const ARGON_LANES: u32 = 1;
 pub(crate) const MAX_ENTRIES: usize = 10_000;
 pub(crate) const MAX_PATH_BYTES: usize = 4_096;
 pub(crate) const MAX_TOTAL_FILE_BYTES: u64 = 512 * 1024 * 1024;
+pub(crate) const MAX_CONTAINER_BYTES: u64 = MAX_TOTAL_FILE_BYTES
+    + (MAX_ENTRIES as u64 * (1 + 4 + 8 + MAX_PATH_BYTES as u64))
+    + 4
+    + HEADER_LEN as u64
+    + 16;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Header {
