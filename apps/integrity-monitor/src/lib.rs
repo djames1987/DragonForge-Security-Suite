@@ -21,6 +21,7 @@ struct BaselineStatus {
     exists: bool,
     created_at_ms: Option<u64>,
     entries: usize,
+    warnings: Vec<String>,
 }
 
 fn baseline_path() -> Result<PathBuf, String> {
@@ -52,11 +53,13 @@ fn get_baseline_status() -> Result<BaselineStatus, String> {
             exists: true,
             created_at_ms: Some(summary.timestamp_ms),
             entries: summary.entries,
+            warnings: summary.warnings,
         },
         None => BaselineStatus {
             exists: false,
             created_at_ms: None,
             entries: 0,
+            warnings: Vec::new(),
         },
     })
 }
