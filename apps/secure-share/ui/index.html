@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge Secure Share</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast" class="toast" hidden></div>
+  <div class="shell">
+    <aside>
+      <div class="brand"><div class="mark">DF</div><div><strong>DragonForge</strong><span>Secure Share</span></div></div>
+      <button class="nav active" data-view="create">Create Share</button>
+      <button class="nav" data-view="open">Verify / Reveal</button>
+      <button class="nav" data-view="extract">Extract Files</button>
+      <button class="nav" data-view="about">About</button>
+      <div class="note">Secure Share is offline and password-protected. Expiration is enforced by DragonForge when revealing secrets or extracting attachments. Offline files cannot be remotely revoked.</div>
+      <div class="phase">Phase 10</div>
+    </aside>
+    <main>
+      <header><div><div class="eyebrow">DragonForge Security Suite</div><h1 id="title">Create secure share</h1></div></header>
+
+      <section id="view-create" class="view active">
+        <div class="panel form-grid">
+          <div class="two-col">
+            <label><span>Sender label</span><input id="sender" maxlength="200" placeholder="Optional"></label>
+            <label><span>Recipient label</span><input id="recipient" maxlength="200" placeholder="Required"></label>
+          </div>
+          <label><span>Expiration</span><input id="expires" type="datetime-local"></label>
+          <label><span>Protected secret text</span><textarea id="secret" rows="7" maxlength="65536" placeholder="Optional secret, note, recovery information, or instructions"></textarea></label>
+          <label><span>Attachments</span><textarea id="attachments" rows="5" spellcheck="false" placeholder="One local file or folder path per line"></textarea></label>
+          <label><span>Package destination</span><input id="create-destination" placeholder="D:\Shares\recipient.dfshare"></label>
+          <div class="two-col">
+            <label><span>Package password</span><input id="create-password" type="password" autocomplete="new-password" placeholder="At least 12 characters"></label>
+            <label><span>Confirm password</span><input id="create-confirm" type="password" autocomplete="new-password"></label>
+          </div>
+          <button id="create-share" class="primary">Create encrypted share</button>
+        </div>
+        <div id="create-result" class="result" hidden></div>
+      </section>
+
+      <section id="view-open" class="view">
+        <div class="panel form-grid">
+          <label><span>Share package</span><input id="open-path" placeholder="D:\Shares\recipient.dfshare"></label>
+          <label><span>Password</span><input id="open-password" type="password" autocomplete="current-password"></label>
+          <div class="button-row"><button id="verify-share" class="secondary">Verify package</button><button id="reveal-secret" class="primary">Reveal secret</button></div>
+        </div>
+        <div id="open-result" class="result" hidden></div>
+        <div id="secret-result" class="secret-box" hidden></div>
+      </section>
+
+      <section id="view-extract" class="view">
+        <div class="warning">Attachments are extracted only after package authentication, integrity verification, and expiration checks. The destination must not already exist.</div>
+        <div class="panel form-grid">
+          <label><span>Share package</span><input id="extract-path" placeholder="D:\Shares\recipient.dfshare"></label>
+          <label><span>New extraction destination</span><input id="extract-destination" placeholder="D:\Received\DragonForgeShare"></label>
+          <label><span>Password</span><input id="extract-password" type="password" autocomplete="current-password"></label>
+          <button id="extract-share" class="primary">Verify and extract attachments</button>
+        </div>
+        <div id="extract-result" class="result" hidden></div>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Secure Share</h2><p>Phase 10 creates offline encrypted .dfshare packages containing recipient-oriented metadata, optional protected secret text, and optional files or folders.</p><p>Recipient/sender labels, expiration, secret text, file names, hashes, and file contents are encrypted. Expired packages can still be verified for integrity, but DragonForge refuses to reveal their secret or extract their attachments.</p><p>Because the package is an offline file, Phase 10 does not claim remote revocation or reliable open-count enforcement. Those features require an online coordination service and a separate trust model.</p></div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
