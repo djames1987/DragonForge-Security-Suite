@@ -68,7 +68,11 @@
         codeMeta.textContent = result.valid_for_seconds == null
           ? `Used counter ${result.counter}; next counter saved`
           : `Valid for ${result.valid_for_seconds}s`;
-        if (account.kind.type === "hotp") await unlock();
+        if (account.kind.type === "hotp") {
+          account.kind.counter = result.counter + 1;
+          meta.textContent = [account.issuer, kindLabel(account.kind), account.algorithm.toUpperCase(), `${account.digits} digits`]
+            .filter(Boolean).join(" · ");
+        }
       } catch (error) {
         toast(String(error), true);
       }
@@ -130,6 +134,18 @@
       toast(String(error), true);
       return false;
     }
+  }
+
+  function lockStore() {
+    state.accounts = [];
+    state.unlocked = false;
+    document.getElementById("master-password").value = "";
+    document.getElementById("recovery-codes").value = "";
+    const badge = document.getElementById("lock-state");
+    badge.textContent = "Locked";
+    badge.classList.remove("unlocked");
+    renderAccounts();
+    toast("Authenticator locked.");
   }
 
   async function createStore() {
@@ -246,6 +262,7 @@
       button.addEventListener("click", () => showView(button.dataset.view));
     });
     document.getElementById("unlock-button").addEventListener("click", unlock);
+    document.getElementById("lock-button").addEventListener("click", lockStore);
     document.getElementById("create-button").addEventListener("click", createStore);
     document.getElementById("refresh-button").addEventListener("click", unlock);
     document.getElementById("uri-form").addEventListener("submit", importUri);
