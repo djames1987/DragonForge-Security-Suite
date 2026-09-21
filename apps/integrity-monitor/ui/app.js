@@ -111,8 +111,11 @@
     const checkButton = document.getElementById("check-button");
     const baselineButton = document.getElementById("baseline-button");
 
+    renderWarnings(status.warnings);
+
     if (status.exists) {
-      document.getElementById("baseline-state").textContent = "Baseline ready";
+      document.getElementById("baseline-state").textContent =
+        status.warnings?.length ? "Baseline ready with coverage warnings" : "Baseline ready";
       document.getElementById("baseline-copy").textContent =
         "Compare the current system fingerprints against the saved reference baseline.";
       document.getElementById("baseline-meta").textContent =
