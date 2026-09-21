@@ -168,7 +168,7 @@ Persistent enforcement remains deferred to the future DragonForge Agent so it ca
 See [PHASE_8_NETWORK_GUARD.md](PHASE_8_NETWORK_GUARD.md).
 
 ## Phase 9 — Backup & Recovery
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - dedicated encrypted Backup & Recovery engine crate and Tauri desktop application;
@@ -180,7 +180,9 @@ Delivered:
 - staged no-overwrite restore into a new destination;
 - Security Center integration with strict sibling-app launch;
 - Phase 9 verification tooling and CI coverage;
-- all-app build coverage extended to Backup & Recovery.
+- all-app build coverage extended to Backup & Recovery;
+- full local Windows verification passed, including formatting, compile checks, strict Clippy, Phase 9 and regression tests, JavaScript validation, and all eight desktop application builds;
+- verified log SHA-256: `1633B93A38D828757E82FC9C677BEB8A0CA1AB91CC269E9782130B3CBD3BD82B`.
 
 See [PHASE_9_BACKUP_RECOVERY.md](PHASE_9_BACKUP_RECOVERY.md).
 

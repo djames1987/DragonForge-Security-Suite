@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 9 adds local encrypted backup and recovery for DragonForge suite data and user-selected files/folders.
 
@@ -95,7 +95,15 @@ The verifier covers:
 - JavaScript syntax checks for all current suite UIs;
 - the all-app desktop build and executable verification.
 
-A passing local verifier log and SHA-256 file are required before Phase 9 is marked **Verified Complete**.
+Local Windows verification passed on 2026-09-21.
+
+Verified log:
+`dragonforge-phase9-backup-recovery-20260921-140930.log`
+
+SHA-256:
+`1633B93A38D828757E82FC9C677BEB8A0CA1AB91CC269E9782130B3CBD3BD82B`
+
+The passing run completed formatting checks, workspace compile checks, strict Clippy, Backup & Recovery tests, prior-suite regression tests, JavaScript syntax checks, and the full eight-application desktop build.
 
 ## Phase 10 handoff
 

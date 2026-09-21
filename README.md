@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 9 Backup & Recovery is implementation complete with local verification pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, and encrypted Backup & Recovery.
+> **Current status:** Phase 9 Backup & Recovery is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, and encrypted Backup & Recovery.
 
 ## Canonical repository
 
@@ -101,7 +101,7 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 6 — Security Scanner: **Verified Complete**
 - Phase 7 — Integrity Monitor: **Verified Complete**
 - Phase 8 — Network Guard: **Verified Complete**
-- Phase 9 — Backup & Recovery: **Implementation Complete — Local Verification Pending**
+- Phase 9 — Backup & Recovery: **Verified Complete**
 - Phase 10 — Secure Share: **Next**
 - Phase 11 — DragonForge Agent
 
@@ -271,5 +271,8 @@ Run Phase 9 verification on Windows with:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase9-backup-recovery-tests.ps1
 ```
+
+Phase 9 local verification result: **PASS**  
+Verified log SHA-256: `1633B93A38D828757E82FC9C677BEB8A0CA1AB91CC269E9782130B3CBD3BD82B`
 
 See [docs/PHASE_9_BACKUP_RECOVERY.md](docs/PHASE_9_BACKUP_RECOVERY.md).
