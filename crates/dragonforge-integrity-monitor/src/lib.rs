@@ -94,6 +94,7 @@ pub struct IntegrityBaseline {
     pub version: u16,
     pub created_at_ms: u64,
     pub entries: Vec<BaselineEntry>,
+    pub unavailable_surfaces: Vec<SurfaceKind>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -132,6 +133,7 @@ pub struct ComparisonReport {
     pub checked_at_ms: u64,
     pub summary: ComparisonSummary,
     pub changes: Vec<IntegrityChange>,
+    pub unavailable_surfaces: Vec<SurfaceKind>,
     pub warnings: Vec<String>,
 }
 
@@ -139,6 +141,7 @@ pub struct ComparisonReport {
 struct CollectedSnapshot {
     timestamp_ms: u64,
     entries: Vec<BaselineEntry>,
+    unavailable_surfaces: BTreeSet<SurfaceKind>,
     warnings: Vec<String>,
 }
 
@@ -272,6 +275,7 @@ pub fn create_baseline(path: &Path, replace: bool) -> IntegrityResult<SnapshotSu
         version: BASELINE_VERSION,
         created_at_ms: snapshot.timestamp_ms,
         entries: snapshot.entries.clone(),
+        unavailable_surfaces: snapshot.unavailable_surfaces.iter().copied().collect(),
     };
     write_baseline(path, &baseline, replace)?;
 
@@ -308,39 +312,60 @@ pub fn compare_to_baseline(path: &Path) -> IntegrityResult<ComparisonReport> {
 fn collect_with_runner(runner: &impl ProbeRunner) -> CollectedSnapshot {
     let mut entries = Vec::new();
     let mut warnings = Vec::new();
+    let mut unavailable_surfaces = BTreeSet::new();
 
     if cfg!(target_os = "windows") {
-        collect_startup_entries(&mut entries, &mut warnings);
-        collect_hosts_entry(&mut entries, &mut warnings);
-        collect_probe_entries(
+        if !collect_startup_entries(&mut entries, &mut warnings) {
+            unavailable_surfaces.insert(SurfaceKind::Startup);
+        }
+        if !collect_hosts_entry(&mut entries, &mut warnings) {
+            unavailable_surfaces.insert(SurfaceKind::HostsFile);
+        }
+        if !collect_probe_entries(
             runner,
             Probe::RegistryPersistence,
             SurfaceKind::RegistryPersistence,
             &mut entries,
             &mut warnings,
-        );
-        collect_probe_entries(
+        ) {
+            unavailable_surfaces.insert(SurfaceKind::RegistryPersistence);
+        }
+        if !collect_probe_entries(
             runner,
             Probe::Services,
             SurfaceKind::Services,
             &mut entries,
             &mut warnings,
-        );
-        collect_probe_entries(
+        ) {
+            unavailable_surfaces.insert(SurfaceKind::Services);
+        }
+        if !collect_probe_entries(
             runner,
             Probe::ScheduledTasks,
             SurfaceKind::ScheduledTasks,
             &mut entries,
             &mut warnings,
-        );
-        collect_probe_entries(
+        ) {
+            unavailable_surfaces.insert(SurfaceKind::ScheduledTasks);
+        }
+        if !collect_probe_entries(
             runner,
             Probe::SystemConfiguration,
             SurfaceKind::SystemConfiguration,
             &mut entries,
             &mut warnings,
-        );
+        ) {
+            unavailable_surfaces.insert(SurfaceKind::SystemConfiguration);
+        }
     } else {
+        unavailable_surfaces.extend([
+            SurfaceKind::Startup,
+            SurfaceKind::RegistryPersistence,
+            SurfaceKind::Services,
+            SurfaceKind::ScheduledTasks,
+            SurfaceKind::HostsFile,
+            SurfaceKind::SystemConfiguration,
+        ]);
         warnings.push("Phase 7 integrity collection is currently Windows-first.".to_owned());
     }
 
@@ -356,6 +381,7 @@ fn collect_with_runner(runner: &impl ProbeRunner) -> CollectedSnapshot {
     CollectedSnapshot {
         timestamp_ms: now_ms(),
         entries,
+        unavailable_surfaces,
         warnings,
     }
 }
@@ -366,22 +392,24 @@ fn collect_probe_entries(
     surface: SurfaceKind,
     entries: &mut Vec<BaselineEntry>,
     warnings: &mut Vec<String>,
-) {
+) -> bool {
     let output = match runner.run(probe) {
         Ok(output) => output,
         Err(message) => {
             warnings.push(message);
-            return;
+            return false;
         }
     };
 
     let mut seen = 0usize;
+    let mut complete = true;
     for line in output.lines() {
         if seen >= MAX_PROBE_LINES {
             warnings.push(format!(
                 "{} probe line limit reached; additional entries were omitted.",
                 surface.as_str()
             ));
+            complete = false;
             break;
         }
         let Some((key, value)) = line.split_once('|') else {
@@ -398,9 +426,10 @@ fn collect_probe_entries(
         });
         seen += 1;
     }
+    complete
 }
 
-fn collect_startup_entries(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<String>) {
+fn collect_startup_entries(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<String>) -> bool {
     let mut roots = Vec::new();
     if let Some(appdata) = env::var_os("APPDATA") {
         roots.push((
@@ -425,10 +454,16 @@ fn collect_startup_entries(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<
         ));
     }
 
+    let mut complete = !roots.is_empty();
+    if roots.is_empty() {
+        warnings.push("Windows Startup folder locations are unavailable.".to_owned());
+    }
+
     for (scope, root) in roots {
         let mut files = Vec::new();
         if let Err(error) = walk_files(&root, &root, &mut files, 0) {
             warnings.push(format!("Startup folder {scope} could not be fully inspected: {error}."));
+            complete = false;
             continue;
         }
         files.sort();
@@ -440,13 +475,17 @@ fn collect_startup_entries(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<
                     key: sanitize_key(&format!("{scope}/{}", relative.to_string_lossy())),
                     fingerprint: hash,
                 }),
-                Err(_) => warnings.push(format!(
-                    "Startup item {scope}/{} could not be fingerprinted.",
-                    relative.to_string_lossy()
-                )),
+                Err(_) => {
+                    complete = false;
+                    warnings.push(format!(
+                        "Startup item {scope}/{} could not be fingerprinted.",
+                        relative.to_string_lossy()
+                    ));
+                }
             }
         }
     }
+    complete
 }
 
 fn walk_files(
@@ -482,10 +521,10 @@ fn walk_files(
     Ok(())
 }
 
-fn collect_hosts_entry(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<String>) {
+fn collect_hosts_entry(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<String>) -> bool {
     let Some(system_root) = env::var_os("SystemRoot") else {
         warnings.push("Windows SystemRoot is unavailable; hosts file was not inspected.".to_owned());
-        return;
+        return false;
     };
     let hosts = PathBuf::from(system_root)
         .join("System32")
@@ -494,12 +533,18 @@ fn collect_hosts_entry(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<Stri
         .join("hosts");
 
     match hash_file(&hosts, MAX_HOSTS_FILE_BYTES) {
-        Ok(hash) => entries.push(BaselineEntry {
-            surface: SurfaceKind::HostsFile,
-            key: "windows/hosts".to_owned(),
-            fingerprint: hash,
-        }),
-        Err(_) => warnings.push("Windows hosts file could not be fingerprinted.".to_owned()),
+        Ok(hash) => {
+            entries.push(BaselineEntry {
+                surface: SurfaceKind::HostsFile,
+                key: "windows/hosts".to_owned(),
+                fingerprint: hash,
+            });
+            true
+        }
+        Err(_) => {
+            warnings.push("Windows hosts file could not be fingerprinted.".to_owned());
+            false
+        }
     }
 }
 
@@ -600,6 +645,17 @@ fn validate_baseline(baseline: &IntegrityBaseline) -> IntegrityResult<()> {
             "integrity baseline contains too many entries",
         ));
     }
+    let unavailable = baseline
+        .unavailable_surfaces
+        .iter()
+        .copied()
+        .collect::<BTreeSet<_>>();
+    if unavailable.len() != baseline.unavailable_surfaces.len() {
+        return Err(IntegrityError::InvalidBaseline(
+            "integrity baseline contains duplicate unavailable surfaces",
+        ));
+    }
+
     let mut keys = BTreeSet::new();
     for entry in &baseline.entries {
         if entry.key.is_empty()
@@ -689,6 +745,13 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
         .map(|entry| ((entry.surface, entry.key.as_str()), entry.fingerprint.as_str()))
         .collect::<BTreeMap<_, _>>();
 
+    let unavailable_surfaces = baseline
+        .unavailable_surfaces
+        .iter()
+        .copied()
+        .chain(current.unavailable_surfaces.iter().copied())
+        .collect::<BTreeSet<_>>();
+
     let mut keys = BTreeSet::new();
     keys.extend(baseline_map.keys().copied());
     keys.extend(current_map.keys().copied());
@@ -700,6 +763,9 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
     let mut changed = 0usize;
 
     for (surface, key) in keys {
+        if unavailable_surfaces.contains(&surface) {
+            continue;
+        }
         match (baseline_map.get(&(surface, key)), current_map.get(&(surface, key))) {
             (None, Some(_)) => {
                 added += 1;
@@ -740,6 +806,7 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
             changed,
         },
         changes,
+        unavailable_surfaces: unavailable_surfaces.into_iter().collect(),
         warnings: current.warnings,
     }
 }
@@ -754,6 +821,7 @@ fn now_ms() -> u64 {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
     use std::fs;
 
     use tempfile::tempdir;
@@ -785,6 +853,7 @@ mod tests {
                 entry(SurfaceKind::Services, "changed", &hash('b')),
                 entry(SurfaceKind::Startup, "removed", &hash('c')),
             ],
+            unavailable_surfaces: Vec::new(),
         };
         let current = CollectedSnapshot {
             timestamp_ms: 20,
@@ -793,6 +862,7 @@ mod tests {
                 entry(SurfaceKind::Services, "changed", &hash('d')),
                 entry(SurfaceKind::ScheduledTasks, "added", &hash('e')),
             ],
+            unavailable_surfaces: BTreeSet::new(),
             warnings: Vec::new(),
         };
 
@@ -807,6 +877,29 @@ mod tests {
     }
 
     #[test]
+    fn unavailable_surface_does_not_create_false_removal() {
+        let baseline = IntegrityBaseline {
+            version: BASELINE_VERSION,
+            created_at_ms: 10,
+            entries: vec![entry(SurfaceKind::Services, "service-a", &hash('a'))],
+            unavailable_surfaces: Vec::new(),
+        };
+        let mut unavailable = BTreeSet::new();
+        unavailable.insert(SurfaceKind::Services);
+        let current = CollectedSnapshot {
+            timestamp_ms: 20,
+            entries: Vec::new(),
+            unavailable_surfaces: unavailable,
+            warnings: vec!["services unavailable".to_owned()],
+        };
+
+        let report = compare(&baseline, current);
+        assert_eq!(report.summary.removed, 0);
+        assert!(report.changes.is_empty());
+        assert_eq!(report.unavailable_surfaces, vec![SurfaceKind::Services]);
+    }
+
+    #[test]
     fn baseline_round_trip_preserves_fingerprints() {
         let dir = tempdir().expect("temporary directory");
         let path = dir.path().join("baseline.json");
@@ -818,6 +911,7 @@ mod tests {
                 "windows/hosts",
                 &hash('f'),
             )],
+            unavailable_surfaces: Vec::new(),
         };
 
         write_baseline(&path, &baseline, false).expect("write baseline");
@@ -837,11 +931,13 @@ mod tests {
             version: BASELINE_VERSION,
             created_at_ms: 1,
             entries: Vec::new(),
+            unavailable_surfaces: Vec::new(),
         };
         let second = IntegrityBaseline {
             version: BASELINE_VERSION,
             created_at_ms: 2,
             entries: Vec::new(),
+            unavailable_surfaces: Vec::new(),
         };
 
         write_baseline(&path, &first, false).expect("initial baseline");
@@ -854,7 +950,10 @@ mod tests {
     fn invalid_baseline_version_is_rejected() {
         let dir = tempdir().expect("temporary directory");
         let path = dir.path().join("baseline.json");
-        fs::write(&path, br#"{"version":99,"created_at_ms":0,"entries":[]}"#)
+        fs::write(
+            &path,
+            br#"{"version":99,"created_at_ms":0,"entries":[],"unavailable_surfaces":[]}"#,
+        )
             .expect("write invalid");
         assert!(read_baseline(&path).is_err());
     }
