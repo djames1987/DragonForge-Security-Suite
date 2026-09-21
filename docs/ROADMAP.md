@@ -111,11 +111,26 @@ Delivered:
 See [PHASE_5_AUTHENTICATOR.md](PHASE_5_AUTHENTICATOR.md).
 
 ## Phase 6 — Security Scanner
-**Status: Next**
+**Status: Implementation Complete — Local Verification Pending**
 
-Assess system security posture, updates, firewall, disk encryption, exposed services, and common configuration weaknesses.
+Delivered:
+- dedicated read-only Security Scanner engine crate and Tauri desktop app;
+- Windows Firewall profile assessment;
+- BitLocker/system-volume protection assessment;
+- Windows Update service and latest-hotfix visibility;
+- Microsoft Defender protection-state assessment;
+- Secure Boot and User Account Control checks;
+- SMB1 and Remote Desktop configuration checks;
+- bounded listening TCP endpoint inventory with selected remote-management exposure findings;
+- explicit Pass / Attention / Unknown / Info result semantics;
+- no elevation, remediation, arbitrary shell input, or secret-store access;
+- Security Center integration with strict sibling-app launch;
+- Phase 6 verification script, documentation, and CI coverage.
+
+See [PHASE_6_SECURITY_SCANNER.md](PHASE_6_SECURITY_SCANNER.md).
 
 ## Phase 7 — Integrity Monitor
+**Status: Next**
 
 Baseline and monitor important files, startup locations, services, tasks, and system configuration.
 
