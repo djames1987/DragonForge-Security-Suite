@@ -56,7 +56,7 @@ Logs must never intentionally contain:
 - authentication tokens;
 - full sensitive payloads.
 
-Identifiers should be minimized or pseudonymized where practical.
+Identifiers should be minimized or pseudonymized where practical. The shared LogPolicy defaults to redacting identifiers and bounds/sanitizes public fields; Secret values format only as [REDACTED].
 
 ## Privilege model
 
@@ -88,3 +88,18 @@ Security-sensitive changes should include:
 - fuzzing/property testing where practical;
 - dependency audit;
 - documented manual verification for OS-specific behavior.
+
+
+## Local IPC foundation
+
+Phase 2 defines transport-neutral authenticated IPC metadata and authorization rules.
+
+Security requirements:
+- unauthenticated peers fail closed;
+- the authenticated component identity must match the envelope source;
+- requests for the wrong destination are rejected;
+- callers must appear in the destination allow-list;
+- incompatible protocol major versions are rejected;
+- actual peer verification remains the responsibility of the selected OS transport or session-authentication mechanism.
+
+Constructing an authenticated peer context is a trust-boundary operation. Future pipe/socket implementations must not accept caller-supplied component identity without independent verification.
