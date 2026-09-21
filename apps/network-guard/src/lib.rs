@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use dragonforge_network_guard::{NetworkSnapshot, collect_snapshot};
+use dragonforge_network_guard::{collect_snapshot, NetworkSnapshot};
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]

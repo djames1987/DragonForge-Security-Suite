@@ -19,9 +19,17 @@ function Invoke-Checked {
     )
     Write-Host ""
     Write-Host ">>> $Command $($Arguments -join ' ')"
-    & $Command @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed with exit code ${LASTEXITCODE}: $Command $($Arguments -join ' ')"
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        & $Command @Arguments 2>&1 | ForEach-Object { Write-Host $_ }
+        $CommandExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($CommandExitCode -ne 0) {
+        throw "Command failed with exit code ${CommandExitCode}: $Command $($Arguments -join ' ')"
     }
 }
 
