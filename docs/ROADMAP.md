@@ -76,11 +76,25 @@ The Phase 3 UI does not claim that the future privileged DragonForge Agent is in
 See [PHASE_3_SECURITY_CENTER.md](PHASE_3_SECURITY_CENTER.md).
 
 ## Phase 4 — File Vault
-**Status: Next**
+**Status: Complete**
 
-Encrypted files/folders and secure containers, reusing vetted cryptographic foundations where appropriate.
+Delivered:
+- dedicated File Vault encrypted-container crate and Tauri desktop app;
+- AES-256-GCM authenticated encryption;
+- Argon2id password derivation with versioned KDF parameters;
+- encrypted filenames, directory structure, and file contents;
+- tamper/wrong-password rejection;
+- path traversal and symbolic-link rejection;
+- bounded entries, path lengths, and aggregate file size;
+- no-overwrite container creation and extraction;
+- temporary-directory extraction with cleanup on failure;
+- Security Center integration and strict sibling-app launch;
+- Phase 4 verification script, documentation, and CI coverage.
+
+See [PHASE_4_FILE_VAULT.md](PHASE_4_FILE_VAULT.md).
 
 ## Phase 5 — Authenticator
+**Status: Next**
 
 TOTP/HOTP, recovery material, and later hardware-backed authentication integrations.
 

@@ -5,14 +5,40 @@ use std::process::Command;
 use dragonforge_core::{CoreError, CoreResult, ErrorCode};
 
 #[must_use]
-pub fn password_manager_sibling(center_executable: &Path) -> Option<PathBuf> {
+fn sibling_executable(center_executable: &Path, name: &str) -> Option<PathBuf> {
     let parent = center_executable.parent()?;
     let file_name = if cfg!(target_os = "windows") {
-        "dragonforge-desktop.exe"
+        format!("{name}.exe")
     } else {
-        "dragonforge-desktop"
+        name.to_owned()
     };
     Some(parent.join(file_name))
+}
+
+#[must_use]
+pub fn password_manager_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-desktop")
+}
+
+pub fn file_vault_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-file-vault")
+}
+
+fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
+    if !target.is_file() {
+        return Err(CoreError::new_safe(
+            ErrorCode::InvalidConfiguration,
+            format!("{display_name} is not installed beside Security Center"),
+        ));
+    }
+
+    Command::new(target).spawn().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            format!("unable to start the {display_name} application"),
+        )
+    })?;
+    Ok(())
 }
 
 pub fn launch_password_manager() -> CoreResult<()> {
@@ -29,28 +55,31 @@ pub fn launch_password_manager() -> CoreResult<()> {
         )
     })?;
 
-    if !target.is_file() {
-        return Err(CoreError::new_safe(
-            ErrorCode::InvalidConfiguration,
-            "Password Manager is not installed beside Security Center",
-        ));
-    }
+    launch_sibling(target, "Password Manager")
+}
 
-    Command::new(target).spawn().map_err(|_| {
+pub fn launch_file_vault() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
         CoreError::new_safe(
             ErrorCode::Internal,
-            "unable to start the Password Manager application",
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = file_vault_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the File Vault sibling path",
         )
     })?;
 
-    Ok(())
+    launch_sibling(target, "File Vault")
 }
 
 #[cfg(test)]
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::password_manager_sibling;
+    use super::{file_vault_sibling, password_manager_sibling};
 
     #[test]
     fn password_manager_path_is_strictly_sibling_scoped() {
@@ -67,5 +96,22 @@ mod tests {
         };
 
         assert_eq!(password_manager_sibling(center), Some(expected));
+    }
+
+    #[test]
+    fn file_vault_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-file-vault.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-file-vault")
+        };
+
+        assert_eq!(file_vault_sibling(center), Some(expected));
     }
 }

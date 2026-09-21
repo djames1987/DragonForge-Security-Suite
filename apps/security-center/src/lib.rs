@@ -56,6 +56,11 @@ fn agent_status(state: State<'_, AppState>) -> AgentStatus {
 }
 
 #[tauri::command]
+fn launch_file_vault(state: State<'_, AppState>) -> Result<(), String> {
+    state.launch_file_vault()
+}
+
+#[tauri::command]
 fn launch_password_manager(state: State<'_, AppState>) -> Result<(), String> {
     state.launch_password_manager()
 }
@@ -75,6 +80,7 @@ pub fn run() {
             get_settings,
             save_settings,
             agent_status,
+            launch_file_vault,
             launch_password_manager
         ])
         .run(tauri::generate_context!())

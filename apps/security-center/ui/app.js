@@ -61,9 +61,12 @@
   
   function componentCard(component) {
     const stateClass = `state-${escapeHtml(component.state)}`;
-    const action = component.id === "password-manager"
-      ? '<button class="component-action" data-launch="password-manager">Open Password Manager</button>'
-      : "";
+    const action =
+      component.id === "password-manager"
+        ? '<button class="component-action" data-launch="password-manager">Open Password Manager</button>'
+        : component.id === "file-vault"
+          ? '<button class="component-action" data-launch="file-vault">Open File Vault</button>'
+          : "";
     return `
       <article class="component-card">
         <div class="component-card-top">
@@ -85,6 +88,9 @@
     overview.innerHTML = components.slice(0, 6).map(componentCard).join("");
     document.querySelectorAll('[data-launch="password-manager"]').forEach((button) => {
       button.addEventListener("click", launchPasswordManager);
+    });
+    document.querySelectorAll('[data-launch="file-vault"]').forEach((button) => {
+      button.addEventListener("click", launchFileVault);
     });
   }
   
@@ -173,6 +179,16 @@
     }
   }
   
+  async function launchFileVault() {
+    try {
+      await invoke("launch_file_vault");
+      toast("File Vault launch requested.");
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
   async function launchPasswordManager() {
     try {
       await invoke("launch_password_manager");
