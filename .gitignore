@@ -26,3 +26,7 @@ test-results/
 *.dfvault.sync.json
 *.dfvault.sync.json.tmp
 *.dfvault.sync.json.bak
+
+# Tauri/generated application build support
+**/gen/
+apps/password-manager/icons/icon.ico
