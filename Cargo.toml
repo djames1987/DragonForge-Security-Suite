@@ -8,6 +8,7 @@ members = [
     "apps/integrity-monitor",
     "apps/network-guard",
     "apps/backup-recovery",
+    "apps/secure-share",
     "services/password-manager-sync",
     "crates/dragonforge-core",
     "crates/dragonforge-file-vault",
@@ -16,6 +17,7 @@ members = [
     "crates/dragonforge-integrity-monitor",
     "crates/dragonforge-network-guard",
     "crates/dragonforge-backup-recovery",
+    "crates/dragonforge-secure-share",
     "crates/dragonforge-crypto",
     "crates/dragonforge-vault",
 ]
