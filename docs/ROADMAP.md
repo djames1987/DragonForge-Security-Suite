@@ -187,12 +187,26 @@ Delivered:
 See [PHASE_9_BACKUP_RECOVERY.md](PHASE_9_BACKUP_RECOVERY.md).
 
 ## Phase 10 — Secure Share
-**Status: Next**
+**Status: Implementation Complete — Local Verification Pending**
 
+Delivered:
+- dedicated Secure Share engine crate and Tauri desktop application;
+- versioned `.dfshare` offline encrypted package format using AES-256-GCM and Argon2id;
+- encrypted sender/recipient labels, expiration, secret text, attachment paths, SHA-256 hashes, and attachment bytes;
+- recipient-oriented package metadata with required recipient label;
+- optional protected secret text and file/folder attachments;
+- expiration enforcement for secret reveal and attachment extraction while retaining post-expiration integrity verification;
+- bounded collection with symbolic-link, traversal, duplicate-path, wrong-password, and tamper rejection;
+- staged no-overwrite attachment extraction;
+- explicit non-claims for offline revocation and open-count enforcement;
+- Security Center integration with strict sibling-app launch;
+- Phase 10 verification tooling and CI coverage;
+- all-app build coverage extended to nine desktop applications.
 
-Encrypted packages/secrets with expiration and recipient-oriented controls.
+See [PHASE_10_SECURE_SHARE.md](PHASE_10_SECURE_SHARE.md).
 
 ## Phase 11 — DragonForge Agent
+**Status: Next**
 
 Unify background monitoring/protection behind authenticated local IPC.
 
