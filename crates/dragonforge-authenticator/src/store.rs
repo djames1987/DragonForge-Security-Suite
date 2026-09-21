@@ -13,7 +13,9 @@ use uuid::Uuid;
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::error::{AuthenticatorError, Result};
-use crate::otp::{GeneratedCode, OtpAlgorithm, OtpKind, generate_hotp, generate_totp, normalize_secret};
+use crate::otp::{
+    GeneratedCode, OtpAlgorithm, OtpKind, generate_hotp, generate_totp, normalize_secret,
+};
 
 const MAGIC: &[u8; 4] = b"DFA1";
 const FORMAT_VERSION: u16 = 1;
@@ -207,9 +209,12 @@ pub fn generate_code(
             period,
             timestamp_seconds,
         )?,
-        OtpKind::Hotp { counter } => {
-            generate_hotp(&account.secret_base32, account.algorithm, account.digits, counter)?
-        }
+        OtpKind::Hotp { counter } => generate_hotp(
+            &account.secret_base32,
+            account.algorithm,
+            account.digits,
+            counter,
+        )?
     };
     Ok(code_view(id, generated))
 }
@@ -227,8 +232,12 @@ pub fn consume_hotp(path: impl AsRef<Path>, password: &[u8], id: &str) -> Result
         OtpKind::Hotp { counter } => counter,
         OtpKind::Totp { .. } => return Err(AuthenticatorError::InvalidAccount),
     };
-    let generated =
-        generate_hotp(&account.secret_base32, account.algorithm, account.digits, counter)?;
+    let generated = generate_hotp(
+        &account.secret_base32,
+        account.algorithm,
+        account.digits,
+        counter,
+    )?;
     account.kind = OtpKind::Hotp {
         counter: counter
             .checked_add(1)
@@ -531,8 +540,7 @@ fn save_store(path: &Path, password: &[u8], store: &StoreData) -> Result<()> {
         return Err(AuthenticatorError::TooManyAccounts);
     }
 
-    let mut plaintext =
-        serde_json::to_vec(store).map_err(|_| AuthenticatorError::InvalidStore)?;
+    let mut plaintext = serde_json::to_vec(store).map_err(|_| AuthenticatorError::InvalidStore)?;
     if plaintext.len() as u64 > MAX_PLAINTEXT_STORE_BYTES {
         plaintext.zeroize();
         return Err(AuthenticatorError::InvalidStore);
@@ -702,7 +710,10 @@ mod tests {
         .expect("add");
 
         let raw = fs::read(&path).expect("raw");
-        assert!(!raw.windows(SECRET.len()).any(|window| window == SECRET.as_bytes()));
+        assert!(
+            !raw.windows(SECRET.len())
+                .any(|window| window == SECRET.as_bytes())
+        );
         let accounts = list_accounts(&path, PASSWORD).expect("list");
         assert_eq!(accounts.len(), 1);
         assert_eq!(accounts[0].label, "Example");
