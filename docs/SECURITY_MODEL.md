@@ -222,3 +222,21 @@ Security requirements:
 - Security Center starts Backup & Recovery only by its exact co-located sibling executable path.
 
 Phase 9 does not provide secure deletion, filesystem ACL/owner preservation, reparse-point backup, bare-metal recovery, or live application-consistent snapshots. Applications that are actively modifying protected data should be closed before backup.
+
+
+## Secure Share offline package boundary
+
+Phase 10 introduces the local `.dfshare` encrypted package format.
+
+Security requirements:
+- AES-256-GCM authenticated encryption protects recipient/sender labels, expiration, secret text, attachment paths, integrity hashes, and attachment contents;
+- Argon2id derives the package key from a user-supplied password;
+- package passwords are not persisted in settings, logs, or package metadata;
+- the recipient label is encrypted context, not proof of recipient identity;
+- expiration is checked by native reveal/extract operations, while integrity verification remains available after expiration;
+- expiration relies on the local system clock and therefore is not tamper-resistant against clock rollback by a controlling local user;
+- symbolic links, absolute/traversal-like attachment paths, duplicate paths, malformed encodings, unsupported versions, wrong passwords, tampering, and oversized inputs are rejected;
+- attachment extraction requires a non-existing destination and uses staged temporary-directory finalization;
+- Security Center starts Secure Share only by its exact co-located sibling executable path.
+
+Offline `.dfshare` files can be copied. Phase 10 therefore does not claim remote revocation, guaranteed deletion after expiration, reliable one-time-open/open-count enforcement, server-authenticated recipients, or delivery tracking. Those properties require an online service with a separate identity, authorization, and availability threat model.
