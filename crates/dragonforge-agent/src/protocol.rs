@@ -140,7 +140,9 @@ pub(crate) fn decode_nonce(value: &str) -> Result<Vec<u8>> {
         .decode(value)
         .map_err(|_| AgentError::Protocol("agent request nonce is malformed"))?;
     if nonce.len() != NONCE_BYTES {
-        return Err(AgentError::Protocol("agent request nonce length is invalid"));
+        return Err(AgentError::Protocol(
+            "agent request nonce length is invalid",
+        ));
     }
     Ok(nonce)
 }
