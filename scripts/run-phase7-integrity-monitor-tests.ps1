@@ -36,6 +36,22 @@ try {
     Invoke-Checked cargo "fmt" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-security-scanner" "-p" "dragonforge-security-scanner-app" "--check"
+    Write-Host ""
+    Write-Host ">>> rustfmt --edition 2024 --check crates/dragonforge-integrity-monitor/src/lib.rs"
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        & rustfmt --edition 2024 --check crates/dragonforge-integrity-monitor/src/lib.rs 2>&1 | ForEach-Object { Write-Host $_ }
+        $IntegrityEngineRustfmtExit = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($IntegrityEngineRustfmtExit -ne 0) {
+        throw "Command failed with exit code ${IntegrityEngineRustfmtExit}: rustfmt --edition 2024 --check crates/dragonforge-integrity-monitor/src/lib.rs"
+    }
+    Invoke-Checked rustfmt "--edition" "2024" "--check" "apps/integrity-monitor/src/lib.rs"
+    Invoke-Checked rustfmt "--edition" "2024" "--check" "apps/integrity-monitor/src/main.rs"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-integrity-monitor" "-p" "dragonforge-integrity-monitor-app" "--check"
 
     Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "-p" "dragonforge-security-scanner" "-p" "dragonforge-security-scanner-app" "-p" "dragonforge-integrity-monitor" "-p" "dragonforge-integrity-monitor-app" "--all-targets"
