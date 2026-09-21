@@ -78,10 +78,7 @@ mod tests {
             ErrorCode::AuthenticationRequired.as_str(),
             "authentication-required"
         );
-        assert_eq!(
-            ErrorCode::ProtocolMismatch.as_str(),
-            "protocol-mismatch"
-        );
+        assert_eq!(ErrorCode::ProtocolMismatch.as_str(), "protocol-mismatch");
     }
 
     #[test]
