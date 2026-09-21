@@ -1,7 +1,11 @@
 [workspace]
 members = [
     "apps/security-center",
+    "apps/password-manager",
+    "services/password-manager-sync",
     "crates/dragonforge-core",
+    "crates/dragonforge-crypto",
+    "crates/dragonforge-vault",
 ]
 resolver = "2"
 
@@ -13,7 +17,3 @@ authors = ["DragonForge Security Suite contributors"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
-
-[workspace.lints.clippy]
-all = "warn"
-pedantic = "warn"
