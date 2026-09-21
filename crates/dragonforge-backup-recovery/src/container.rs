@@ -96,13 +96,21 @@ pub fn discover_suite_sources() -> Result<Vec<DiscoveredSource>> {
     Ok(sources)
 }
 
-pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) -> Result<BackupSummary> {
+pub fn create_backup(
+    sources: &[PathBuf],
+    destination: &Path,
+    password: &str,
+) -> Result<BackupSummary> {
     validate_password(password)?;
     if sources.is_empty() {
-        return Err(BackupError::InvalidInput("at least one backup source is required"));
+        return Err(BackupError::InvalidInput(
+            "at least one backup source is required",
+        ));
     }
     if sources.len() > 64 {
-        return Err(BackupError::InvalidInput("too many backup sources were requested"));
+        return Err(BackupError::InvalidInput(
+            "too many backup sources were requested",
+        ));
     }
     if destination.exists() {
         return Err(BackupError::Conflict("backup destination already exists"));
@@ -116,7 +124,9 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
         let metadata = fs::symlink_metadata(source)
             .map_err(|_| BackupError::Io("a backup source could not be read"))?;
         if metadata.file_type().is_symlink() {
-            return Err(BackupError::InvalidInput("symbolic-link backup sources are not allowed"));
+            return Err(BackupError::InvalidInput(
+                "symbolic-link backup sources are not allowed",
+            ));
         }
 
         let basename = source
@@ -134,7 +144,9 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
         } else if metadata.is_dir() {
             collect_directory(source, Path::new(&root), &mut entries, &mut total_bytes)?;
         } else {
-            return Err(BackupError::InvalidInput("backup sources must be regular files or directories"));
+            return Err(BackupError::InvalidInput(
+                "backup sources must be regular files or directories",
+            ));
         }
 
         selections.push(BackupSelectionSummary {
@@ -154,7 +166,9 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
     let plaintext = serde_json::to_vec(&payload)
         .map_err(|_| BackupError::Format("backup payload could not be serialized"))?;
     if plaintext.len() as u64 > MAX_ARCHIVE_BYTES {
-        return Err(BackupError::InvalidInput("backup payload exceeds the safe archive limit"));
+        return Err(BackupError::InvalidInput(
+            "backup payload exceeds the safe archive limit",
+        ));
     }
 
     let mut salt = [0_u8; SALT_LEN];
@@ -168,7 +182,8 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
     let cipher_len = plaintext
         .len()
         .checked_add(TAG_LEN)
-        .ok_or(BackupError::InvalidInput("backup payload is too large"))? as u64;
+        .ok_or(BackupError::InvalidInput("backup payload is too large"))?
+        as u64;
     let aad = build_header(&salt, &nonce_bytes, cipher_len);
     let ciphertext = cipher
         .encrypt(
@@ -235,7 +250,9 @@ pub fn restore_backup(path: &Path, password: &str, destination: &Path) -> Result
                 .decode(&entry.data_b64)
                 .map_err(|_| BackupError::Format("backup file data is malformed"))?;
             if bytes.len() as u64 != entry.size || digest_hex(&bytes) != entry.sha256 {
-                return Err(BackupError::Integrity("backup entry integrity verification failed"));
+                return Err(BackupError::Integrity(
+                    "backup entry integrity verification failed",
+                ));
             }
             fs::write(&target, &bytes)
                 .map_err(|_| BackupError::Io("restored file could not be written"))?;
@@ -275,21 +292,25 @@ fn collect_directory(
         let metadata = fs::symlink_metadata(&path)
             .map_err(|_| BackupError::Io("backup source metadata could not be read"))?;
         if metadata.file_type().is_symlink() {
-            return Err(BackupError::InvalidInput("symbolic links inside backup sources are not allowed"));
+            return Err(BackupError::InvalidInput(
+                "symbolic links inside backup sources are not allowed",
+            ));
         }
         let name = child
             .file_name()
             .to_str()
             .map(sanitize_segment)
             .filter(|value| !value.is_empty())
-            .ok_or(BackupError::InvalidInput("backup source contains an unsupported file name"))?;
+            .ok_or(BackupError::InvalidInput(
+                "backup source contains an unsupported file name",
+            ))?;
         let archive_path = archive_root.join(name);
         if metadata.is_dir() {
             collect_directory(&path, &archive_path, entries, total_bytes)?;
         } else if metadata.is_file() {
-            let archive = archive_path
-                .to_str()
-                .ok_or(BackupError::InvalidInput("backup path could not be represented safely"))?;
+            let archive = archive_path.to_str().ok_or(BackupError::InvalidInput(
+                "backup path could not be represented safely",
+            ))?;
             collect_file(&path, archive, entries, total_bytes)?;
         }
     }
@@ -306,18 +327,24 @@ fn collect_file(
         return Err(BackupError::InvalidInput("backup contains too many files"));
     }
     if archive_path.chars().count() > MAX_PATH_CHARS {
-        return Err(BackupError::InvalidInput("backup path exceeds the safe length limit"));
+        return Err(BackupError::InvalidInput(
+            "backup path exceeds the safe length limit",
+        ));
     }
     let metadata = fs::metadata(source)
         .map_err(|_| BackupError::Io("backup file metadata could not be read"))?;
     if metadata.len() > MAX_FILE_BYTES {
-        return Err(BackupError::InvalidInput("an individual backup file exceeds the safe size limit"));
+        return Err(BackupError::InvalidInput(
+            "an individual backup file exceeds the safe size limit",
+        ));
     }
     let next_total = total_bytes
         .checked_add(metadata.len())
         .ok_or(BackupError::InvalidInput("backup size overflowed"))?;
     if next_total > MAX_TOTAL_BYTES {
-        return Err(BackupError::InvalidInput("backup exceeds the safe total file-size limit"));
+        return Err(BackupError::InvalidInput(
+            "backup exceeds the safe total file-size limit",
+        ));
     }
 
     let bytes = fs::read(source).map_err(|_| BackupError::Io("backup file could not be read"))?;
@@ -340,9 +367,12 @@ fn collect_file(
 
 fn decrypt_payload(path: &Path, password: &str) -> Result<BackupPayload> {
     validate_password(password)?;
-    let metadata = fs::metadata(path).map_err(|_| BackupError::Io("backup file could not be read"))?;
+    let metadata =
+        fs::metadata(path).map_err(|_| BackupError::Io("backup file could not be read"))?;
     if metadata.len() > MAX_ARCHIVE_BYTES + HEADER_LEN as u64 {
-        return Err(BackupError::Format("backup file exceeds the safe archive limit"));
+        return Err(BackupError::Format(
+            "backup file exceeds the safe archive limit",
+        ));
     }
     let bytes = fs::read(path).map_err(|_| BackupError::Io("backup file could not be read"))?;
     if bytes.len() < HEADER_LEN + TAG_LEN {
@@ -386,11 +416,15 @@ fn decrypt_payload(path: &Path, password: &str) -> Result<BackupPayload> {
                 aad: &bytes[..HEADER_LEN],
             },
         )
-        .map_err(|_| BackupError::Crypto("backup password is incorrect or the backup was modified"))?;
+        .map_err(|_| {
+            BackupError::Crypto("backup password is incorrect or the backup was modified")
+        })?;
     let payload: BackupPayload = serde_json::from_slice(&plaintext)
         .map_err(|_| BackupError::Format("decrypted backup payload is malformed"))?;
     if payload.format_version != FORMAT_VERSION {
-        return Err(BackupError::Format("decrypted backup format version is unsupported"));
+        return Err(BackupError::Format(
+            "decrypted backup format version is unsupported",
+        ));
     }
     Ok(payload)
 }
@@ -403,23 +437,31 @@ fn validate_payload(payload: &BackupPayload) -> Result<()> {
     let mut total = 0_u64;
     for entry in &payload.entries {
         if !seen.insert(entry.archive_path.clone()) {
-            return Err(BackupError::Integrity("backup contains duplicate archive paths"));
+            return Err(BackupError::Integrity(
+                "backup contains duplicate archive paths",
+            ));
         }
         validated_relative_path(&entry.archive_path)?;
         let bytes = BASE64
             .decode(&entry.data_b64)
             .map_err(|_| BackupError::Format("backup file data is malformed"))?;
         if bytes.len() as u64 != entry.size || digest_hex(&bytes) != entry.sha256 {
-            return Err(BackupError::Integrity("backup entry integrity verification failed"));
+            return Err(BackupError::Integrity(
+                "backup entry integrity verification failed",
+            ));
         }
         if entry.size > MAX_FILE_BYTES {
-            return Err(BackupError::Integrity("backup entry exceeds the safe file-size limit"));
+            return Err(BackupError::Integrity(
+                "backup entry exceeds the safe file-size limit",
+            ));
         }
         total = total
             .checked_add(entry.size)
             .ok_or(BackupError::Integrity("backup byte count overflowed"))?;
         if total > MAX_TOTAL_BYTES {
-            return Err(BackupError::Integrity("backup exceeds the safe total file-size limit"));
+            return Err(BackupError::Integrity(
+                "backup exceeds the safe total file-size limit",
+            ));
         }
     }
     Ok(())
@@ -464,7 +506,9 @@ fn build_header(salt: &[u8; SALT_LEN], nonce: &[u8; NONCE_LEN], cipher_len: u64)
 
 fn validated_relative_path(value: &str) -> Result<PathBuf> {
     if value.is_empty() || value.chars().count() > MAX_PATH_CHARS {
-        return Err(BackupError::Integrity("backup contains an invalid relative path"));
+        return Err(BackupError::Integrity(
+            "backup contains an invalid relative path",
+        ));
     }
     let path = Path::new(value);
     if path.is_absolute() {
@@ -472,7 +516,9 @@ fn validated_relative_path(value: &str) -> Result<PathBuf> {
     }
     for component in path.components() {
         if !matches!(component, PathComponent::Normal(_)) {
-            return Err(BackupError::Integrity("backup contains a traversal-like path"));
+            return Err(BackupError::Integrity(
+                "backup contains a traversal-like path",
+            ));
         }
     }
     Ok(path.to_path_buf())
@@ -481,7 +527,13 @@ fn validated_relative_path(value: &str) -> Result<PathBuf> {
 fn sanitize_segment(value: &str) -> String {
     value
         .chars()
-        .filter(|character| !character.is_control() && !matches!(character, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'))
+        .filter(|character| {
+            !character.is_control()
+                && !matches!(
+                    character,
+                    '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'
+                )
+        })
         .take(120)
         .collect::<String>()
         .trim()
@@ -490,7 +542,9 @@ fn sanitize_segment(value: &str) -> String {
 
 fn validate_password(password: &str) -> Result<()> {
     if password.chars().count() < MIN_PASSWORD_CHARS {
-        return Err(BackupError::InvalidInput("backup password must contain at least 12 characters"));
+        return Err(BackupError::InvalidInput(
+            "backup password must contain at least 12 characters",
+        ));
     }
     Ok(())
 }
@@ -501,14 +555,18 @@ fn digest_hex(bytes: &[u8]) -> String {
 }
 
 fn nonempty_parent(path: &Path) -> Option<&Path> {
-    path.parent().filter(|parent| !parent.as_os_str().is_empty())
+    path.parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
 }
 
 fn temporary_sibling(destination: &Path) -> Result<PathBuf> {
     let parent = nonempty_parent(destination).unwrap_or_else(|| Path::new("."));
     let mut random = [0_u8; 8];
     OsRng.fill_bytes(&mut random);
-    let token = random.iter().map(|byte| format!("{byte:02x}")).collect::<String>();
+    let token = random
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
     let name = destination
         .file_name()
         .and_then(|value| value.to_str())
@@ -519,7 +577,9 @@ fn temporary_sibling(destination: &Path) -> Result<PathBuf> {
 fn now_ms() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map_or(0, |duration| duration.as_millis().min(u128::from(u64::MAX)) as u64)
+        .map_or(0, |duration| {
+            duration.as_millis().min(u128::from(u64::MAX)) as u64
+        })
 }
 
 #[cfg(test)]
@@ -542,7 +602,8 @@ mod tests {
         fs::write(source.join("nested").join("beta.bin"), [1_u8, 2, 3, 4]).expect("beta");
 
         let backup = dir.path().join("sample.dfbackup");
-        let created = create_backup(std::slice::from_ref(&source), &backup, PASSWORD).expect("create");
+        let created =
+            create_backup(std::slice::from_ref(&source), &backup, PASSWORD).expect("create");
         assert_eq!(created.entries, 2);
         assert!(created.verified);
 
@@ -562,7 +623,10 @@ mod tests {
             .expect("source root")
             .expect("source entry")
             .path();
-        assert_eq!(fs::read(root.join("alpha.txt")).expect("read alpha"), b"alpha");
+        assert_eq!(
+            fs::read(root.join("alpha.txt")).expect("read alpha"),
+            b"alpha"
+        );
     }
 
     #[test]
