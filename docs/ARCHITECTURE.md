@@ -265,3 +265,24 @@ Authenticator secrets are not moved into `dragonforge-core`, Password Manager st
 4. HOTP counters are advanced and persisted only through the HOTP consume action.
 5. The app does not claim hardware-backed credential support in Phase 5.
 6. The local master password is command-scoped and not persisted by the application.
+
+
+## 13. Phase 6 Security Scanner
+
+Security Scanner is split into a product-owned posture engine and a Tauri desktop UI:
+
+- `crates/dragonforge-security-scanner/` owns fixed platform probes, result semantics, evidence bounding, and posture findings.
+- `apps/security-scanner/` exposes only scanner metadata and one read-only scan command.
+- Security Center marks Security Scanner as Integrated and launches only the expected sibling executable.
+
+Phase 6 is intentionally a one-shot assessment component, not a privileged background monitor. Continuous baseline/change monitoring remains Phase 7 Integrity Monitor work.
+
+### Scanner trust rules
+
+1. The webview cannot supply shell commands, PowerShell fragments, registry paths, executable paths, or remediation instructions.
+2. Windows probes are fixed in native Rust code and execute without requested elevation.
+3. Probe failure or insufficient visibility produces an Unknown result rather than a fabricated pass.
+4. Scanner evidence is bounded and avoids Password Manager, File Vault, and Authenticator secret material.
+5. Phase 6 does not mutate firewall, encryption, update, Defender, UAC, SMB1, Remote Desktop, service, or network configuration.
+6. Listening ports are posture evidence, not proof of vulnerability.
+7. Latest-hotfix metadata is informational and does not claim that no newer update is available.
