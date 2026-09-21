@@ -1,0 +1,28 @@
+[package]
+name = "dragonforge-network-guard-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+build = "build.rs"
+description = "DragonForge Network Guard desktop application"
+
+[lib]
+name = "dragonforge_network_guard_app"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dragonforge-network-guard"
+path = "src/main.rs"
+
+[dependencies]
+dragonforge-network-guard = { path = "../../crates/dragonforge-network-guard" }
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.11.5", features = [] }
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[lints]
+workspace = true

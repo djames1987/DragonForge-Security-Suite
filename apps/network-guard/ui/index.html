@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge Network Guard</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast" class="toast" hidden></div>
+  <div class="shell">
+    <aside>
+      <div class="brand"><div class="mark">DF</div><div><strong>DragonForge</strong><span>Network Guard</span></div></div>
+      <button class="nav active" data-view="connections">Connections</button>
+      <button class="nav" data-view="dns">DNS Cache</button>
+      <button class="nav" data-view="about">About</button>
+      <div class="note">Phase 8 is visibility-only. It does not block traffic, capture packets, or change Windows Firewall.</div>
+      <div class="phase">Phase 8</div>
+    </aside>
+    <main>
+      <header><div><div class="eyebrow">DragonForge Security Suite</div><h1 id="title">Network visibility</h1></div><button id="refresh" class="primary">Refresh snapshot</button></header>
+
+      <section id="view-connections" class="view active">
+        <div class="metrics">
+          <article><span>TCP</span><strong id="tcp">—</strong></article>
+          <article><span>UDP</span><strong id="udp">—</strong></article>
+          <article><span>Processes</span><strong id="processes">—</strong></article>
+          <article><span>Wildcard listeners</span><strong id="wildcards">—</strong></article>
+        </div>
+        <div id="warnings"></div>
+        <div class="section-head"><div><div class="eyebrow">Per-process visibility</div><h2>Endpoints</h2></div><span id="stamp">No snapshot yet.</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Protocol</th><th>Process</th><th>PID</th><th>Local</th><th>Remote</th><th>State</th></tr></thead><tbody id="connections"></tbody></table></div>
+      </section>
+
+      <section id="view-dns" class="view">
+        <div class="section-head"><div><div class="eyebrow">Windows DNS client cache</div><h2>Cached records</h2></div><span id="dns-count">0 records</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Data</th><th>TTL</th></tr></thead><tbody id="dns"></tbody></table></div>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Network Guard</h2><p>Phase 8 provides Windows-first, on-demand network visibility for TCP/UDP endpoints and the Windows DNS client cache.</p><p>It does not inspect packet payloads, block traffic, terminate connections, change firewall rules, or claim persistent protection while closed. Those enforcement capabilities require the later DragonForge Agent.</p></div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

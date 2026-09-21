@@ -186,3 +186,20 @@ Security requirements:
 - Phase 7 does not remediate changes, quarantine files, or provide privileged/tamper-resistant monitoring.
 
 Continuous monitoring outside the desktop application remains a future DragonForge Agent responsibility.
+
+
+## Network Guard observation boundary
+
+Phase 8 introduces Windows-first, on-demand network visibility.
+
+Security requirements:
+- TCP, UDP, and DNS-cache probes are fixed native commands; the UI cannot inject shell fragments or arbitrary selectors;
+- collection is bounded by probe output size and result count;
+- endpoint inventory may include process names, local/remote addresses, ports, TCP state, and DNS cache records needed for local visibility;
+- packet payloads, credentials, Password Manager secrets, Authenticator seeds, and File Vault plaintext are not inspected;
+- Phase 8 does not request elevation, block traffic, kill processes, terminate connections, or alter firewall rules;
+- wildcard listeners and remote endpoints are contextual visibility, not proof of compromise;
+- probe failures are surfaced as warnings rather than silently represented as an empty network;
+- Security Center starts Network Guard only by its exact co-located sibling executable path.
+
+Persistent enforcement belongs behind the future DragonForge Agent's authenticated local IPC and narrowly scoped privilege boundary.
