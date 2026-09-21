@@ -76,6 +76,11 @@ fn launch_network_guard(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn launch_backup_recovery(state: State<'_, AppState>) -> Result<(), String> {
+    state.launch_backup_recovery()
+}
+
+#[tauri::command]
 fn launch_file_vault(state: State<'_, AppState>) -> Result<(), String> {
     state.launch_file_vault()
 }
@@ -104,6 +109,7 @@ pub fn run() {
             launch_security_scanner,
             launch_integrity_monitor,
             launch_network_guard,
+            launch_backup_recovery,
             launch_file_vault,
             launch_password_manager
         ])
