@@ -527,6 +527,11 @@ fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
     fs::create_dir_all(parent).map_err(|_| AuthenticatorError::Io)?;
     let temporary = temporary_path(path)?;
 
+    let backup = path.with_extension("dfauth.bak");
+    if backup.exists() {
+        fs::remove_file(&backup).map_err(|_| AuthenticatorError::Io)?;
+    }
+
     let result = (|| -> Result<()> {
         let mut file = OpenOptions::new()
             .write(true)
@@ -537,10 +542,24 @@ fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
         file.write_all(ciphertext)
             .map_err(|_| AuthenticatorError::Io)?;
         file.sync_all().map_err(|_| AuthenticatorError::Io)?;
-        if path.exists() {
-            fs::remove_file(path).map_err(|_| AuthenticatorError::Io)?;
+
+        let had_original = path.exists();
+        if had_original {
+            fs::rename(path, &backup).map_err(|_| AuthenticatorError::Io)?;
         }
-        fs::rename(&temporary, path).map_err(|_| AuthenticatorError::Io)?;
+
+        if let Err(error) = fs::rename(&temporary, path) {
+            if had_original {
+                let _ = fs::rename(&backup, path);
+            }
+            return Err(match error.kind() {
+                _ => AuthenticatorError::Io,
+            });
+        }
+
+        if had_original {
+            let _ = fs::remove_file(&backup);
+        }
         Ok(())
     })();
 
