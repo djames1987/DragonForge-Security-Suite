@@ -208,9 +208,26 @@ Delivered:
 See [PHASE_10_SECURE_SHARE.md](PHASE_10_SECURE_SHARE.md).
 
 ## Phase 11 — DragonForge Agent
-**Status: Next**
+**Status: Implementation Complete — Local Verification Pending**
 
-Unify background monitoring/protection behind authenticated local IPC.
+Delivered:
+- dedicated Agent runtime/client crate and background service executable;
+- per-user loopback-only IPC transport;
+- random per-session 256-bit credential;
+- HMAC-SHA256 authenticated requests and responses;
+- timestamp freshness and nonce replay protection;
+- Phase 2 caller/destination authorization policy enforcement;
+- bounded wire messages and socket timeouts;
+- single-instance lock and stale-runtime cleanup;
+- authenticated health/status endpoint with PID, uptime, and capability reporting;
+- Security Center live Agent status and exact sibling launch;
+- isolated end-to-end authenticated client/server round-trip test;
+- Phase 11 verification tooling and CI coverage;
+- all-suite build extended to include `dragonforge-agent`.
+
+Phase 11 is intentionally per-user and non-elevated. Privileged enforcement remains future work behind a separately reviewed Windows service boundary.
+
+See [PHASE_11_DRAGONFORGE_AGENT.md](PHASE_11_DRAGONFORGE_AGENT.md).
 
 ## Later research
 
