@@ -127,7 +127,7 @@ try {
     Invoke-Logged cargo "test" "-p" "dragonforge-sync-server" "--test" "device_enrollment" "--" "--nocapture"
 
     Write-Log "=== Phase 8 multi-device sync regression ==="
-    Invoke-Logged cargo "test" "-p" "dragonforge-desktop" "--test" "multi_device_sync" "--" "--nocapture"
+    Invoke-Logged cargo "test" "-p" "dragonforge-desktop" "--test" "multi_device_sync" "--" "--nocapture" "--test-threads=1"
 
     Write-Log "=== Phase 7 sync server API ==="
     Invoke-Logged cargo "test" "-p" "dragonforge-sync-server" "--test" "sync_api" "--" "--nocapture"
