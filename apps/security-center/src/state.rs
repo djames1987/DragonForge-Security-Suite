@@ -168,6 +168,23 @@ impl AppState {
         self.agent.status()
     }
 
+    pub fn launch_file_vault(&self) -> Result<(), String> {
+        orchestration::launch_file_vault().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.file-vault-launched",
+            "File Vault launch requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.file-vault-launched",
+            "File Vault launch requested",
+        );
+        Ok(())
+    }
+
     pub fn launch_password_manager(&self) -> Result<(), String> {
         orchestration::launch_password_manager().map_err(|error| error.to_string())?;
         self.lock_events()?.push(
