@@ -203,3 +203,22 @@ Security requirements:
 - Security Center starts Network Guard only by its exact co-located sibling executable path.
 
 Persistent enforcement belongs behind the future DragonForge Agent's authenticated local IPC and narrowly scoped privilege boundary.
+
+
+## Backup & Recovery encrypted archive boundary
+
+Phase 9 introduces the local `.dfbackup` encrypted backup format.
+
+Security requirements:
+- AES-256-GCM authenticated encryption protects backup metadata, source/path information, integrity hashes, and file contents;
+- Argon2id derives the backup key from a user-supplied password;
+- the backup format is explicitly versioned and owns its KDF parameters;
+- the application does not persist backup passwords in settings, logs, or archive metadata;
+- symbolic links, absolute/traversal-like archive paths, duplicate paths, malformed encodings, unsupported versions, and oversized inputs are rejected;
+- full verification recomputes SHA-256 for every decrypted file entry before reporting a verified backup;
+- wrong-password and ciphertext-tamper failures are indistinguishable at the public error boundary;
+- restore requires a non-existing destination and never merges with or overwrites existing data;
+- restore writes into a randomized sibling temporary directory and cleans it up on failure before final rename;
+- Security Center starts Backup & Recovery only by its exact co-located sibling executable path.
+
+Phase 9 does not provide secure deletion, filesystem ACL/owner preservation, reparse-point backup, bare-metal recovery, or live application-consistent snapshots. Applications that are actively modifying protected data should be closed before backup.

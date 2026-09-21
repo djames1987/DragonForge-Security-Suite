@@ -47,6 +47,7 @@ Current:
 - `security-scanner/`
 - `integrity-monitor/`
 - `network-guard/`
+- `backup-recovery/`
 
 Future:
 - other user-facing suite applications
@@ -72,6 +73,7 @@ Current:
 - `dragonforge-security-scanner`: Security Scanner product-owned posture assessment engine.
 - `dragonforge-integrity-monitor`: Integrity Monitor product-owned baseline/change engine.
 - `dragonforge-network-guard`: Network Guard product-owned visibility engine.
+- `dragonforge-backup-recovery`: Backup & Recovery product-owned encrypted backup engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -333,3 +335,26 @@ Phase 8 is intentionally visibility-only. Persistent application-level traffic e
 5. Phase 8 does not terminate processes/connections or mutate Windows Firewall.
 6. Wildcard-listener status is visibility context, not a vulnerability verdict.
 7. Probe failures surface warnings instead of being treated as a healthy/empty network.
+
+
+## 16. Phase 9 Backup & Recovery
+
+Backup & Recovery is split into a product-owned encrypted archive engine and a Tauri desktop UI:
+
+- `crates/dragonforge-backup-recovery/` owns the `.dfbackup` format, password KDF, authenticated encryption, source collection, per-entry hashing, verification, limits, and restore rules.
+- `apps/backup-recovery/` exposes narrow commands for suite-path discovery, backup creation, inspection, integrity verification, and restore.
+- Security Center marks Backup & Recovery as Integrated and launches only the expected sibling executable.
+
+The Phase 9 format is intentionally separate from File Vault, Authenticator, and Password Manager persistent formats. Backup policy and recovery semantics remain product-owned instead of being pushed into `dragonforge-core`.
+
+### Backup & Recovery trust rules
+
+1. Backup passwords are command-scoped and are not persisted by the application.
+2. Backup metadata, original source paths, relative archive paths, hashes, and file bytes are inside AES-256-GCM authenticated ciphertext.
+3. Argon2id derives the backup key; KDF parameters are owned by the versioned Phase 9 format.
+4. Symbolic links and traversal-like archive paths are rejected.
+5. File count, path length, per-file size, aggregate plaintext size, and archive size are bounded.
+6. Full verification recomputes SHA-256 for every decrypted file entry.
+7. Restore never merges into or overwrites an existing destination.
+8. Restore is staged into a randomized sibling temporary directory and finalized only after all entries verify and write successfully.
+9. Phase 9 is not a disk-image/bare-metal backup system and does not claim ACL, reparse-point, timestamp, or live-consistency preservation.

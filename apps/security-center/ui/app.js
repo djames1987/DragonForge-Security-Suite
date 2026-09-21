@@ -74,7 +74,9 @@
                 ? '<button class="component-action" data-launch="integrity-monitor">Open Integrity Monitor</button>'
                 : component.id === "network-guard"
                   ? '<button class="component-action" data-launch="network-guard">Open Network Guard</button>'
-                  : "";
+                  : component.id === "backup-recovery"
+                    ? '<button class="component-action" data-launch="backup-recovery">Open Backup & Recovery</button>'
+                    : "";
     return `
       <article class="component-card">
         <div class="component-card-top">
@@ -111,6 +113,9 @@
     });
     document.querySelectorAll('[data-launch="network-guard"]').forEach((button) => {
       button.addEventListener("click", launchNetworkGuard);
+    });
+    document.querySelectorAll('[data-launch="backup-recovery"]').forEach((button) => {
+      button.addEventListener("click", launchBackupRecovery);
     });
   }
   
@@ -233,6 +238,16 @@
     try {
       await invoke("launch_network_guard");
       toast("Network Guard launch requested.");
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function launchBackupRecovery() {
+    try {
+      await invoke("launch_backup_recovery");
+      toast("Backup & Recovery launch requested.");
       await loadSnapshot();
     } catch (error) {
       toast(String(error), true);

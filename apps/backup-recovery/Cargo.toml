@@ -1,0 +1,28 @@
+[package]
+name = "dragonforge-backup-recovery-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+build = "build.rs"
+description = "DragonForge Backup & Recovery desktop application"
+
+[lib]
+name = "dragonforge_backup_recovery_app"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dragonforge-backup-recovery"
+path = "src/main.rs"
+
+[dependencies]
+dragonforge-backup-recovery = { path = "../../crates/dragonforge-backup-recovery" }
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.11.5", features = [] }
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[lints]
+workspace = true

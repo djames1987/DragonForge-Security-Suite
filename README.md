@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 8 Network Guard is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, and Windows-first per-process network visibility.
+> **Current status:** Phase 9 Backup & Recovery is implementation complete with local verification pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, and encrypted Backup & Recovery.
 
 ## Canonical repository
 
@@ -24,7 +24,8 @@ DragonForge-Security-Suite/
 │   ├── authenticator/                 # Encrypted TOTP/HOTP desktop application
 │   ├── security-scanner/              # Read-only system posture scanner
 │   ├── integrity-monitor/             # Integrity baseline/change monitor
-│   └── network-guard/                 # Per-process network visibility
+│   ├── network-guard/                 # Per-process network visibility
+│   └── backup-recovery/               # Encrypted backup and restore application
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
@@ -32,6 +33,7 @@ DragonForge-Security-Suite/
 │   ├── dragonforge-security-scanner/  # Security posture assessment engine
 │   ├── dragonforge-integrity-monitor/ # Integrity baseline/change engine
 │   ├── dragonforge-network-guard/     # Network visibility engine
+│   ├── dragonforge-backup-recovery/   # Encrypted backup/recovery engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -51,7 +53,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_5_AUTHENTICATOR.md
 │   ├── PHASE_6_SECURITY_SCANNER.md
 │   ├── PHASE_7_INTEGRITY_MONITOR.md
-│   └── PHASE_8_NETWORK_GUARD.md
+│   ├── PHASE_8_NETWORK_GUARD.md
+│   └── PHASE_9_BACKUP_RECOVERY.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -98,8 +101,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 6 — Security Scanner: **Verified Complete**
 - Phase 7 — Integrity Monitor: **Verified Complete**
 - Phase 8 — Network Guard: **Verified Complete**
-- Phase 9 — Backup & Recovery: **Next**
-- Phase 10 — Secure Share
+- Phase 9 — Backup & Recovery: **Implementation Complete — Local Verification Pending**
+- Phase 10 — Secure Share: **Next**
 - Phase 11 — DragonForge Agent
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
@@ -247,3 +250,26 @@ Phase 8 local verification result: **PASS**
 Verified log SHA-256: `B9734604E9E3550B9742C6440FB21B5E6B418CB7E810317B6CB63AC153FA1549`
 
 See [docs/PHASE_8_NETWORK_GUARD.md](docs/PHASE_8_NETWORK_GUARD.md).
+
+
+## Backup & Recovery
+
+Phase 9 adds an encrypted local backup application under `apps/backup-recovery/`.
+
+Current capabilities:
+- create versioned `.dfbackup` packages from DragonForge suite data and user-selected files/folders;
+- encrypt source metadata, paths, integrity hashes, and file contents with AES-256-GCM;
+- derive backup keys with Argon2id without persisting the password;
+- inspect backup metadata after authentication;
+- fully verify every decrypted file against its SHA-256 manifest;
+- reject symbolic links, traversal-like paths, duplicate paths, malformed/tampered archives, and bounded-limit violations;
+- restore only into a new destination using staged temporary-directory recovery;
+- integrate with Security Center through an exact sibling executable path.
+
+Run Phase 9 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase9-backup-recovery-tests.ps1
+```
+
+See [docs/PHASE_9_BACKUP_RECOVERY.md](docs/PHASE_9_BACKUP_RECOVERY.md).

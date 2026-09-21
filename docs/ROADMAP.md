@@ -168,11 +168,25 @@ Persistent enforcement remains deferred to the future DragonForge Agent so it ca
 See [PHASE_8_NETWORK_GUARD.md](PHASE_8_NETWORK_GUARD.md).
 
 ## Phase 9 — Backup & Recovery
-**Status: Next**
+**Status: Implementation Complete — Local Verification Pending**
 
-Encrypted, verifiable backup/recovery for suite data and selected user data.
+Delivered:
+- dedicated encrypted Backup & Recovery engine crate and Tauri desktop application;
+- versioned `.dfbackup` format using AES-256-GCM and Argon2id;
+- encrypted source metadata, relative paths, SHA-256 manifests, and file contents;
+- suite config/data discovery plus selected user file/folder backup;
+- bounded collection with symbolic-link and traversal rejection;
+- inspect, full integrity verification, and wrong-password/tamper rejection;
+- staged no-overwrite restore into a new destination;
+- Security Center integration with strict sibling-app launch;
+- Phase 9 verification tooling and CI coverage;
+- all-app build coverage extended to Backup & Recovery.
+
+See [PHASE_9_BACKUP_RECOVERY.md](PHASE_9_BACKUP_RECOVERY.md).
 
 ## Phase 10 — Secure Share
+**Status: Next**
+
 
 Encrypted packages/secrets with expiration and recipient-oriented controls.
 
