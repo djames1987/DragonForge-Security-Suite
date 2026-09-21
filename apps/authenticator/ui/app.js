@@ -190,15 +190,17 @@
     if (!state.unlocked && !(await unlock())) return;
     try {
       await invoke("add_manual_account", {
-        path: storePath(),
-        password: password(),
-        label: document.getElementById("manual-label").value,
-        issuer: document.getElementById("manual-issuer").value,
-        secret: document.getElementById("manual-secret").value,
-        algorithm: document.getElementById("manual-algorithm").value,
-        digits: Number(document.getElementById("manual-digits").value),
-        kind: document.getElementById("manual-kind").value,
-        periodOrCounter: Number(document.getElementById("period-counter").value),
+        request: {
+          path: storePath(),
+          password: password(),
+          label: document.getElementById("manual-label").value,
+          issuer: document.getElementById("manual-issuer").value,
+          secret: document.getElementById("manual-secret").value,
+          algorithm: document.getElementById("manual-algorithm").value,
+          digits: Number(document.getElementById("manual-digits").value),
+          kind: document.getElementById("manual-kind").value,
+          periodOrCounter: Number(document.getElementById("period-counter").value),
+        },
       });
       document.getElementById("manual-secret").value = "";
       await unlock();
