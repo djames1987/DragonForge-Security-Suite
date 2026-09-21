@@ -122,6 +122,18 @@
           <p>Phase 5 provides local encrypted TOTP/HOTP accounts and recovery-code storage.</p>
           <div class="facts"><span>TOTP / HOTP</span><span>otpauth import</span><span>AES-256-GCM</span><span>Argon2id</span><span>Local only</span></div>
         </div>
+        <form id="password-change-form" class="panel form-grid password-change">
+          <div>
+            <div class="eyebrow">Store protection</div>
+            <h2>Change master password</h2>
+            <p>The store is decrypted with the current password and re-encrypted using a fresh salt and nonce.</p>
+          </div>
+          <div class="row">
+            <label><span>New password</span><input id="new-password" type="password" autocomplete="new-password" required></label>
+            <label><span>Confirm new password</span><input id="confirm-new-password" type="password" autocomplete="new-password" required></label>
+          </div>
+          <button class="primary" type="submit">Re-encrypt store</button>
+        </form>
       </section>
     </main>
   </div>
