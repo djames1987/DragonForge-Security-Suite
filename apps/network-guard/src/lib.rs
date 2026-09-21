@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use dragonforge_network_guard::{collect_snapshot, NetworkSnapshot};
+use dragonforge_network_guard::{NetworkSnapshot, collect_snapshot};
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -30,7 +30,10 @@ fn refresh_network_snapshot() -> NetworkSnapshot {
 
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![guard_info, refresh_network_snapshot])
+        .invoke_handler(tauri::generate_handler![
+            guard_info,
+            refresh_network_snapshot
+        ])
         .run(tauri::generate_context!())
         .expect("error while running DragonForge Network Guard");
 }
