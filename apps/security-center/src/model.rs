@@ -79,10 +79,10 @@ impl ComponentRegistry {
                 ComponentStatus::new(
                     Component::Agent,
                     "DragonForge Agent",
-                    "Future background monitoring and protected local operations.",
-                    ComponentState::Unavailable,
-                    "Not installed",
-                    "Agent transport and service arrive in a later phase.",
+                    "Authenticated per-user background runtime and protected local IPC boundary.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 11 authenticated local background agent.",
                 ),
                 ComponentStatus::new(
                     Component::FileVault,
