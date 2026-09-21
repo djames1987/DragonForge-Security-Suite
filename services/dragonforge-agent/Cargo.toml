@@ -1,0 +1,19 @@
+[package]
+name = "dragonforge-agent-service"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+description = "DragonForge per-user background agent service executable"
+
+[[bin]]
+name = "dragonforge-agent"
+path = "src/main.rs"
+
+[dependencies]
+dragonforge-agent = { path = "../../crates/dragonforge-agent" }
+serde_json = "1.0"
+
+[lints]
+workspace = true
