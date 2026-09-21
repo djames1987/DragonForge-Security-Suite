@@ -54,6 +54,9 @@ function componentInitials(name) {
 
 function componentCard(component) {
   const stateClass = `state-${escapeHtml(component.state)}`;
+  const action = component.id === "password-manager"
+    ? '<button class="component-action" data-launch="password-manager">Open Password Manager</button>'
+    : "";
   return `
     <article class="component-card">
       <div class="component-card-top">
@@ -63,6 +66,7 @@ function componentCard(component) {
       <h3>${escapeHtml(component.name)}</h3>
       <p>${escapeHtml(component.description)}</p>
       <div class="component-detail">${escapeHtml(component.detail)}</div>
+      ${action}
     </article>
   `;
 }
@@ -72,6 +76,9 @@ function renderComponents(components) {
   const overview = document.getElementById("overview-components");
   all.innerHTML = components.map(componentCard).join("");
   overview.innerHTML = components.slice(0, 6).map(componentCard).join("");
+  document.querySelectorAll('[data-launch="password-manager"]').forEach((button) => {
+    button.addEventListener("click", launchPasswordManager);
+  });
 }
 
 function formatTime(timestampMs) {
@@ -156,6 +163,16 @@ async function refreshHealth() {
   } finally {
     button.disabled = false;
     button.textContent = "Refresh health";
+  }
+}
+
+async function launchPasswordManager() {
+  try {
+    await invoke("launch_password_manager");
+    toast("Password Manager launch requested.");
+    await loadSnapshot();
+  } catch (error) {
+    toast(String(error), true);
   }
 }
 
