@@ -38,6 +38,9 @@ try {
     Invoke-Checked cargo "fmt" "-p" "dragonforge-security-center" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--check"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--check"
+    Invoke-Checked rustfmt "--edition" "2024" "--check" "crates/dragonforge-security-scanner/src/lib.rs"
+    Invoke-Checked rustfmt "--edition" "2024" "--check" "apps/security-scanner/src/lib.rs"
+    Invoke-Checked rustfmt "--edition" "2024" "--check" "apps/security-scanner/src/main.rs"
     Invoke-Checked cargo "fmt" "-p" "dragonforge-security-scanner" "-p" "dragonforge-security-scanner-app" "--check"
 
     Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "-p" "dragonforge-security-scanner" "-p" "dragonforge-security-scanner-app" "--all-targets"
