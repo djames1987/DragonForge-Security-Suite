@@ -32,7 +32,6 @@ const MAX_LABEL_LEN: usize = 160;
 const MAX_ISSUER_LEN: usize = 120;
 const MAX_RECOVERY_CODE_LEN: usize = 256;
 
-#[derive(Serialize, Deserialize)]
 pub struct NewAccount {
     pub label: String,
     pub issuer: String,
@@ -309,7 +308,7 @@ pub fn parse_otpauth_uri(uri: &str) -> Result<NewAccount> {
         return Err(AuthenticatorError::InvalidOtpUri);
     }
 
-    let mut secret = None;
+    let mut secret: Option<Zeroizing<String>> = None;
     let mut issuer = None;
     let mut algorithm = OtpAlgorithm::Sha1;
     let mut digits = 6_u32;
@@ -318,7 +317,7 @@ pub fn parse_otpauth_uri(uri: &str) -> Result<NewAccount> {
 
     for (key, value) in parsed.query_pairs() {
         match key.as_ref() {
-            "secret" => secret = Some(value.into_owned()),
+            "secret" => secret = Some(Zeroizing::new(value.into_owned())),
             "issuer" => issuer = Some(value.into_owned()),
             "algorithm" => {
                 algorithm = match value.to_ascii_uppercase().as_str() {
@@ -349,7 +348,8 @@ pub fn parse_otpauth_uri(uri: &str) -> Result<NewAccount> {
         }
     }
 
-    let secret_base32 = secret.ok_or(AuthenticatorError::InvalidOtpUri)?;
+    let mut secret = secret.ok_or(AuthenticatorError::InvalidOtpUri)?;
+    let secret_base32 = std::mem::take(&mut *secret);
     let label_issuer = label
         .split_once(':')
         .map(|(left, _)| left.trim().to_owned())
