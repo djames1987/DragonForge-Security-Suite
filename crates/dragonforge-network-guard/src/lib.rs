@@ -364,7 +364,10 @@ fn now_ms() -> u64 {
 mod tests {
     use std::collections::HashMap;
 
-    use super::{NetworkConnection, Probe, ProbeRunner, Protocol, collect_with_runner, parse_dns, parse_tcp, parse_udp};
+    use super::{
+        collect_with_runner, parse_dns, parse_tcp, parse_udp, NetworkConnection, Probe, ProbeRunner,
+        Protocol,
+    };
 
     #[derive(Default)]
     struct FakeRunner {
