@@ -104,10 +104,10 @@ impl ComponentRegistry {
                 ComponentStatus::new(
                     Component::SecurityScanner,
                     "Security Scanner",
-                    "System security posture and configuration assessment.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 6.",
+                    "Read-only system security posture and configuration assessment.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 6 local posture scanner application.",
                 ),
                 ComponentStatus::new(
                     Component::IntegrityMonitor,
