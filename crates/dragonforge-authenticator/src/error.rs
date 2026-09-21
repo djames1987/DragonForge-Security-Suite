@@ -24,13 +24,17 @@ impl AuthenticatorError {
     #[must_use]
     pub const fn safe_message(self) -> &'static str {
         match self {
-            Self::InvalidPassword => "the Authenticator password is incorrect or the store is corrupted",
+            Self::InvalidPassword => {
+                "the Authenticator password is incorrect or the store is corrupted"
+            },
             Self::PasswordTooShort => "Authenticator passwords must be at least 12 characters",
             Self::InvalidStore => "the Authenticator store is invalid or corrupted",
             Self::UnsupportedFormat => "the Authenticator store version is unsupported",
             Self::StoreExists => "an Authenticator store already exists at this location",
             Self::StoreNotFound => "the Authenticator store does not exist",
-            Self::SymlinkNotAllowed => "symbolic links are not accepted for the Authenticator store",
+            Self::SymlinkNotAllowed => {
+                "symbolic links are not accepted for the Authenticator store"
+            },
             Self::InvalidAccount => "the authenticator account is invalid",
             Self::InvalidSecret => "the authenticator secret is invalid",
             Self::InvalidOtpUri => "the otpauth URI is invalid or unsupported",
