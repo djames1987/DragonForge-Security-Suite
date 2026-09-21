@@ -40,7 +40,7 @@ Run on Windows:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase4-file-vault-tests.ps1
 ```
 
-The script checks formatting, compile, strict Clippy, File Vault/core/Security Center tests, both JavaScript frontends, and application builds. It writes a timestamped log and SHA-256 checksum under `test-logs/`.
+The script checks formatting, compile, strict Clippy, File Vault/core/Security Center tests, both JavaScript frontends, and application builds. It also builds the Password Manager desktop binary so Security Center can launch both integrated sibling applications from a clean development checkout. It writes a timestamped log and SHA-256 checksum under `test-logs/`.
 
 ## Phase 5 handoff
 
