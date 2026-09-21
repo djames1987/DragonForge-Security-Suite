@@ -82,11 +82,29 @@ impl AppState {
     }
 
     pub fn snapshot(&self) -> Result<DashboardSnapshot, String> {
+        let agent = self.agent.status();
+        let mut components = self.registry.all().to_vec();
+        let mut health = self.registry.health_summary();
+
+        if agent.available {
+            if let Some(component) = components.iter_mut().find(|item| item.id == "agent") {
+                component.state = crate::model::ComponentState::Active;
+                component.state_label = "Active";
+                component.detail = "Authenticated Phase 11 background agent is running.";
+            }
+            health.active += 1;
+            health.integrated = health.integrated.saturating_sub(1);
+        } else {
+            health.attention += 1;
+            health.state = "attention";
+            health.label = "Agent attention required";
+        }
+
         Ok(DashboardSnapshot {
-            health: self.registry.health_summary(),
-            components: self.registry.all().to_vec(),
+            health,
+            components,
             events: self.lock_events()?.recent(12),
-            agent: self.agent.status(),
+            agent,
             platform: Platform::current().as_str(),
             settings: self.lock_settings()?.clone(),
         })
@@ -341,6 +359,7 @@ mod tests {
         let snapshot = state.snapshot().expect("snapshot");
         assert_eq!(snapshot.components.len(), 10);
         assert!(!snapshot.agent.available);
+        assert_eq!(snapshot.health.attention, 1);
         let encoded = serde_json::to_string(&snapshot).expect("serialize snapshot");
         assert!(encoded.contains("security-center"));
     }
