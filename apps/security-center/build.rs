@@ -1,6 +1,10 @@
 use std::{fs, io, path::Path};
 
 fn main() {
+    if let Err(error) = ensure_shared_png() {
+        panic!("failed to prepare Security Center PNG icon: {error}");
+    }
+
     if std::env::var_os("CARGO_CFG_WINDOWS").is_some() {
         if let Err(error) = ensure_windows_icon() {
             panic!("failed to prepare Windows Security Center icon: {error}");
@@ -8,6 +12,21 @@ fn main() {
     }
 
     tauri_build::build();
+}
+
+fn ensure_shared_png() -> io::Result<()> {
+    let directory = Path::new("icons");
+    let icon_path = directory.join("icon.png");
+    fs::create_dir_all(directory)?;
+
+    if !icon_path.exists() {
+        fs::copy(
+            "../../assets/branding/logos/dragonforge-security-center.png",
+            icon_path,
+        )?;
+    }
+
+    Ok(())
 }
 
 fn ensure_windows_icon() -> io::Result<()> {
