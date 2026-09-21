@@ -18,11 +18,11 @@ pub use config::{ConfigKey, ConfigSource, ResolvedConfig};
 pub use error::{CoreError, CoreResult, ErrorCode};
 pub use event::{EventKind, EventRecord, Severity};
 pub use ipc::{
-    AuthenticationMechanism, IpcEnvelope, LocalIpcPolicy, PeerContext, ProtocolVersion, RequestId,
-    CURRENT_PROTOCOL,
+    AuthenticationMechanism, CURRENT_PROTOCOL, IpcEnvelope, LocalIpcPolicy, PeerContext,
+    ProtocolVersion, RequestId,
 };
 pub use platform::{Platform, SuitePaths};
-pub use redaction::{LogPolicy, Secret, REDACTED};
+pub use redaction::{LogPolicy, REDACTED, Secret};
 
 /// Identifies a DragonForge suite component in logs, events and IPC metadata.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
