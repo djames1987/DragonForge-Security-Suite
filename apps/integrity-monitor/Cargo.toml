@@ -1,0 +1,29 @@
+[package]
+name = "dragonforge-integrity-monitor-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+build = "build.rs"
+description = "DragonForge Integrity Monitor desktop application"
+
+[lib]
+name = "dragonforge_integrity_monitor_app"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dragonforge-integrity-monitor"
+path = "src/main.rs"
+
+[dependencies]
+dragonforge-core = { path = "../../crates/dragonforge-core" }
+dragonforge-integrity-monitor = { path = "../../crates/dragonforge-integrity-monitor" }
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.11.5", features = [] }
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[lints]
+workspace = true
