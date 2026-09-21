@@ -2,8 +2,27 @@
 
 //! Shared, non-cryptographic foundation for DragonForge Security Suite.
 //!
-//! Keep this crate intentionally small. Cryptographic primitives, encrypted
-//! storage formats and product-specific policy belong in dedicated crates.
+//! This crate owns small cross-product primitives that do not belong to a
+//! security-sensitive product domain. Cryptographic primitives, encrypted
+//! storage formats, sync protocols, and product policy remain in dedicated
+//! crates/components.
+
+pub mod config;
+pub mod error;
+pub mod event;
+pub mod ipc;
+pub mod platform;
+pub mod redaction;
+
+pub use config::{ConfigKey, ConfigSource, ResolvedConfig};
+pub use error::{CoreError, CoreResult, ErrorCode};
+pub use event::{EventKind, EventRecord, Severity};
+pub use ipc::{
+    AuthenticationMechanism, IpcEnvelope, LocalIpcPolicy, PeerContext, ProtocolVersion, RequestId,
+    CURRENT_PROTOCOL,
+};
+pub use platform::{Platform, SuitePaths};
+pub use redaction::{LogPolicy, Secret, REDACTED};
 
 /// Identifies a DragonForge suite component in logs, events and IPC metadata.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
