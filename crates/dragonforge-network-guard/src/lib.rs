@@ -203,8 +203,7 @@ fn collect_with_runner(runner: &impl ProbeRunner) -> NetworkSnapshot {
     let listening_endpoints = connections
         .iter()
         .filter(|connection| {
-            connection.protocol == Protocol::Udp
-                || connection.state.as_deref() == Some("Listen")
+            connection.protocol == Protocol::Udp || connection.state.as_deref() == Some("Listen")
         })
         .count();
     let wildcard_listeners = connections
@@ -365,8 +364,8 @@ mod tests {
     use std::collections::HashMap;
 
     use super::{
-        collect_with_runner, parse_dns, parse_tcp, parse_udp, NetworkConnection, Probe, ProbeRunner,
-        Protocol,
+        NetworkConnection, Probe, ProbeRunner, Protocol, collect_with_runner, parse_dns, parse_tcp,
+        parse_udp,
     };
 
     #[derive(Default)]
