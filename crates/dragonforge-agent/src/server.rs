@@ -263,9 +263,10 @@ fn acquire_runtime_lock(paths: &AgentPaths) -> Result<fs::File> {
                 ));
             }
             let stale = fs::metadata(paths.lock_file())
-                .and_then(|metadata| metadata.modified())
-                .and_then(|modified| modified.elapsed().map_err(std::io::Error::other))
-                .is_ok_and(|age| age >= Duration::from_secs(5));
+                .ok()
+                .and_then(|metadata| metadata.modified().ok())
+                .and_then(|modified| modified.elapsed().ok())
+                .is_some_and(|age| age >= Duration::from_secs(5));
             if !stale {
                 return Err(AgentError::InvalidState(
                     "DragonForge Agent is already starting",
