@@ -253,9 +253,8 @@ pub fn set_recovery_codes(
         let value = code.trim().to_owned();
         if value.is_empty()
             || value.len() > MAX_RECOVERY_CODE_LEN
-            || value.contains('')
-            || value.contains('
-')
+            || value.contains('\\r')
+            || value.contains('\\n')
         {
             return Err(AuthenticatorError::InvalidRecoveryCode);
         }
