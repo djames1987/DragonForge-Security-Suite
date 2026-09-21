@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 8 Network Guard implemented; local verification is pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, and Windows-first per-process network visibility.
+> **Current status:** Phase 8 Network Guard is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, and Windows-first per-process network visibility.
 
 ## Canonical repository
 
@@ -97,7 +97,7 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 5 — Authenticator: **Verified Complete**
 - Phase 6 — Security Scanner: **Verified Complete**
 - Phase 7 — Integrity Monitor: **Verified Complete**
-- Phase 8 — Network Guard: **Implementation Complete — Local Verification Pending**
+- Phase 8 — Network Guard: **Verified Complete**
 - Phase 9 — Backup & Recovery: **Next**
 - Phase 10 — Secure Share
 - Phase 11 — DragonForge Agent
@@ -242,5 +242,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-all-apps
 ```
 
 Use `-Profile release` for release-profile test builds.
+
+Phase 8 local verification result: **PASS**  
+Verified log SHA-256: `B9734604E9E3550B9742C6440FB21B5E6B418CB7E810317B6CB63AC153FA1549`
 
 See [docs/PHASE_8_NETWORK_GUARD.md](docs/PHASE_8_NETWORK_GUARD.md).
