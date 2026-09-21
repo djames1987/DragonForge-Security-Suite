@@ -352,10 +352,10 @@ fn check_update_service(runner: &impl ProbeRunner) -> Finding {
             "Confirm Windows Update policy and service configuration manually.",
         );
     };
-    let parts: Vec<_> = value.split('|').map(str::trim).collect();
-    let disabled = parts
-        .get(1)
-        .is_some_and(|start_type| start_type.eq_ignore_ascii_case("disabled"));
+    let disabled = value
+        .split('|')
+        .nth(1)
+        .is_some_and(|start_type| start_type.trim().eq_ignore_ascii_case("disabled"));
     Finding {
         id: "updates.service",
         category: "Updates",
@@ -418,12 +418,12 @@ fn check_defender(runner: &impl ProbeRunner) -> Finding {
             "Confirm that a supported antimalware provider has active real-time protection.",
         );
     };
-    let values: Vec<_> = value.split('|').map(str::trim).collect();
-    let all_enabled = values.len() >= 3
-        && values
-            .iter()
-            .take(3)
-            .all(|item| item.eq_ignore_ascii_case("true"));
+    let mut values = value.split('|').map(str::trim);
+    let all_enabled = (0..3).all(|_| {
+        values
+            .next()
+            .is_some_and(|item| item.eq_ignore_ascii_case("true"))
+    });
     Finding {
         id: "defender.realtime",
         category: "Malware protection",
