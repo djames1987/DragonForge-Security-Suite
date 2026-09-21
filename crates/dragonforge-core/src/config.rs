@@ -1,7 +1,7 @@
 //! Shared configuration primitives.
 
-use crate::error::{CoreError, CoreResult, ErrorCode};
 use crate::Component;
+use crate::error::{CoreError, CoreResult, ErrorCode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ConfigSource {
