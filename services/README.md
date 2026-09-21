@@ -2,8 +2,10 @@
 
 Long-running local or server-side DragonForge processes live here.
 
-Planned:
-- `dragonforge-agent`
-- `password-manager-sync` after migration
+Current:
+- `password-manager-sync/` — migrated Password Manager zero-knowledge sync service.
 
-Background services should expose narrow, authenticated interfaces and run with the least privilege required.
+Planned:
+- `dragonforge-agent/` — future local background monitoring/protection service.
+
+Background services should expose narrow authenticated interfaces and run with the least privilege required.
