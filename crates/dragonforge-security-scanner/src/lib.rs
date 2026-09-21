@@ -108,13 +108,13 @@ impl ProbeRunner for PlatformRunner {
                 r#"try { if (Confirm-SecureBootUEFI) { "True" } else { "False" } } catch { "Unknown" }"#
             }
             Probe::Uac => {
-                r#"try { (Get-ItemProperty 'HKLM:SOFTWAREMicrosoftWindowsCurrentVersionPoliciesSystem' -Name EnableLUA).EnableLUA } catch { "Unknown" }"#
+                r#"try { (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name EnableLUA).EnableLUA } catch { "Unknown" }"#
             }
             Probe::Smb1 => {
                 r#"try { (Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol).State } catch { "Unknown" }"#
             }
             Probe::RemoteDesktop => {
-                r#"try { (Get-ItemProperty 'HKLM:SYSTEMCurrentControlSetControlTerminal Server' -Name fDenyTSConnections).fDenyTSConnections } catch { "Unknown" }"#
+                r#"try { (Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server' -Name fDenyTSConnections).fDenyTSConnections } catch { "Unknown" }"#
             }
             Probe::Listeners => {
                 r#"try { Get-NetTCPConnection -State Listen | Sort-Object LocalPort,LocalAddress -Unique | Select-Object -First 256 | ForEach-Object { "$($_.LocalAddress)|$($_.LocalPort)" } } catch { "Unknown" }"#
