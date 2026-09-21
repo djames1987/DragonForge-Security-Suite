@@ -3,7 +3,9 @@ use std::sync::{Mutex, MutexGuard};
 use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
 
-use crate::agent::{validate_future_agent_request, AgentClient, AgentStatus, UnavailableAgentClient};
+use crate::agent::{
+    AgentClient, AgentStatus, UnavailableAgentClient, validate_future_agent_request,
+};
 use crate::events::{DashboardEvent, EventStore};
 use crate::logging::SafeLogger;
 use crate::model::{ComponentRegistry, ComponentStatus, HealthSummary};
