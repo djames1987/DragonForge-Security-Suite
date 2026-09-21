@@ -182,7 +182,7 @@ foreach ($path in $paths) {
     foreach ($property in $item.PSObject.Properties) {
       if ($property.Name -notmatch '^PS') {
         $value = ([string]$property.Value) -replace '[\r\n]+', ' '
-        "$path::$($property.Name)|$value"
+        "${path}::$($property.Name)|$value"
       }
     }
   }
@@ -292,10 +292,20 @@ pub fn baseline_summary(path: &Path) -> IntegrityResult<Option<SnapshotSummary>>
         return Ok(None);
     }
     let baseline = read_baseline(path)?;
+    let warnings = baseline
+        .unavailable_surfaces
+        .iter()
+        .map(|surface| {
+            format!(
+                "{} was unavailable when this baseline was created.",
+                surface.as_str()
+            )
+        })
+        .collect();
     Ok(Some(SnapshotSummary {
         timestamp_ms: baseline.created_at_ms,
         entries: baseline.entries.len(),
-        warnings: Vec::new(),
+        warnings,
     }))
 }
 
@@ -512,10 +522,10 @@ fn walk_files(
         }
         if metadata.is_dir() {
             walk_files(root, &item.path(), files, depth + 1)?;
-        } else if metadata.is_file() {
-            if let Ok(relative) = item.path().strip_prefix(root) {
-                files.push(relative.to_path_buf());
-            }
+        } else if metadata.is_file()
+            && let Ok(relative) = item.path().strip_prefix(root)
+        {
+            files.push(relative.to_path_buf());
         }
     }
     Ok(())
@@ -796,6 +806,14 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
         }
     }
 
+    let mut warnings = current.warnings;
+    for surface in &unavailable_surfaces {
+        warnings.push(format!(
+            "{} was unavailable in the baseline or current snapshot and was excluded from comparison.",
+            surface.as_str()
+        ));
+    }
+
     ComparisonReport {
         baseline_created_at_ms: baseline.created_at_ms,
         checked_at_ms: current.timestamp_ms,
@@ -807,7 +825,7 @@ fn compare(baseline: &IntegrityBaseline, current: CollectedSnapshot) -> Comparis
         },
         changes,
         unavailable_surfaces: unavailable_surfaces.into_iter().collect(),
-        warnings: current.warnings,
+        warnings,
     }
 }
 
