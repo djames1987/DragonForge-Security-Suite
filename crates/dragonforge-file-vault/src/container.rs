@@ -70,12 +70,7 @@ pub fn create_vault(
     let mut total_file_bytes = 0_u64;
 
     for source in sources {
-        collect_source(
-            source,
-            &mut entries,
-            &mut seen,
-            &mut total_file_bytes,
-        )?;
+        collect_source(source, &mut entries, &mut seen, &mut total_file_bytes)?;
     }
 
     if entries.is_empty() {
@@ -111,10 +106,7 @@ pub fn create_vault(
     Ok(summary)
 }
 
-pub fn list_vault(
-    container: impl AsRef<Path>,
-    password: &[u8],
-) -> Result<Vec<VaultEntryInfo>> {
+pub fn list_vault(container: impl AsRef<Path>, password: &[u8]) -> Result<Vec<VaultEntryInfo>> {
     let entries = open_entries(container.as_ref(), password)?;
     Ok(entries
         .iter()
@@ -210,22 +202,9 @@ fn collect_source(
     validate_archive_path(&root_name)?;
 
     if metadata.is_file() {
-        collect_file(
-            source,
-            root_name,
-            entries,
-            seen,
-            total_file_bytes,
-        )?;
+        collect_file(source, root_name, entries, seen, total_file_bytes)?;
     } else if metadata.is_dir() {
-        collect_directory(
-            source,
-            &root_name,
-            source,
-            entries,
-            seen,
-            total_file_bytes,
-        )?;
+        collect_directory(source, &root_name, source, entries, seen, total_file_bytes)?;
     } else {
         return Err(FileVaultError::InvalidPath);
     }
@@ -269,26 +248,13 @@ fn collect_directory(
         }
 
         if metadata.is_dir() {
-            collect_directory(
-                root,
-                root_name,
-                &path,
-                entries,
-                seen,
-                total_file_bytes,
-            )?;
+            collect_directory(root, root_name, &path, entries, seen, total_file_bytes)?;
         } else if metadata.is_file() {
             let relative = path
                 .strip_prefix(root)
                 .map_err(|_| FileVaultError::InvalidPath)?;
             let archived = archive_path(root_name, relative)?;
-            collect_file(
-                &path,
-                archived,
-                entries,
-                seen,
-                total_file_bytes,
-            )?;
+            collect_file(&path, archived, entries, seen, total_file_bytes)?;
         } else {
             return Err(FileVaultError::InvalidPath);
         }
@@ -611,9 +577,7 @@ fn summarize(entries: &[DecodedEntry]) -> VaultSummary {
 }
 
 fn read_u8(bytes: &[u8], cursor: &mut usize) -> Result<u8> {
-    let value = *bytes
-        .get(*cursor)
-        .ok_or(FileVaultError::InvalidContainer)?;
+    let value = *bytes.get(*cursor).ok_or(FileVaultError::InvalidContainer)?;
     *cursor += 1;
     Ok(value)
 }
@@ -666,16 +630,26 @@ mod tests {
         fs::write(source.join("nested").join("note.bin"), [1_u8, 2, 3, 4]).expect("file");
 
         let vault = temp.path().join("archive.dfvault");
-        let summary =
-            create_vault(&vault, std::slice::from_ref(&source), b"test-password-123").expect("create");
+        let summary = create_vault(&vault, std::slice::from_ref(&source), b"test-password-123")
+            .expect("create");
         assert_eq!(summary.files, 2);
 
         let raw = fs::read(&vault).expect("vault bytes");
-        assert!(!raw.windows(b"secret.txt".len()).any(|window| window == b"secret.txt"));
-        assert!(!raw.windows(b"dragon fire".len()).any(|window| window == b"dragon fire"));
+        assert!(
+            !raw.windows(b"secret.txt".len())
+                .any(|window| window == b"secret.txt")
+        );
+        assert!(
+            !raw.windows(b"dragon fire".len())
+                .any(|window| window == b"dragon fire")
+        );
 
         let listing = list_vault(&vault, b"test-password-123").expect("list");
-        assert!(listing.iter().any(|entry| entry.path == "private/secret.txt"));
+        assert!(
+            listing
+                .iter()
+                .any(|entry| entry.path == "private/secret.txt")
+        );
         assert!(listing.iter().any(|entry| entry.path == "private/empty"));
 
         let extracted = temp.path().join("restored");
