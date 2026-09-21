@@ -44,6 +44,10 @@ pub fn backup_recovery_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-backup-recovery")
 }
 
+pub fn secure_share_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-secure-share")
+}
+
 fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
     if !target.is_file() {
         return Err(CoreError::new_safe(
@@ -146,6 +150,23 @@ pub fn launch_network_guard() -> CoreResult<()> {
     launch_sibling(target, "Network Guard")
 }
 
+pub fn launch_secure_share() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = secure_share_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Secure Share sibling path",
+        )
+    })?;
+
+    launch_sibling(target, "Secure Share")
+}
+
 pub fn launch_backup_recovery() -> CoreResult<()> {
     let current = env::current_exe().map_err(|_| {
         CoreError::new_safe(
@@ -187,7 +208,7 @@ mod tests {
     use super::{
         authenticator_sibling, backup_recovery_sibling, file_vault_sibling,
         integrity_monitor_sibling, network_guard_sibling, password_manager_sibling,
-        security_scanner_sibling,
+        secure_share_sibling, security_scanner_sibling,
     };
 
     #[test]
@@ -273,6 +294,23 @@ mod tests {
         };
 
         assert_eq!(network_guard_sibling(center), Some(expected));
+    }
+
+    #[test]
+    fn secure_share_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-secure-share.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-secure-share")
+        };
+
+        assert_eq!(secure_share_sibling(center), Some(expected));
     }
 
     #[test]

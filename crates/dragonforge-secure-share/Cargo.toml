@@ -1,0 +1,24 @@
+[package]
+name = "dragonforge-secure-share"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+description = "Encrypted recipient-oriented secure share engine for DragonForge Security Suite"
+
+[dependencies]
+aes-gcm = "0.10.3"
+argon2 = "0.5.3"
+base64 = "0.22.1"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10.9"
+zeroize = "1.8"
+
+[dev-dependencies]
+tempfile = "3.27"
+
+[lints]
+workspace = true

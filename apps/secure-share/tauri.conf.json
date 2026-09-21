@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DragonForge Secure Share",
+  "version": "0.1.0",
+  "identifier": "com.dragonforge.secureshare",
+  "build": { "frontendDist": "ui" },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "DragonForge Secure Share",
+        "width": 1180,
+        "height": 840,
+        "minWidth": 900,
+        "minHeight": 680,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": { "active": false }
+}

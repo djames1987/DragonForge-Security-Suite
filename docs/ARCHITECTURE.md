@@ -48,6 +48,7 @@ Current:
 - `integrity-monitor/`
 - `network-guard/`
 - `backup-recovery/`
+- `secure-share/`
 
 Future:
 - other user-facing suite applications
@@ -74,6 +75,7 @@ Current:
 - `dragonforge-integrity-monitor`: Integrity Monitor product-owned baseline/change engine.
 - `dragonforge-network-guard`: Network Guard product-owned visibility engine.
 - `dragonforge-backup-recovery`: Backup & Recovery product-owned encrypted backup engine.
+- `dragonforge-secure-share`: Secure Share product-owned encrypted sharing engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -358,3 +360,26 @@ The Phase 9 format is intentionally separate from File Vault, Authenticator, and
 7. Restore never merges into or overwrites an existing destination.
 8. Restore is staged into a randomized sibling temporary directory and finalized only after all entries verify and write successfully.
 9. Phase 9 is not a disk-image/bare-metal backup system and does not claim ACL, reparse-point, timestamp, or live-consistency preservation.
+
+
+## 17. Phase 10 Secure Share
+
+Secure Share is split into a product-owned encrypted package engine and a Tauri desktop UI:
+
+- `crates/dragonforge-secure-share/` owns the `.dfshare` format, password KDF, authenticated encryption, recipient/sender labels, expiration policy, attachment hashing, bounded collection, and extraction rules.
+- `apps/secure-share/` exposes narrow commands for package creation, verification, secret reveal, and attachment extraction.
+- Security Center marks Secure Share as Integrated and launches only the expected sibling executable.
+
+The Phase 10 format remains independent from File Vault, Backup & Recovery, Authenticator, and Password Manager formats.
+
+### Secure Share trust rules
+
+1. Passwords are command-scoped and are not persisted by the application.
+2. Sender/recipient labels, expiration, secret text, attachment paths, hashes, and bytes are inside AES-256-GCM authenticated ciphertext.
+3. Argon2id derives the package key with Phase 10 format-owned parameters.
+4. Recipient labels identify intended package context after decryption; they are not cryptographic recipient authentication.
+5. Expired packages remain verifiable but secret reveal and attachment extraction fail closed.
+6. Expiration uses the local system clock and is not represented as tamper-resistant against a user who controls that clock.
+7. Symbolic links, traversal-like paths, duplicate paths, malformed packages, and bounded-limit violations are rejected.
+8. Extraction never overwrites an existing destination and is staged through a randomized sibling temporary directory.
+9. Offline packages do not claim remote revocation, guaranteed post-expiration deletion, one-time-open enforcement, open-count enforcement, or delivery tracking.

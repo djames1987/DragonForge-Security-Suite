@@ -236,6 +236,23 @@ impl AppState {
         Ok(())
     }
 
+    pub fn launch_secure_share(&self) -> Result<(), String> {
+        orchestration::launch_secure_share().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.secure-share-launched",
+            "Secure Share launch requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.secure-share-launched",
+            "Secure Share launch requested",
+        );
+        Ok(())
+    }
+
     pub fn launch_backup_recovery(&self) -> Result<(), String> {
         orchestration::launch_backup_recovery().map_err(|error| error.to_string())?;
         self.lock_events()?.push(
