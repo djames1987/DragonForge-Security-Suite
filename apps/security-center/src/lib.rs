@@ -4,6 +4,7 @@ mod agent;
 mod events;
 mod logging;
 mod model;
+mod orchestration;
 mod settings;
 mod state;
 
@@ -54,6 +55,11 @@ fn agent_status(state: State<'_, AppState>) -> AgentStatus {
     state.agent_status()
 }
 
+#[tauri::command]
+fn launch_password_manager(state: State<'_, AppState>) -> Result<(), String> {
+    state.launch_password_manager()
+}
+
 pub fn run() {
     let state = AppState::initialize().unwrap_or_else(|error| {
         panic!("failed to initialize DragonForge Security Center: {error}")
@@ -68,7 +74,8 @@ pub fn run() {
             clear_events,
             get_settings,
             save_settings,
-            agent_status
+            agent_status,
+            launch_password_manager
         ])
         .run(tauri::generate_context!())
         .expect("error while running DragonForge Security Center");
