@@ -452,6 +452,7 @@ fn read_u32(bytes: &[u8], offset: usize) -> Result<u32> {
 
 fn load_store(path: &Path, password: &[u8]) -> Result<StoreData> {
     validate_password(password)?;
+    recover_interrupted_replace(path)?;
     let metadata = fs::metadata(path).map_err(|_| AuthenticatorError::StoreNotFound)?;
     if metadata.len() > MAX_STORE_BYTES {
         return Err(AuthenticatorError::InvalidStore);
@@ -548,13 +549,11 @@ fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
             fs::rename(path, &backup).map_err(|_| AuthenticatorError::Io)?;
         }
 
-        if let Err(error) = fs::rename(&temporary, path) {
+        if fs::rename(&temporary, path).is_err() {
             if had_original {
                 let _ = fs::rename(&backup, path);
             }
-            return Err(match error.kind() {
-                _ => AuthenticatorError::Io,
-            });
+            return Err(AuthenticatorError::Io);
         }
 
         if had_original {
@@ -567,6 +566,16 @@ fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
         let _ = fs::remove_file(&temporary);
     }
     result
+}
+
+fn recover_interrupted_replace(path: &Path) -> Result<()> {
+    let backup = path.with_extension("dfauth.bak");
+    if !path.exists() && backup.exists() {
+        fs::rename(&backup, path).map_err(|_| AuthenticatorError::Io)?;
+    } else if path.exists() && backup.exists() {
+        fs::remove_file(&backup).map_err(|_| AuthenticatorError::Io)?;
+    }
+    Ok(())
 }
 
 fn temporary_path(path: &Path) -> Result<PathBuf> {
