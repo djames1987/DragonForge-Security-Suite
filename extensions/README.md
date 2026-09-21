@@ -2,4 +2,7 @@
 
 Browser extensions and other separately packaged integrations live here.
 
-The existing Password Manager browser extension will eventually be migrated to `extensions/password-manager-browser/` after a tested source commit is selected.
+Current:
+- `password-manager-browser/` — migrated DragonForge Password Manager browser extension.
+
+Extensions are a distinct trust boundary from native applications. Treat browser/web input as untrusted and keep privileged operations behind validated native interfaces.
