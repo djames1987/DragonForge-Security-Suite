@@ -26,7 +26,7 @@ Shared libraries sit below applications and services:
 - dragonforge-core
 - dragonforge-crypto
 - dragonforge-vault
-- future shared IPC/policy/event/platform crates
+- Phase 2 shared primitives inside dragonforge-core
 ```
 
 The Security Center is an orchestration and visibility layer. It must not become a dumping ground for security-sensitive implementation details.
@@ -76,7 +76,7 @@ Potential future crates should be created only when real cross-product requireme
 - `dragonforge-events`
 - `dragonforge-platform`
 
-`dragonforge-core` must remain small and must not absorb cryptographic code simply because multiple products need it.
+`dragonforge-core` owns the small Phase 2 cross-product foundation: component IDs, configuration metadata, safe error/event types, platform path discovery, logging/redaction policy, and transport-neutral IPC authorization metadata. It must not absorb cryptographic code simply because multiple products need it.
 
 ### extensions/
 
@@ -158,7 +158,7 @@ The migration followed **move first, refactor second**:
 7. Establish a passing suite baseline.
 8. Only then allow shared-component extraction.
 
-That sequence is now complete through step 7. Phase 2 may begin controlled extraction of proven cross-product functionality.
+That sequence is complete. Phase 2 added only non-cryptographic cross-product primitives and did not refactor Password Manager security-sensitive behavior.
 
 Crypto, vault format, sync protocol, key derivation, recovery, and serialization changes remain separate security-sensitive work and must not be bundled casually into architectural refactors.
 
@@ -181,3 +181,19 @@ Significant decisions should be recorded under `docs/adr/`, including:
 - update signing;
 - plugin model;
 - cross-platform strategy.
+
+
+## 9. Phase 2 shared foundation
+
+Phase 2 established the following modules in `dragonforge-core`:
+
+- `config` — validated stable keys, component-scoped environment names, and configuration source metadata.
+- `error` — stable error categories plus messages explicitly designated safe for logs/UI.
+- `event` — cross-product severity, event categories, and redaction-safe event records.
+- `platform` — operating-system identification and conventional per-user suite paths without creating directories.
+- `redaction` — formatting-safe secret wrappers and conservative logging policy.
+- `ipc` — versioned request envelopes, transport-authentication metadata, and fail-closed destination/caller authorization policy.
+
+The IPC module is intentionally transport-neutral. It does not generate credentials, open sockets/pipes, or claim that a peer is authenticated. The platform transport must verify a peer first and only then construct an authenticated peer context.
+
+If any Phase 2 module grows into a large subsystem or gains security-sensitive dependencies, it should be split into a dedicated crate through a separate ADR.
