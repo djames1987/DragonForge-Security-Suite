@@ -155,7 +155,7 @@ impl ComponentRegistry {
         let mut active = 0;
         let mut integrated = 0;
         let mut planned = 0;
-        let mut attention = 0;
+        let attention = 0;
 
         for component in &self.components {
             match component.state {
