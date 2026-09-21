@@ -35,4 +35,9 @@ impl AgentPaths {
     pub fn credential_file(&self) -> PathBuf {
         self.root.join("agent-session.key")
     }
+
+    #[must_use]
+    pub fn lock_file(&self) -> PathBuf {
+        self.root.join("agent.lock")
+    }
 }
