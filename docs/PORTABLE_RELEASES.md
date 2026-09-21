@@ -38,7 +38,7 @@ The published release is marked pre-release.
 
 ## Test machine requirements
 
-The extracted package needs no Rust, Cargo, Node.js, Git, or source checkout.
+The extracted package needs no Rust, Cargo, Node.js, Git, or source checkout. Testers can run Check-Prerequisites.cmd and Launch-Security-Center.cmd directly from the extracted folder.
 
 It requires 64-bit Windows 10/11 and Microsoft Edge WebView2 Runtime for the Tauri desktop applications.
 
