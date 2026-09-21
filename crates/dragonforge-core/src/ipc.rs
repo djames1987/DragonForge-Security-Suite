@@ -243,6 +243,40 @@ mod tests {
     }
 
     #[test]
+    fn authenticated_but_unlisted_caller_is_rejected() {
+        let policy = LocalIpcPolicy::new(Component::Agent, [Component::SecurityCenter]);
+        let peer = PeerContext::authenticated(
+            Component::PasswordManager,
+            2,
+            AuthenticationMechanism::SessionCredential,
+        );
+        let request = IpcEnvelope::new(
+            RequestId::new(43),
+            Component::PasswordManager,
+            Component::Agent,
+            "health",
+        );
+        assert!(policy.authorize(peer, &request).is_err());
+    }
+
+    #[test]
+    fn wrong_destination_is_rejected() {
+        let policy = LocalIpcPolicy::new(Component::Agent, [Component::SecurityCenter]);
+        let peer = PeerContext::authenticated(
+            Component::SecurityCenter,
+            1,
+            AuthenticationMechanism::OperatingSystemPeer,
+        );
+        let request = IpcEnvelope::new(
+            RequestId::new(44),
+            Component::SecurityCenter,
+            Component::PasswordManager,
+            "health",
+        );
+        assert!(policy.authorize(peer, &request).is_err());
+    }
+
+    #[test]
     fn incompatible_protocol_major_is_rejected() {
         let policy = LocalIpcPolicy::new(Component::Agent, [Component::SecurityCenter]);
         let peer = PeerContext::authenticated(
