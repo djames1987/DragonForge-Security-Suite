@@ -24,7 +24,8 @@ const HEADER_LEN: usize = 4 + 2 + 4 + 4 + 4 + SALT_LEN + NONCE_LEN;
 const ARGON_MEMORY_KIB: u32 = 65_536;
 const ARGON_ITERATIONS: u32 = 3;
 const ARGON_LANES: u32 = 1;
-const MAX_STORE_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_PLAINTEXT_STORE_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_STORE_FILE_BYTES: u64 = MAX_PLAINTEXT_STORE_BYTES + HEADER_LEN as u64 + 16;
 const MAX_ACCOUNTS: usize = 500;
 const MAX_RECOVERY_CODES: usize = 100;
 const MAX_LABEL_LEN: usize = 160;
@@ -104,6 +105,7 @@ struct StoreData {
 pub fn create_store(path: impl AsRef<Path>, password: &[u8]) -> Result<()> {
     validate_password(password)?;
     let path = path.as_ref();
+    recover_interrupted_replace(path)?;
     if path.exists() {
         return Err(AuthenticatorError::StoreExists);
     }
@@ -231,8 +233,12 @@ pub fn set_recovery_codes(
     let mut normalized = Vec::with_capacity(codes.len());
     for code in codes {
         let value = code.trim().to_owned();
-        if value.is_empty() || value.len() > MAX_RECOVERY_CODE_LEN || value.contains(['', '
-']) {
+        if value.is_empty()
+            || value.len() > MAX_RECOVERY_CODE_LEN
+            || value.contains('')
+            || value.contains('
+')
+        {
             return Err(AuthenticatorError::InvalidRecoveryCode);
         }
         normalized.push(value);
@@ -459,7 +465,7 @@ fn load_store(path: &Path, password: &[u8]) -> Result<StoreData> {
         return Err(AuthenticatorError::SymlinkNotAllowed);
     }
     let metadata = fs::metadata(path).map_err(|_| AuthenticatorError::StoreNotFound)?;
-    if metadata.len() > MAX_STORE_BYTES {
+    if metadata.len() > MAX_STORE_FILE_BYTES {
         return Err(AuthenticatorError::InvalidStore);
     }
 
@@ -500,7 +506,7 @@ fn save_store(path: &Path, password: &[u8], store: &StoreData) -> Result<()> {
 
     let mut plaintext =
         serde_json::to_vec(store).map_err(|_| AuthenticatorError::InvalidStore)?;
-    if plaintext.len() as u64 > MAX_STORE_BYTES {
+    if plaintext.len() as u64 > MAX_PLAINTEXT_STORE_BYTES {
         plaintext.zeroize();
         return Err(AuthenticatorError::InvalidStore);
     }
@@ -581,6 +587,12 @@ fn write_atomic(path: &Path, header: &[u8], ciphertext: &[u8]) -> Result<()> {
 
 fn recover_interrupted_replace(path: &Path) -> Result<()> {
     let backup = path.with_extension("dfauth.bak");
+    if backup.exists() {
+        let metadata = fs::symlink_metadata(&backup).map_err(|_| AuthenticatorError::Io)?;
+        if metadata.file_type().is_symlink() {
+            return Err(AuthenticatorError::SymlinkNotAllowed);
+        }
+    }
     if !path.exists() && backup.exists() {
         fs::rename(&backup, path).map_err(|_| AuthenticatorError::Io)?;
     } else if path.exists() && backup.exists() {
