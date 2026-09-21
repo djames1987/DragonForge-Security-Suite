@@ -104,6 +104,7 @@ Delivered:
 - encrypted local account/secret store with Argon2id + AES-256-GCM;
 - encrypted recovery-code management with explicit reveal;
 - persistent HOTP counter advancement;
+- encrypted store master-password rotation;
 - Security Center integration and strict sibling-app launch;
 - Phase 5 verification script, documentation, and CI coverage.
 
