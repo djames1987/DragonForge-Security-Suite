@@ -56,11 +56,27 @@ No Password Manager cryptography, vault format, sync protocol, recovery flow, or
 See [PHASE_2_SHARED_FOUNDATION.md](PHASE_2_SHARED_FOUNDATION.md).
 
 ## Phase 3 — Security Center
-**Status: Next**
+**Status: Complete**
 
-Build the unified dashboard and orchestration layer.
+Delivered:
+- Tauri desktop application shell with DragonForge suite styling;
+- overview, components, activity, settings, and about navigation;
+- suite component registry with accurate current/future states;
+- aggregate suite health model without treating planned components as failures;
+- bounded redaction-safe in-memory activity history;
+- persistent versioned local settings;
+- safe local logging bootstrap;
+- explicit future-agent status and Phase 2 IPC-policy boundary;
+- strict co-located Password Manager launch orchestration;
+- Security Center-specific CI and local Phase 3 verification script;
+- Phase 3 architecture/security documentation and ADR.
+
+The Phase 3 UI does not claim that the future privileged DragonForge Agent is installed or connected.
+
+See [PHASE_3_SECURITY_CENTER.md](PHASE_3_SECURITY_CENTER.md).
 
 ## Phase 4 — File Vault
+**Status: Next**
 
 Encrypted files/folders and secure containers, reusing vetted cryptographic foundations where appropriate.
 

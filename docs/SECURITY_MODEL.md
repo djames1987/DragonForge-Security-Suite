@@ -103,3 +103,19 @@ Security requirements:
 - actual peer verification remains the responsibility of the selected OS transport or session-authentication mechanism.
 
 Constructing an authenticated peer context is a trust-boundary operation. Future pipe/socket implementations must not accept caller-supplied component identity without independent verification.
+
+
+## Security Center native boundary
+
+Phase 3 adds a Tauri webview dashboard backed by Rust commands.
+
+Security requirements:
+- webview code must not receive arbitrary filesystem/process primitives;
+- native commands must validate inputs and expose only narrowly-scoped actions;
+- Password Manager launch resolves only the expected executable beside Security Center;
+- settings are preferences, not a secret store;
+- dashboard events and log messages use safe/redaction-oriented text;
+- invalid local settings fall back to safe defaults instead of disabling the dashboard;
+- the future DragonForge Agent remains explicitly unavailable until a real authenticated transport/service exists.
+
+The current in-memory activity view is not a tamper-resistant audit log and must not be represented as one.

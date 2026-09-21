@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 2 shared foundation implemented. The repository now has common configuration, event/error, platform, redaction/logging, and fail-closed IPC primitives ready for Security Center development.
+> **Current status:** Phase 3 Security Center implemented. DragonForge now has a desktop dashboard for suite health, component visibility, activity, local settings, safe logging, and non-privileged application orchestration.
 
 ## Canonical repository
 
@@ -18,7 +18,7 @@ The standalone Password Manager repository remains useful as the pre-migration h
 ```text
 DragonForge-Security-Suite/
 ├── apps/
-│   ├── security-center/               # Unified suite dashboard foundation
+│   ├── security-center/               # Unified Tauri desktop dashboard
 │   └── password-manager/              # Migrated Password Manager desktop application
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
@@ -35,7 +35,8 @@ DragonForge-Security-Suite/
 │   ├── ROADMAP.md
 │   ├── SECURITY_MODEL.md
 │   ├── PHASE_1_1_BASELINE.md
-│   └── PHASE_2_SHARED_FOUNDATION.md
+│   ├── PHASE_2_SHARED_FOUNDATION.md
+│   └── PHASE_3_SECURITY_CENTER.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -76,8 +77,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 1 — Password Manager migration: **Complete**
 - Phase 1.1 — Post-Migration Baseline Cleanup: **Complete**
 - Phase 2 — Shared foundation: **Complete**
-- Phase 3 — Security Center: **Next**
-- Phase 4 — File Vault
+- Phase 3 — Security Center: **Complete**
+- Phase 4 — File Vault: **Next**
 - Phase 5 — Authenticator
 - Phase 6 — Security Scanner
 - Phase 7 — Integrity Monitor
@@ -87,3 +88,26 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 11 — DragonForge Agent
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
+
+
+## Security Center
+
+The Phase 3 Security Center is a Tauri desktop application under `apps/security-center/`.
+
+Current capabilities:
+- suite health summary;
+- component registry with accurate Active / Integrated / Planned / Unavailable states;
+- local redaction-safe activity history;
+- persistent local Security Center settings;
+- safe local diagnostic logging;
+- explicit DragonForge Agent unavailable state until the background service is implemented;
+- launch of a co-located Password Manager executable by exact sibling path;
+- shared DragonForge dark/orange UI language.
+
+Run the local verification script on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase3-security-center-tests.ps1
+```
+
+See [docs/PHASE_3_SECURITY_CENTER.md](docs/PHASE_3_SECURITY_CENTER.md).

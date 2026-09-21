@@ -197,3 +197,28 @@ Phase 2 established the following modules in `dragonforge-core`:
 The IPC module is intentionally transport-neutral. It does not generate credentials, open sockets/pipes, or claim that a peer is authenticated. The platform transport must verify a peer first and only then construct an authenticated peer context.
 
 If any Phase 2 module grows into a large subsystem or gains security-sensitive dependencies, it should be split into a dedicated crate through a separate ADR.
+
+
+## 10. Phase 3 Security Center
+
+Security Center is now a real Tauri desktop application under `apps/security-center/`.
+
+Its internal boundaries are:
+
+- `model` — component registry and aggregate suite health.
+- `events` — bounded, redaction-safe in-memory dashboard activity.
+- `settings` — versioned local settings stored under the user-specific Security Center configuration directory.
+- `logging` — conservative local diagnostic log writer using the shared LogPolicy contract.
+- `agent` — explicit unavailable-agent client and validation against the shared IPC policy.
+- `orchestration` — strict sibling-process launch for the Password Manager.
+- `state` — synchronized application state exposed to Tauri commands.
+- `ui` — static HTML/CSS/JavaScript dashboard.
+
+### Security Center trust rules
+
+1. The browser/webview UI does not directly perform filesystem or process operations.
+2. Tauri commands are the native boundary for dashboard actions.
+3. Password Manager launching resolves only an exact executable beside the running Security Center binary. It does not search PATH or execute a user-supplied path.
+4. Settings contain preferences only; passwords, keys, tokens, vault content, or recovery material must never be stored there.
+5. Activity records and log messages must use safe summaries and the shared redaction policy.
+6. The future Agent remains unavailable until an authenticated OS transport and service are implemented. The dashboard must not infer an authenticated peer from UI or payload data.
