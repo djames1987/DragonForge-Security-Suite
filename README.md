@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 10 Secure Share is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, and offline encrypted Secure Share.
+> **Current status:** Phase 11 DragonForge Agent is implementation complete with local verification pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, Secure Share, and an authenticated per-user background Agent.
 
 ## Canonical repository
 
@@ -29,6 +29,7 @@ DragonForge-Security-Suite/
 │   └── secure-share/                   # Offline encrypted recipient-oriented sharing
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
+│   ├── dragonforge-agent/             # Agent authenticated IPC/runtime engine
 │   ├── dragonforge-file-vault/        # File Vault container engine
 │   ├── dragonforge-authenticator/     # Authenticator OTP + encrypted store engine
 │   ├── dragonforge-security-scanner/  # Security posture assessment engine
@@ -39,7 +40,8 @@ DragonForge-Security-Suite/
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
-│   └── password-manager-sync/         # Migrated Password Manager sync service
+│   ├── password-manager-sync/         # Migrated Password Manager sync service
+│   └── dragonforge-agent/             # Per-user authenticated background Agent
 ├── extensions/
 │   └── password-manager-browser/      # Migrated browser extension
 ├── docs/
@@ -57,7 +59,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_7_INTEGRITY_MONITOR.md
 │   ├── PHASE_8_NETWORK_GUARD.md
 │   ├── PHASE_9_BACKUP_RECOVERY.md
-│   └── PHASE_10_SECURE_SHARE.md
+│   ├── PHASE_10_SECURE_SHARE.md
+│   └── PHASE_11_DRAGONFORGE_AGENT.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -87,7 +90,7 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Security-first, auditable Rust components.
 - Independent applications backed by shared, narrowly scoped libraries.
 - A central Security Center for visibility and orchestration.
-- A future background agent for protections that must continue when the UI is closed.
+- A background Agent for authenticated work that must continue when the UI is closed.
 - Strict separation between UI/orchestration code and security-sensitive primitives.
 - Incremental refactoring only after tested behavior is preserved.
 - No traditional antivirus/signature engine in the initial suite roadmap.
@@ -106,7 +109,7 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 8 — Network Guard: **Verified Complete**
 - Phase 9 — Backup & Recovery: **Verified Complete**
 - Phase 10 — Secure Share: **Verified Complete**
-- Phase 11 — DragonForge Agent: **Next**
+- Phase 11 — DragonForge Agent: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -117,11 +120,11 @@ The Phase 3 Security Center is a Tauri desktop application under `apps/security-
 
 Current capabilities:
 - suite health summary;
-- component registry with accurate Active / Integrated / Planned / Unavailable states;
+- component registry with accurate Active / Integrated states;
 - local redaction-safe activity history;
 - persistent local Security Center settings;
 - safe local diagnostic logging;
-- explicit DragonForge Agent unavailable state until the background service is implemented;
+- live authenticated DragonForge Agent health/status reporting and exact-sibling startup;
 - launch of a co-located Password Manager executable by exact sibling path;
 - shared DragonForge dark/orange UI language.
 
@@ -308,3 +311,30 @@ Phase 10 local verification result: **PASS**
 Verified log SHA-256: `71F0900206E214B464CBE82F912EC043FF668BDC9F5CBDCBD65B20A1D8434913`
 
 See [docs/PHASE_10_SECURE_SHARE.md](docs/PHASE_10_SECURE_SHARE.md).
+
+
+## DragonForge Agent
+
+Phase 11 adds the first real DragonForge background Agent under `services/dragonforge-agent/`.
+
+Current capabilities:
+- run as a per-user background process independent of the Security Center UI lifetime;
+- bind only to IPv4 loopback;
+- generate a fresh 256-bit session credential at each startup;
+- authenticate requests and responses with HMAC-SHA256;
+- enforce timestamp freshness and bounded nonce replay rejection;
+- validate Security Center callers through the Phase 2 IPC authorization policy;
+- expose only a narrow authenticated health operation in Phase 11;
+- report PID, uptime, transport state, and current capability names;
+- launch from Security Center using the exact sibling `dragonforge-agent` executable;
+- reject malformed/unauthenticated connections without terminating the Agent.
+
+Phase 11 is intentionally non-elevated and per-user. It does not claim privileged firewall enforcement, process termination, quarantine, or Windows-service protection yet.
+
+Run Phase 11 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase11-agent-tests.ps1
+```
+
+See [docs/PHASE_11_DRAGONFORGE_AGENT.md](docs/PHASE_11_DRAGONFORGE_AGENT.md).
