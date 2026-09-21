@@ -323,6 +323,11 @@ fn collect_file(
     let bytes = fs::read(source).map_err(|_| BackupError::Io("backup file could not be read"))?;
     let normalized = archive_path.replace('\\', "/");
     validated_relative_path(&normalized)?;
+    if entries.iter().any(|entry| entry.archive_path == normalized) {
+        return Err(BackupError::InvalidInput(
+            "backup sources produce duplicate archive paths",
+        ));
+    }
     entries.push(StoredEntry {
         archive_path: normalized,
         sha256: digest_hex(&bytes),
