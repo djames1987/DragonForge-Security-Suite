@@ -14,9 +14,44 @@ function Invoke-Checked {
     )
     Write-Host ""
     Write-Host ">>> $Command $($Arguments -join ' ')"
-    & $Command @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed with exit code ${LASTEXITCODE}: $Command $($Arguments -join ' ')"
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        & $Command @Arguments 2>&1 | ForEach-Object { Write-Host $_ }
+        $CommandExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($CommandExitCode -ne 0) {
+        throw "Command failed with exit code ${CommandExitCode}: $Command $($Arguments -join ' ')"
+    }
+}
+
+function Assert-ExecutableNotRunning {
+    param(
+        [Parameter(Mandatory = $true)] [string]$ExecutablePath
+    )
+
+    if (-not (Test-Path -LiteralPath $ExecutablePath -PathType Leaf)) {
+        return
+    }
+
+    $ResolvedTarget = [System.IO.Path]::GetFullPath($ExecutablePath)
+    $LockingProcesses = Get-Process -ErrorAction SilentlyContinue | Where-Object {
+        try {
+            $_.Path -and ([System.IO.Path]::GetFullPath($_.Path) -eq $ResolvedTarget)
+        }
+        catch {
+            $false
+        }
+    }
+
+    if ($LockingProcesses) {
+        $Descriptions = ($LockingProcesses | ForEach-Object {
+            "$($_.ProcessName) (PID $($_.Id))"
+        }) -join ", "
+        throw "Cannot rebuild $ResolvedTarget because it is currently running: $Descriptions. Close the application and rerun the verification."
     }
 }
 
@@ -32,18 +67,8 @@ try {
     Write-Host "Repository: $RepoRoot"
     Write-Host "Profile: $Profile"
 
-    Invoke-Checked cargo "build" "-p" "dragonforge-desktop" "--bin" "dragonforge-desktop" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-security-center" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-file-vault-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-authenticator-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-security-scanner-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-integrity-monitor-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-network-guard-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-backup-recovery-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-secure-share-app" @ReleaseArgs
-    Invoke-Checked cargo "build" "-p" "dragonforge-agent-service" @ReleaseArgs
-
     $Extension = if ($env:OS -eq "Windows_NT") { ".exe" } else { "" }
+    $TargetDirectory = Join-Path $RepoRoot "target\$TargetProfile"
     $Expected = @(
         "dragonforge-desktop$Extension",
         "dragonforge-security-center$Extension",
@@ -57,7 +82,23 @@ try {
         "dragonforge-agent$Extension"
     )
 
-    $TargetDirectory = Join-Path $RepoRoot "target\$TargetProfile"
+    if ($env:OS -eq "Windows_NT") {
+        foreach ($Name in $Expected) {
+            Assert-ExecutableNotRunning -ExecutablePath (Join-Path $TargetDirectory $Name)
+        }
+    }
+
+    Invoke-Checked cargo "build" "-p" "dragonforge-desktop" "--bin" "dragonforge-desktop" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-security-center" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-file-vault-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-authenticator-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-security-scanner-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-integrity-monitor-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-network-guard-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-backup-recovery-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-secure-share-app" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-agent-service" @ReleaseArgs
+
     Write-Host ""
     Write-Host "Verifying expected test executables in $TargetDirectory"
 
