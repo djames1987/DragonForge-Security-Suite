@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 7 adds a Windows-first, local-only integrity baseline and on-demand comparison application.
 
@@ -74,7 +74,9 @@ Run on Windows:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase7-integrity-monitor-tests.ps1
 ```
 
-A passing local verifier log is required before Phase 7 is marked **Verified Complete**.
+Authoritative Windows verification passed on 2026-09-21 using `dragonforge-phase7-integrity-monitor-20260921-123231.log`.
+
+SHA-256: `DBE01791CEB551EC6CFD880F89858768F5402C8A154B3DC382B97A8ED60C0063`.
 
 ## Phase 8 handoff
 
