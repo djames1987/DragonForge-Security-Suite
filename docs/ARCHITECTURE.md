@@ -46,9 +46,9 @@ Current:
 - `authenticator/`
 - `security-scanner/`
 - `integrity-monitor/`
+- `network-guard/`
 
 Future:
-- Network Guard UI
 - other user-facing suite applications
 
 ### services/
@@ -71,6 +71,7 @@ Current:
 - `dragonforge-authenticator`: Authenticator product-owned OTP and encrypted-store engine.
 - `dragonforge-security-scanner`: Security Scanner product-owned posture assessment engine.
 - `dragonforge-integrity-monitor`: Integrity Monitor product-owned baseline/change engine.
+- `dragonforge-network-guard`: Network Guard product-owned visibility engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -311,3 +312,24 @@ Phase 7 remains user-session scoped and on-demand. It does not claim continuous 
 6. Startup collection skips symbolic links and limits recursion, file count, and hashed file size.
 7. Probe/collection failures mark affected surfaces unavailable so they do not create false removal findings.
 8. Detected differences are review signals, not malware verdicts.
+
+
+## 15. Phase 8 Network Guard
+
+Network Guard is split into a product-owned visibility engine and a Tauri desktop UI:
+
+- `crates/dragonforge-network-guard/` owns bounded Windows TCP, UDP, and DNS-cache collection plus normalization and summary semantics.
+- `apps/network-guard/` exposes narrow commands for product metadata and refreshing an on-demand network snapshot.
+- Security Center marks Network Guard as Integrated and launches only the expected sibling executable.
+
+Phase 8 is intentionally visibility-only. Persistent application-level traffic enforcement requires a background service that can survive UI closure and a carefully reviewed privilege boundary; that responsibility remains with the future DragonForge Agent.
+
+### Network Guard trust rules
+
+1. The webview cannot submit PowerShell, process IDs, commands, firewall rules, packet filters, or arbitrary probe parameters.
+2. Native probes are fixed and invoke PowerShell with `-NoProfile -NonInteractive`.
+3. Probe output and row counts are bounded.
+4. Network Guard reads endpoint/process metadata and DNS cache records; it does not capture packet payloads.
+5. Phase 8 does not terminate processes/connections or mutate Windows Firewall.
+6. Wildcard-listener status is visibility context, not a vulnerability verdict.
+7. Probe failures surface warnings instead of being treated as a healthy/empty network.
