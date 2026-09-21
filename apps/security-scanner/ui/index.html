@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge Security Scanner</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">DF</div>
+        <div><strong>DragonForge</strong><span>Security Scanner</span></div>
+      </div>
+      <nav>
+        <button class="nav active" data-view="scan">Scan</button>
+        <button class="nav" data-view="about">About</button>
+      </nav>
+      <div class="sidebar-note">
+        <strong>Read-only assessment</strong>
+        <span>Phase 6 does not change system configuration or request elevation.</span>
+      </div>
+      <div class="phase">Phase 6</div>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h1 id="page-title">Security posture scan</h1>
+        </div>
+        <button id="scan-button" class="primary">Run scan</button>
+      </header>
+
+      <section id="view-scan" class="view active">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">Local assessment</div>
+            <h2 id="scan-state">Ready to scan</h2>
+            <p id="scan-copy">Review firewall, disk encryption, updates, Defender, Secure Boot, UAC, legacy protocols, Remote Desktop, and listening TCP endpoints.</p>
+          </div>
+          <div id="platform-pill" class="pill">Windows-first</div>
+        </div>
+
+        <div class="metrics">
+          <article><span>Pass</span><strong id="metric-pass">—</strong></article>
+          <article><span>Attention</span><strong id="metric-attention">—</strong></article>
+          <article><span>Unknown</span><strong id="metric-unknown">—</strong></article>
+          <article><span>Info</span><strong id="metric-info">—</strong></article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Findings</div>
+            <h2>Current system posture</h2>
+          </div>
+          <span id="scan-time" class="muted">No scan run yet.</span>
+        </div>
+        <div id="findings" class="findings">
+          <div class="empty">Run a scan to collect local posture findings.</div>
+        </div>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about">
+          <div class="mark large">DF</div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h2>Security Scanner</h2>
+          <p>Phase 6 provides a read-only local security posture assessment. It does not act as an antivirus engine, exploit scanner, vulnerability feed, or automatic remediation service.</p>
+          <p>Checks may report <strong>Unknown</strong> when Windows blocks a query, a feature is unavailable, or the current user lacks sufficient visibility. Unknown is not treated as a pass or a failure.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

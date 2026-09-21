@@ -15,8 +15,8 @@ The current runtime/repository model is:
                  |                              (future service)
      +-----------+-----------+
      |           |           |
- Password     File Vault  Authenticator
- Manager      (current)   (current)
+ Password     File Vault  Authenticator  Security Scanner
+ Manager      (current)   (current)       (current)
      |
      +---- Password Manager sync service
      |
@@ -44,9 +44,9 @@ Current:
 - `password-manager/`
 - `file-vault/`
 - `authenticator/`
+- `security-scanner/`
 
 Future:
-- Security Scanner
 - Network Guard UI
 - other user-facing suite applications
 
@@ -68,6 +68,7 @@ Current:
 - `dragonforge-core`: suite-wide, non-cryptographic foundation.
 - `dragonforge-file-vault`: File Vault product-owned encrypted-container engine.
 - `dragonforge-authenticator`: Authenticator product-owned OTP and encrypted-store engine.
+- `dragonforge-security-scanner`: Security Scanner product-owned posture assessment engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -212,7 +213,7 @@ Its internal boundaries are:
 - `settings` — versioned local settings stored under the user-specific Security Center configuration directory.
 - `logging` — conservative local diagnostic log writer using the shared LogPolicy contract.
 - `agent` — explicit unavailable-agent client and validation against the shared IPC policy.
-- `orchestration` — strict sibling-process launch for the Password Manager.
+- `orchestration` — strict sibling-process launch for integrated suite applications.
 - `state` — synchronized application state exposed to Tauri commands.
 - `ui` — static HTML/CSS/JavaScript dashboard.
 
@@ -220,7 +221,7 @@ Its internal boundaries are:
 
 1. The browser/webview UI does not directly perform filesystem or process operations.
 2. Tauri commands are the native boundary for dashboard actions.
-3. Password Manager launching resolves only an exact executable beside the running Security Center binary. It does not search PATH or execute a user-supplied path.
+3. Integrated application launching resolves only exact expected executables beside the running Security Center binary. It does not search PATH or execute a user-supplied path.
 4. Settings contain preferences only; passwords, keys, tokens, vault content, or recovery material must never be stored there.
 5. Activity records and log messages must use safe summaries and the shared redaction policy.
 6. The future Agent remains unavailable until an authenticated OS transport and service are implemented. The dashboard must not infer an authenticated peer from UI or payload data.
@@ -265,3 +266,24 @@ Authenticator secrets are not moved into `dragonforge-core`, Password Manager st
 4. HOTP counters are advanced and persisted only through the HOTP consume action.
 5. The app does not claim hardware-backed credential support in Phase 5.
 6. The local master password is command-scoped and not persisted by the application.
+
+
+## 13. Phase 6 Security Scanner
+
+Security Scanner is split into a product-owned posture engine and a Tauri desktop UI:
+
+- `crates/dragonforge-security-scanner/` owns fixed platform probes, result semantics, evidence bounding, and posture findings.
+- `apps/security-scanner/` exposes only scanner metadata and one read-only scan command.
+- Security Center marks Security Scanner as Integrated and launches only the expected sibling executable.
+
+Phase 6 is intentionally a one-shot assessment component, not a privileged background monitor. Continuous baseline/change monitoring remains Phase 7 Integrity Monitor work.
+
+### Scanner trust rules
+
+1. The webview cannot supply shell commands, PowerShell fragments, registry paths, executable paths, or remediation instructions.
+2. Windows probes are fixed in native Rust code and execute without requested elevation.
+3. Probe failure or insufficient visibility produces an Unknown result rather than a fabricated pass.
+4. Scanner evidence is bounded and avoids Password Manager, File Vault, and Authenticator secret material.
+5. Phase 6 does not mutate firewall, encryption, update, Defender, UAC, SMB1, Remote Desktop, service, or network configuration.
+6. Listening ports are posture evidence, not proof of vulnerability.
+7. Latest-hotfix metadata is informational and does not claim that no newer update is available.

@@ -4,10 +4,12 @@ members = [
     "apps/password-manager",
     "apps/file-vault",
     "apps/authenticator",
+    "apps/security-scanner",
     "services/password-manager-sync",
     "crates/dragonforge-core",
     "crates/dragonforge-file-vault",
     "crates/dragonforge-authenticator",
+    "crates/dragonforge-security-scanner",
     "crates/dragonforge-crypto",
     "crates/dragonforge-vault",
 ]

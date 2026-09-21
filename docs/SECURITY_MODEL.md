@@ -153,3 +153,19 @@ Security requirements:
 - Authenticator master passwords are not stored in settings or logs.
 
 Authenticator is not a hardware-backed credential vault in Phase 5. Hardware-key/passkey support requires a later threat model and OS/hardware integration review.
+
+
+## Security Scanner observation boundary
+
+Phase 6 introduces a read-only Windows-first posture scanner.
+
+Security requirements:
+- platform probes are fixed native code; the webview cannot inject shell fragments or select arbitrary commands;
+- the scanner does not request administrator elevation or automatically remediate findings;
+- inaccessible or unsupported checks return Unknown instead of being treated as secure;
+- listener enumeration is bounded and reports local exposure context without claiming that an open port is inherently vulnerable;
+- update metadata is advisory and does not claim completeness of Windows Update availability;
+- scanner output must not read, include, or inspect Password Manager secrets, File Vault plaintext, Authenticator seeds, or recovery codes;
+- Security Center starts the scanner only by its exact co-located sibling executable path.
+
+The scanner is not a traditional antivirus engine, exploit scanner, EDR agent, or authenticated vulnerability-feed service. Those capabilities are outside the Phase 6 trust boundary.
