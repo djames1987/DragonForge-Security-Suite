@@ -42,20 +42,10 @@ impl AgentServer {
     }
 
     fn run_internal(&self, max_connections: Option<usize>) -> Result<()> {
-        if AgentClient::from_paths(self.paths.clone()).health().is_ok() {
-            return Err(AgentError::InvalidState(
-                "DragonForge Agent is already running",
-            ));
-        }
-        cleanup_stale_runtime(&self.paths);
-
         fs::create_dir_all(self.paths.root())
             .map_err(|_| AgentError::Io("agent runtime directory could not be created"))?;
-        let lock = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(self.paths.lock_file())
-            .map_err(|_| AgentError::InvalidState("DragonForge Agent is already starting"))?;
+        let lock = acquire_runtime_lock(&self.paths)?;
+        cleanup_runtime_files(&self.paths);
         let _guard = RuntimeGuard {
             paths: self.paths.clone(),
             _lock: Some(lock),
@@ -98,7 +88,8 @@ struct RuntimeGuard {
 impl Drop for RuntimeGuard {
     fn drop(&mut self) {
         let _ = self._lock.take();
-        cleanup_stale_runtime(&self.paths);
+        cleanup_runtime_files(&self.paths);
+        let _ = fs::remove_file(self.paths.lock_file());
     }
 }
 
@@ -256,10 +247,42 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
         .map_err(|_| AgentError::Io("agent runtime file could not be finalized"))
 }
 
-fn cleanup_stale_runtime(paths: &AgentPaths) {
+fn acquire_runtime_lock(paths: &AgentPaths) -> Result<fs::File> {
+    let open_new = || {
+        OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(paths.lock_file())
+    };
+    match open_new() {
+        Ok(lock) => Ok(lock),
+        Err(_) => {
+            if AgentClient::from_paths(paths.clone()).health().is_ok() {
+                return Err(AgentError::InvalidState(
+                    "DragonForge Agent is already running",
+                ));
+            }
+            let stale = fs::metadata(paths.lock_file())
+                .and_then(|metadata| metadata.modified())
+                .and_then(|modified| modified.elapsed().map_err(std::io::Error::other))
+                .is_ok_and(|age| age >= Duration::from_secs(5));
+            if !stale {
+                return Err(AgentError::InvalidState(
+                    "DragonForge Agent is already starting",
+                ));
+            }
+            let _ = fs::remove_file(paths.lock_file());
+            cleanup_runtime_files(paths);
+            open_new().map_err(|_| {
+                AgentError::InvalidState("DragonForge Agent runtime lock could not be acquired")
+            })
+        }
+    }
+}
+
+fn cleanup_runtime_files(paths: &AgentPaths) {
     let _ = fs::remove_file(paths.runtime_file());
     let _ = fs::remove_file(paths.credential_file());
-    let _ = fs::remove_file(paths.lock_file());
 }
 
 #[cfg(test)]
