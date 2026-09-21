@@ -36,6 +36,10 @@ pub fn integrity_monitor_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-integrity-monitor")
 }
 
+pub fn network_guard_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-network-guard")
+}
+
 fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
     if !target.is_file() {
         return Err(CoreError::new_safe(
@@ -121,6 +125,23 @@ pub fn launch_integrity_monitor() -> CoreResult<()> {
     launch_sibling(target, "Integrity Monitor")
 }
 
+pub fn launch_network_guard() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = network_guard_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Network Guard sibling path",
+        )
+    })?;
+
+    launch_sibling(target, "Network Guard")
+}
+
 pub fn launch_file_vault() -> CoreResult<()> {
     let current = env::current_exe().map_err(|_| {
         CoreError::new_safe(
@@ -144,7 +165,7 @@ mod tests {
 
     use super::{
         authenticator_sibling, file_vault_sibling, integrity_monitor_sibling,
-        password_manager_sibling, security_scanner_sibling,
+        network_guard_sibling, password_manager_sibling, security_scanner_sibling,
     };
 
     #[test]
@@ -213,6 +234,23 @@ mod tests {
         };
 
         assert_eq!(integrity_monitor_sibling(center), Some(expected));
+    }
+
+    #[test]
+    fn network_guard_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-network-guard.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-network-guard")
+        };
+
+        assert_eq!(network_guard_sibling(center), Some(expected));
     }
 
     #[test]
