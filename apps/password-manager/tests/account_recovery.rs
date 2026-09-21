@@ -1,5 +1,5 @@
 use std::{
-    sync::{Arc, mpsc},
+    sync::{Arc, Mutex, MutexGuard, OnceLock, mpsc},
     thread,
 };
 
@@ -11,6 +11,14 @@ use tempfile::tempdir;
 use uuid::Uuid;
 
 const MASTER: &str = "phase-ten-test-master";
+
+fn recovery_test_guard() -> MutexGuard<'static, ()> {
+    static RECOVERY_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    RECOVERY_TEST_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 fn token() -> String {
     "10".repeat(32)
@@ -56,6 +64,7 @@ fn login() -> ItemDraft {
 
 #[test]
 fn lost_device_recovery_restores_vault_and_rotates_trust() {
+    let _test_guard = recovery_test_guard();
     let server = start_sync_server();
     let temp = tempdir().unwrap();
     let original_path = temp.path().join("original.dfvault");
@@ -131,6 +140,7 @@ fn lost_device_recovery_restores_vault_and_rotates_trust() {
 
 #[test]
 fn wrong_master_does_not_consume_recovery_kit() {
+    let _test_guard = recovery_test_guard();
     let server = start_sync_server();
     let temp = tempdir().unwrap();
     let original_path = temp.path().join("master-original.dfvault");
