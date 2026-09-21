@@ -141,6 +141,10 @@
     state.unlocked = false;
     document.getElementById("master-password").value = "";
     document.getElementById("recovery-codes").value = "";
+    document.getElementById("otp-uri").value = "";
+    document.getElementById("manual-secret").value = "";
+    document.getElementById("new-password").value = "";
+    document.getElementById("confirm-new-password").value = "";
     const badge = document.getElementById("lock-state");
     badge.textContent = "Locked";
     badge.classList.remove("unlocked");
