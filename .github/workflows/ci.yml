@@ -101,13 +101,6 @@ jobs:
           node --check apps/integrity-monitor/ui/app.js
           node --check apps/network-guard/ui/app.js
 
-      - name: Build suite applications
+      - name: Build all suite applications for testing
         shell: pwsh
-        run: |
-          cargo build -p dragonforge-desktop --bin dragonforge-desktop
-          cargo build -p dragonforge-security-center
-          cargo build -p dragonforge-file-vault-app
-          cargo build -p dragonforge-authenticator-app
-          cargo build -p dragonforge-security-scanner-app
-          cargo build -p dragonforge-integrity-monitor-app
-          cargo build -p dragonforge-network-guard-app
+        run: ./scripts/build-all-apps-for-testing.ps1
