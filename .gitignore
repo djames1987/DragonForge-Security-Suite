@@ -17,6 +17,7 @@ coverage/
 artifacts/
 test-results/
 /test-logs/
+/dist/
 
 # DragonForge vaults and per-vault sync credentials/state
 *.dfvault
