@@ -80,12 +80,7 @@ impl EventStore {
 
     #[must_use]
     pub fn recent(&self, limit: usize) -> Vec<DashboardEvent> {
-        self.events
-            .iter()
-            .rev()
-            .take(limit)
-            .cloned()
-            .collect()
+        self.events.iter().rev().take(limit).cloned().collect()
     }
 
     pub fn clear(&mut self) {
