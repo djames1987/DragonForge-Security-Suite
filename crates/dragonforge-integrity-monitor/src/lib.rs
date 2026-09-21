@@ -477,7 +477,14 @@ fn collect_startup_entries(entries: &mut Vec<BaselineEntry>, warnings: &mut Vec<
             continue;
         }
         files.sort();
-        for relative in files.into_iter().take(MAX_STARTUP_FILES) {
+        if files.len() > MAX_STARTUP_FILES {
+            complete = false;
+            warnings.push(format!(
+                "Startup folder {scope} exceeded the item limit; that surface will be excluded from comparison."
+            ));
+            files.truncate(MAX_STARTUP_FILES);
+        }
+        for relative in files {
             let full = root.join(&relative);
             match hash_file(&full, MAX_HASHED_FILE_BYTES) {
                 Ok(hash) => entries.push(BaselineEntry {
@@ -504,7 +511,13 @@ fn walk_files(
     files: &mut Vec<PathBuf>,
     depth: usize,
 ) -> io::Result<()> {
-    if depth > 8 || files.len() >= MAX_STARTUP_FILES {
+    if depth > 8 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "startup traversal depth limit reached",
+        ));
+    }
+    if files.len() > MAX_STARTUP_FILES {
         return Ok(());
     }
     if !current.exists() {
@@ -512,7 +525,7 @@ fn walk_files(
     }
 
     for item in fs::read_dir(current)? {
-        if files.len() >= MAX_STARTUP_FILES {
+        if files.len() > MAX_STARTUP_FILES {
             break;
         }
         let item = item?;
