@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 4 File Vault implemented. DragonForge now includes the Security Center, Password Manager, and a dedicated encrypted file/folder container application.
+> **Current status:** Phase 5 Authenticator implemented. DragonForge now includes the Security Center, Password Manager, File Vault, and a local encrypted TOTP/HOTP Authenticator.
 
 ## Canonical repository
 
@@ -20,10 +20,12 @@ DragonForge-Security-Suite/
 ├── apps/
 │   ├── security-center/               # Unified Tauri desktop dashboard
 │   ├── password-manager/              # Migrated Password Manager desktop application
-│   └── file-vault/                    # Encrypted file/folder container application
+│   ├── file-vault/                    # Encrypted file/folder container application
+│   └── authenticator/                 # Encrypted TOTP/HOTP desktop application
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
+│   ├── dragonforge-authenticator/     # Authenticator OTP + encrypted store engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -39,7 +41,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_1_1_BASELINE.md
 │   ├── PHASE_2_SHARED_FOUNDATION.md
 │   ├── PHASE_3_SECURITY_CENTER.md
-│   └── PHASE_4_FILE_VAULT.md
+│   ├── PHASE_4_FILE_VAULT.md
+│   └── PHASE_5_AUTHENTICATOR.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -82,8 +85,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 2 — Shared foundation: **Complete**
 - Phase 3 — Security Center: **Complete**
 - Phase 4 — File Vault: **Complete**
-- Phase 5 — Authenticator: **Next**
-- Phase 6 — Security Scanner
+- Phase 5 — Authenticator: **Complete**
+- Phase 6 — Security Scanner: **Next**
 - Phase 7 — Integrity Monitor
 - Phase 8 — Network Guard
 - Phase 9 — Backup & Recovery
@@ -136,3 +139,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase4-fil
 ```
 
 See [docs/PHASE_4_FILE_VAULT.md](docs/PHASE_4_FILE_VAULT.md).
+
+
+## Authenticator
+
+Phase 5 adds a local encrypted TOTP/HOTP authenticator under `apps/authenticator/`.
+
+Current capabilities:
+- import standard `otpauth://` TOTP/HOTP URIs;
+- manual TOTP/HOTP account setup;
+- RFC-compatible code generation;
+- encrypted OTP secrets and account metadata;
+- encrypted recovery-code storage with explicit reveal;
+- persistent HOTP counters;
+- Security Center launch integration.
+
+Run Phase 5 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase5-authenticator-tests.ps1
+```
+
+See [docs/PHASE_5_AUTHENTICATOR.md](docs/PHASE_5_AUTHENTICATOR.md).
