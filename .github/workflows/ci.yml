@@ -1,20 +1,26 @@
-name: Security Center CI
+name: Suite Application CI
 
 on:
   push:
     branches: ["main"]
     paths:
       - "apps/security-center/**"
+      - "apps/file-vault/**"
       - "crates/dragonforge-core/**"
+      - "crates/dragonforge-file-vault/**"
       - "scripts/run-phase3-security-center-tests.ps1"
+      - "scripts/run-phase4-file-vault-tests.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
   pull_request:
     paths:
       - "apps/security-center/**"
+      - "apps/file-vault/**"
       - "crates/dragonforge-core/**"
+      - "crates/dragonforge-file-vault/**"
       - "scripts/run-phase3-security-center-tests.ps1"
+      - "scripts/run-phase4-file-vault-tests.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
@@ -26,8 +32,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  security-center:
-    name: Security Center
+  suite-applications:
+    name: Security Center + File Vault
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -50,17 +56,23 @@ jobs:
       - name: Format
         run: cargo fmt --all --check
 
-      - name: Check Security Center
-        run: cargo check -p dragonforge-core -p dragonforge-security-center --all-targets
+      - name: Check suite applications
+        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app --all-targets
 
-      - name: Clippy Security Center
-        run: cargo clippy -p dragonforge-core -p dragonforge-security-center --all-targets -- -D warnings
+      - name: Clippy suite applications
+        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app --all-targets -- -D warnings
 
-      - name: Test Security Center
-        run: cargo test -p dragonforge-core -p dragonforge-security-center --all-targets
+      - name: Test suite applications
+        run: cargo test -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app --all-targets
 
-      - name: Check dashboard JavaScript
-        run: node --check apps/security-center/ui/app.js
+      - name: Check application JavaScript
+        shell: pwsh
+        run: |
+          node --check apps/security-center/ui/app.js
+          node --check apps/file-vault/ui/app.js
 
-      - name: Build Security Center
-        run: cargo build -p dragonforge-security-center
+      - name: Build suite applications
+        shell: pwsh
+        run: |
+          cargo build -p dragonforge-security-center
+          cargo build -p dragonforge-file-vault-app
