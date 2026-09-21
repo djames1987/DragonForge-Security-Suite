@@ -30,7 +30,7 @@ pub enum FindingStatus {
     Info,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Probe {
     Firewall,
     BitLocker,
