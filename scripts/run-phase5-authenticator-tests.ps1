@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $LogDirectory = Join-Path $RepoRoot "test-logs"
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$LogPath = Join-Path $LogDirectory "dragonforge-phase4-file-vault-$Timestamp.log"
+$LogPath = Join-Path $LogDirectory "dragonforge-phase5-authenticator-$Timestamp.log"
 $HashPath = "$LogPath.sha256"
 
 New-Item -ItemType Directory -Force -Path $LogDirectory | Out-Null
@@ -30,30 +30,33 @@ function Invoke-Checked {
 
 try {
     Start-Transcript -Path $LogPath -Force | Out-Null
-    Write-Host "DragonForge Security Suite - Phase 4 File Vault verification"
+    Write-Host "DragonForge Security Suite - Phase 5 Authenticator verification"
     Write-Host "Repository: $RepoRoot"
     Write-Host "Started: $(Get-Date -Format o)"
 
-    Invoke-Checked cargo "fmt" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--check"
-    Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets"
-    Invoke-Checked cargo "clippy" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets" "--" "-D" "warnings"
+    Invoke-Checked cargo "fmt" "--all" "--check"
+    Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--all-targets"
+    Invoke-Checked cargo "clippy" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--all-targets" "--" "-D" "warnings"
+    Invoke-Checked cargo "test" "-p" "dragonforge-authenticator" "-p" "dragonforge-authenticator-app" "--all-targets"
     Invoke-Checked cargo "test" "-p" "dragonforge-file-vault" "-p" "dragonforge-file-vault-app" "--all-targets"
     Invoke-Checked cargo "test" "-p" "dragonforge-core" "-p" "dragonforge-security-center" "--all-targets"
+    Invoke-Checked node "--check" "apps/authenticator/ui/app.js"
     Invoke-Checked node "--check" "apps/file-vault/ui/app.js"
     Invoke-Checked node "--check" "apps/security-center/ui/app.js"
 
     if (-not $SkipBuild) {
         Invoke-Checked cargo "build" "-p" "dragonforge-desktop" "--bin" "dragonforge-desktop"
         Invoke-Checked cargo "build" "-p" "dragonforge-file-vault-app"
+        Invoke-Checked cargo "build" "-p" "dragonforge-authenticator-app"
         Invoke-Checked cargo "build" "-p" "dragonforge-security-center"
     }
 
     Write-Host ""
-    Write-Host "PHASE 4 FILE VAULT VERIFICATION: PASS"
+    Write-Host "PHASE 5 AUTHENTICATOR VERIFICATION: PASS"
 }
 catch {
     Write-Host ""
-    Write-Host "PHASE 4 FILE VAULT VERIFICATION: FAIL"
+    Write-Host "PHASE 5 AUTHENTICATOR VERIFICATION: FAIL"
     Write-Host $_
     throw
 }

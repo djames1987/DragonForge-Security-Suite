@@ -96,10 +96,10 @@ impl ComponentRegistry {
                 ComponentStatus::new(
                     Component::Authenticator,
                     "Authenticator",
-                    "TOTP/HOTP and recovery material management.",
-                    ComponentState::Planned,
-                    "Planned",
-                    "Scheduled for Phase 5.",
+                    "TOTP/HOTP and encrypted recovery material management.",
+                    ComponentState::Integrated,
+                    "Integrated",
+                    "Phase 5 local Authenticator application.",
                 ),
                 ComponentStatus::new(
                     Component::SecurityScanner,

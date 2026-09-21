@@ -168,6 +168,23 @@ impl AppState {
         self.agent.status()
     }
 
+    pub fn launch_authenticator(&self) -> Result<(), String> {
+        orchestration::launch_authenticator().map_err(|error| error.to_string())?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.authenticator-launched",
+            "Authenticator launch requested",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.authenticator-launched",
+            "Authenticator launch requested",
+        );
+        Ok(())
+    }
+
     pub fn launch_file_vault(&self) -> Result<(), String> {
         orchestration::launch_file_vault().map_err(|error| error.to_string())?;
         self.lock_events()?.push(

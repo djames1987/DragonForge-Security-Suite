@@ -66,7 +66,9 @@
         ? '<button class="component-action" data-launch="password-manager">Open Password Manager</button>'
         : component.id === "file-vault"
           ? '<button class="component-action" data-launch="file-vault">Open File Vault</button>'
-          : "";
+          : component.id === "authenticator"
+            ? '<button class="component-action" data-launch="authenticator">Open Authenticator</button>'
+            : "";
     return `
       <article class="component-card">
         <div class="component-card-top">
@@ -91,6 +93,9 @@
     });
     document.querySelectorAll('[data-launch="file-vault"]').forEach((button) => {
       button.addEventListener("click", launchFileVault);
+    });
+    document.querySelectorAll('[data-launch="authenticator"]').forEach((button) => {
+      button.addEventListener("click", launchAuthenticator);
     });
   }
   
@@ -179,6 +184,16 @@
     }
   }
   
+  async function launchAuthenticator() {
+    try {
+      await invoke("launch_authenticator");
+      toast("Authenticator launch requested.");
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
   async function launchFileVault() {
     try {
       await invoke("launch_file_vault");

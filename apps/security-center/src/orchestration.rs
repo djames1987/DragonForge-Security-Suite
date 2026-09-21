@@ -24,6 +24,10 @@ pub fn file_vault_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-file-vault")
 }
 
+pub fn authenticator_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-authenticator")
+}
+
 fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
     if !target.is_file() {
         return Err(CoreError::new_safe(
@@ -58,6 +62,23 @@ pub fn launch_password_manager() -> CoreResult<()> {
     launch_sibling(target, "Password Manager")
 }
 
+pub fn launch_authenticator() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = authenticator_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Authenticator sibling path",
+        )
+    })?;
+
+    launch_sibling(target, "Authenticator")
+}
+
 pub fn launch_file_vault() -> CoreResult<()> {
     let current = env::current_exe().map_err(|_| {
         CoreError::new_safe(
@@ -79,7 +100,7 @@ pub fn launch_file_vault() -> CoreResult<()> {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{file_vault_sibling, password_manager_sibling};
+    use super::{authenticator_sibling, file_vault_sibling, password_manager_sibling};
 
     #[test]
     fn password_manager_path_is_strictly_sibling_scoped() {
@@ -96,6 +117,23 @@ mod tests {
         };
 
         assert_eq!(password_manager_sibling(center), Some(expected));
+    }
+
+    #[test]
+    fn authenticator_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-authenticator.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-authenticator")
+        };
+
+        assert_eq!(authenticator_sibling(center), Some(expected));
     }
 
     #[test]

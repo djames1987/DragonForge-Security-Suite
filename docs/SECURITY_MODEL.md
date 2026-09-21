@@ -136,3 +136,20 @@ Security requirements:
 - File Vault passwords are not stored in settings, logs, or container metadata.
 
 The current Phase 4 implementation is a local container product, not a secure-deletion tool and not a replacement for full-disk encryption. Plaintext source files remain under the user's control after container creation.
+
+
+## Authenticator secret boundary
+
+Phase 5 introduces the local `.dfauth` encrypted Authenticator store.
+
+Security requirements:
+- OTP secrets and recovery codes are encrypted with AES-256-GCM;
+- the store key is derived with Argon2id;
+- store/KDF version metadata is authenticated as associated data;
+- account list responses omit OTP secrets and recovery-code contents;
+- recovery codes require an explicit reveal operation;
+- HOTP counter updates are persisted in the encrypted store;
+- malformed OTP URIs, weak/invalid secrets, unsupported parameters, and oversized stores are rejected;
+- Authenticator master passwords are not stored in settings or logs.
+
+Authenticator is not a hardware-backed credential vault in Phase 5. Hardware-key/passkey support requires a later threat model and OS/hardware integration review.

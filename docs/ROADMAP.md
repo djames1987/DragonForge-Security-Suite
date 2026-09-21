@@ -94,11 +94,24 @@ Delivered:
 See [PHASE_4_FILE_VAULT.md](PHASE_4_FILE_VAULT.md).
 
 ## Phase 5 — Authenticator
-**Status: Next**
+**Status: Complete**
 
-TOTP/HOTP, recovery material, and later hardware-backed authentication integrations.
+Delivered:
+- dedicated Authenticator engine crate and Tauri desktop app;
+- RFC-compatible TOTP and HOTP generation;
+- SHA-1/SHA-256/SHA-512 and 6/8 digit support;
+- otpauth URI import and manual account entry;
+- encrypted local account/secret store with Argon2id + AES-256-GCM;
+- encrypted recovery-code management with explicit reveal;
+- persistent HOTP counter advancement;
+- encrypted store master-password rotation;
+- Security Center integration and strict sibling-app launch;
+- Phase 5 verification script, documentation, and CI coverage.
+
+See [PHASE_5_AUTHENTICATOR.md](PHASE_5_AUTHENTICATOR.md).
 
 ## Phase 6 — Security Scanner
+**Status: Next**
 
 Assess system security posture, updates, firewall, disk encryption, exposed services, and common configuration weaknesses.
 

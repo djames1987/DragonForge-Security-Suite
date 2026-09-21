@@ -16,7 +16,7 @@ The current runtime/repository model is:
      +-----------+-----------+
      |           |           |
  Password     File Vault  Authenticator
- Manager      (current)   (future)
+ Manager      (current)   (current)
      |
      +---- Password Manager sync service
      |
@@ -43,9 +43,9 @@ Current:
 - `security-center/`
 - `password-manager/`
 - `file-vault/`
+- `authenticator/`
 
 Future:
-- Authenticator
 - Security Scanner
 - Network Guard UI
 - other user-facing suite applications
@@ -67,6 +67,7 @@ Reusable Rust libraries.
 Current:
 - `dragonforge-core`: suite-wide, non-cryptographic foundation.
 - `dragonforge-file-vault`: File Vault product-owned encrypted-container engine.
+- `dragonforge-authenticator`: Authenticator product-owned OTP and encrypted-store engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -244,3 +245,23 @@ The File Vault format is deliberately independent from the Password Manager vaul
 5. Creation and extraction do not overwrite existing destinations.
 6. Extraction occurs in a randomized temporary sibling directory and is renamed into place only after success.
 7. File Vault passwords are never persisted by the File Vault application.
+
+
+## 12. Phase 5 Authenticator
+
+Authenticator is split into a product-owned OTP/storage engine and a Tauri desktop UI:
+
+- `crates/dragonforge-authenticator/` owns TOTP/HOTP generation, otpauth parsing, encrypted store format, account validation, HOTP counters, and recovery-code storage.
+- `apps/authenticator/` exposes narrow native commands for store creation/unlock, import, account management, code generation, and recovery-code management.
+- Security Center marks Authenticator as Integrated and launches only the expected sibling executable.
+
+Authenticator secrets are not moved into `dragonforge-core`, Password Manager storage, or File Vault containers. Its `.dfauth` format has a separate version and lifecycle.
+
+### Authenticator trust rules
+
+1. OTP secrets and recovery codes are encrypted at rest.
+2. Ordinary account listings never expose OTP secrets or recovery-code values.
+3. Recovery codes require an explicit reveal action.
+4. HOTP counters are advanced and persisted only through the HOTP consume action.
+5. The app does not claim hardware-backed credential support in Phase 5.
+6. The local master password is command-scoped and not persisted by the application.
