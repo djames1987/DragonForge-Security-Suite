@@ -121,7 +121,7 @@ try {
 
     Write-Log "=== Phase 10 secure recovery regression ==="
     Invoke-Logged cargo "test" "-p" "dragonforge-sync-server" "--test" "account_recovery" "--" "--nocapture"
-    Invoke-Logged cargo "test" "-p" "dragonforge-desktop" "--test" "account_recovery" "--" "--nocapture"
+    Invoke-Logged cargo "test" "-p" "dragonforge-desktop" "--test" "account_recovery" "--" "--nocapture" "--test-threads=1"
 
     Write-Log "=== Phase 9 device enrollment regression ==="
     Invoke-Logged cargo "test" "-p" "dragonforge-sync-server" "--test" "device_enrollment" "--" "--nocapture"
