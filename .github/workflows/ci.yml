@@ -74,5 +74,6 @@ jobs:
       - name: Build suite applications
         shell: pwsh
         run: |
+          cargo build -p dragonforge-desktop --bin dragonforge-desktop
           cargo build -p dragonforge-security-center
           cargo build -p dragonforge-file-vault-app
