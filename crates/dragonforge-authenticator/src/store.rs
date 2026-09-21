@@ -214,7 +214,7 @@ pub fn generate_code(
             account.algorithm,
             account.digits,
             counter,
-        )?
+        )?,
     };
     Ok(code_view(id, generated))
 }
