@@ -463,7 +463,7 @@ fn validate_payload(payload: &SharePayload) -> Result<()> {
         ));
     }
     if let Some(secret) = &payload.secret_text {
-        if secret.as_bytes().len() > MAX_SECRET_BYTES {
+        if secret.len() > MAX_SECRET_BYTES {
             return Err(ShareError::Integrity(
                 "share secret exceeds the safe size limit",
             ));
