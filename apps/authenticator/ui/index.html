@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DragonForge Authenticator</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">DF</div>
+        <div>
+          <strong>DragonForge</strong>
+          <span>Authenticator</span>
+        </div>
+      </div>
+      <button class="nav active" data-view="accounts">Accounts</button>
+      <button class="nav" data-view="add">Add account</button>
+      <button class="nav" data-view="recovery">Recovery codes</button>
+      <button class="nav" data-view="about">About</button>
+      <div class="security-note">Secrets and recovery codes are encrypted locally. Nothing is sent to a server.</div>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h1 id="page-title">Authenticator accounts</h1>
+        </div>
+        <div id="lock-state" class="pill">Locked</div>
+      </header>
+
+      <section class="unlock panel">
+        <label>
+          <span>Encrypted store</span>
+          <input id="store-path" type="text">
+        </label>
+        <label>
+          <span>Master password</span>
+          <input id="master-password" type="password" autocomplete="current-password">
+        </label>
+        <div class="unlock-actions">
+          <button id="unlock-button" class="primary">Unlock</button>
+          <button id="create-button">Create new store</button>
+        </div>
+      </section>
+
+      <section id="view-accounts" class="view active">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Local codes</div>
+            <h2>Your accounts</h2>
+          </div>
+          <button id="refresh-button">Refresh</button>
+        </div>
+        <div id="accounts" class="account-grid">
+          <div class="empty">Unlock the encrypted store to view accounts.</div>
+        </div>
+      </section>
+
+      <section id="view-add" class="view">
+        <div class="two-column">
+          <form id="uri-form" class="panel form-grid">
+            <div>
+              <div class="eyebrow">Recommended import</div>
+              <h2>Import otpauth URI</h2>
+            </div>
+            <label>
+              <span>otpauth:// URI</span>
+              <textarea id="otp-uri" rows="5" required></textarea>
+            </label>
+            <button class="primary" type="submit">Import account</button>
+          </form>
+
+          <form id="manual-form" class="panel form-grid">
+            <div>
+              <div class="eyebrow">Manual setup</div>
+              <h2>Add TOTP or HOTP</h2>
+            </div>
+            <label><span>Label</span><input id="manual-label" required></label>
+            <label><span>Issuer</span><input id="manual-issuer"></label>
+            <label><span>Base32 secret</span><input id="manual-secret" type="password" required></label>
+            <div class="row">
+              <label><span>Algorithm</span><select id="manual-algorithm"><option>SHA1</option><option>SHA256</option><option>SHA512</option></select></label>
+              <label><span>Digits</span><select id="manual-digits"><option>6</option><option>8</option></select></label>
+            </div>
+            <div class="row">
+              <label><span>Type</span><select id="manual-kind"><option value="totp">TOTP</option><option value="hotp">HOTP</option></select></label>
+              <label><span id="period-label">Period (seconds)</span><input id="period-counter" type="number" min="0" value="30"></label>
+            </div>
+            <button class="primary" type="submit">Add account</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="view-recovery" class="view">
+        <div class="panel form-grid">
+          <div>
+            <div class="eyebrow">Encrypted recovery material</div>
+            <h2>Recovery codes</h2>
+            <p>Select an account, then explicitly reveal or replace its encrypted recovery codes.</p>
+          </div>
+          <label><span>Account</span><select id="recovery-account"></select></label>
+          <label>
+            <span>Recovery codes</span>
+            <small>One code per line. Saving replaces the current set.</small>
+            <textarea id="recovery-codes" rows="10"></textarea>
+          </label>
+          <div class="row actions">
+            <button id="reveal-recovery" type="button">Reveal</button>
+            <button id="save-recovery" class="primary" type="button">Save encrypted codes</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="panel about">
+          <div class="mark large">DF</div>
+          <h2>DragonForge Authenticator</h2>
+          <p>Phase 5 provides local encrypted TOTP/HOTP accounts and recovery-code storage.</p>
+          <div class="facts"><span>TOTP / HOTP</span><span>otpauth import</span><span>AES-256-GCM</span><span>Argon2id</span><span>Local only</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast-region" class="toast-region"></div>
+  <script src="app.js"></script>
+</body>
+</html>
