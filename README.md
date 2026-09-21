@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 6 Security Scanner implemented; local verification is pending. DragonForge now includes the Security Center, Password Manager, File Vault, Authenticator, and a read-only Windows-first security posture scanner.
+> **Current status:** Phase 6 Security Scanner verified complete. DragonForge now includes the Security Center, Password Manager, File Vault, Authenticator, and a read-only Windows-first security posture scanner.
 
 ## Canonical repository
 
@@ -89,7 +89,7 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 3 — Security Center: **Complete**
 - Phase 4 — File Vault: **Complete**
 - Phase 5 — Authenticator: **Verified Complete**
-- Phase 6 — Security Scanner: **Implementation Complete — Local Verification Pending**
+- Phase 6 — Security Scanner: **Verified Complete**
 - Phase 7 — Integrity Monitor: **Next**
 - Phase 8 — Network Guard
 - Phase 9 — Backup & Recovery
