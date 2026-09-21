@@ -8,7 +8,6 @@ pub enum ComponentState {
     Integrated,
     Planned,
     Unavailable,
-    Attention,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -163,7 +162,6 @@ impl ComponentRegistry {
                 ComponentState::Active => active += 1,
                 ComponentState::Integrated => integrated += 1,
                 ComponentState::Planned | ComponentState::Unavailable => planned += 1,
-                ComponentState::Attention => attention += 1,
             }
         }
 
