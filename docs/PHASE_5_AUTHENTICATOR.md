@@ -18,6 +18,7 @@ Phase 5 adds DragonForge Authenticator as a dedicated local TOTP/HOTP applicatio
 - manual TOTP/HOTP account entry;
 - encrypted recovery-code storage and explicit reveal workflow;
 - persistent HOTP counter advancement;
+- encrypted store master-password rotation with fresh salt/nonce;
 - Security Center integration and strict sibling executable launch;
 - local Phase 5 verification script and CI coverage.
 
@@ -34,7 +35,7 @@ The encrypted payload contains:
 
 The store uses AES-256-GCM authenticated encryption and Argon2id password derivation. The version/KDF header is authenticated as associated data. A new random salt and nonce are used on each write.
 
-The application does not persist the master password. Password strings owned by native Tauri commands are zeroized after each command.
+The application does not persist the master password. The user can rotate the master password; the store is decrypted with the current password and re-encrypted with a fresh salt and nonce. Password strings owned by native Tauri commands are zeroized after each command.
 
 ## Validation and limits
 
