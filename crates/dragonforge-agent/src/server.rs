@@ -38,6 +38,10 @@ impl AgentServer {
     }
 
     pub fn run(&self) -> Result<()> {
+        self.run_internal(None)
+    }
+
+    fn run_internal(&self, max_connections: Option<usize>) -> Result<()> {
         if AgentClient::from_paths(self.paths.clone()).health().is_ok() {
             return Err(AgentError::InvalidState(
                 "DragonForge Agent is already running",
@@ -47,6 +51,16 @@ impl AgentServer {
 
         fs::create_dir_all(self.paths.root())
             .map_err(|_| AgentError::Io("agent runtime directory could not be created"))?;
+        let lock = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(self.paths.lock_file())
+            .map_err(|_| AgentError::InvalidState("DragonForge Agent is already starting"))?;
+        let _guard = RuntimeGuard {
+            paths: self.paths.clone(),
+            _lock: lock,
+        };
+
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
             .map_err(|_| AgentError::Io("agent loopback listener could not be created"))?;
         let port = listener
@@ -60,13 +74,30 @@ impl AgentServer {
 
         let started = Instant::now();
         let mut replay = ReplayCache::default();
-        let run_result = listener.incoming().try_for_each(|incoming| {
-            let mut stream =
-                incoming.map_err(|_| AgentError::Io("agent client connection failed"))?;
-            handle_connection(&mut stream, &session_key, started, &mut replay)
-        });
+        let mut handled = 0_usize;
+        loop {
+            let (mut stream, _) = listener
+                .accept()
+                .map_err(|_| AgentError::Io("agent client connection failed"))?;
+            let _ = handle_connection(&mut stream, &session_key, started, &mut replay);
+            handled += 1;
+            if max_connections.is_some_and(|limit| handled >= limit) {
+                break;
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct RuntimeGuard {
+    paths: AgentPaths,
+    _lock: fs::File,
+}
+
+impl Drop for RuntimeGuard {
+    fn drop(&mut self) {
         cleanup_stale_runtime(&self.paths);
-        run_result
     }
 }
 
@@ -227,18 +258,19 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
 fn cleanup_stale_runtime(paths: &AgentPaths) {
     let _ = fs::remove_file(paths.runtime_file());
     let _ = fs::remove_file(paths.credential_file());
+    let _ = fs::remove_file(paths.lock_file());
 }
 
 #[cfg(test)]
 mod tests {
     use std::thread;
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
 
     use base64::Engine;
     use base64::engine::general_purpose::STANDARD as BASE64;
     use tempfile::tempdir;
 
-    use super::{ReplayCache, validate_request};
+    use super::{AgentServer, ReplayCache, validate_request};
     use crate::protocol::{
         AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, NONCE_BYTES, RequestWire, now_ms,
         request_message, sign_hex,
@@ -290,6 +322,35 @@ mod tests {
         let dir = tempdir().expect("tempdir");
         let paths = crate::AgentPaths::from_root(dir.path());
         assert!(crate::AgentClient::from_paths(paths).health().is_err());
-        thread::sleep(Duration::from_millis(1));
+    }
+
+    #[test]
+    fn authenticated_health_round_trip_works() {
+        let dir = tempdir().expect("tempdir");
+        let paths = crate::AgentPaths::from_root(dir.path());
+        let server_paths = paths.clone();
+        let handle = thread::spawn(move || {
+            AgentServer::from_paths(server_paths)
+                .run_internal(Some(1))
+                .expect("server");
+        });
+
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while !paths.runtime_file().is_file() {
+            assert!(Instant::now() < deadline, "agent runtime file was not created");
+            thread::sleep(Duration::from_millis(10));
+        }
+
+        let health = crate::AgentClient::from_paths(paths.clone())
+            .health()
+            .expect("health");
+        assert!(health.available);
+        assert_eq!(health.state, "healthy");
+        assert!(health.capabilities.iter().any(|item| item == "authenticated-ipc"));
+
+        handle.join().expect("server thread");
+        assert!(!paths.runtime_file().exists());
+        assert!(!paths.credential_file().exists());
+        assert!(!paths.lock_file().exists());
     }
 }
