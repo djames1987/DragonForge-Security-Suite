@@ -414,7 +414,7 @@ fn validate_options(options: &CreateShareOptions) -> Result<()> {
     validate_label(&options.recipient_label, true)?;
     validate_label(&options.sender_label, false)?;
     if let Some(secret) = &options.secret_text {
-        if secret.as_bytes().len() > MAX_SECRET_BYTES {
+        if secret.len() > MAX_SECRET_BYTES {
             return Err(ShareError::InvalidInput(
                 "secret text exceeds the safe size limit",
             ));
@@ -486,7 +486,7 @@ fn validate_payload(payload: &SharePayload) -> Result<()> {
                 "share attachment exceeds the safe file-size limit",
             ));
         }
-        let _ = decoded_verified_bytes(attachment)?;
+        decoded_verified_bytes(attachment)?;
         total = total
             .checked_add(attachment.size)
             .ok_or(ShareError::Integrity("share attachment byte count overflowed"))?;
@@ -658,8 +658,10 @@ mod tests {
     use tempfile::tempdir;
 
     use super::{
-        CreateShareOptions, create_share, extract_attachments, reveal_secret, verify_share,
+        CreateShareOptions, SharePayload, create_share, extract_attachments, reject_if_expired,
+        reveal_secret, validate_payload, verify_share,
     };
+    use crate::format::FORMAT_VERSION;
 
     const PASSWORD: &str = "correct horse battery staple";
 
@@ -726,16 +728,18 @@ mod tests {
     }
 
     #[test]
-    fn expired_share_can_verify_but_cannot_reveal() {
-        let dir = tempdir().expect("tempdir");
-        let package = dir.path().join("secret.dfshare");
-        create_share(&basic_options(), &package, PASSWORD).expect("create");
-
-        let mut bytes = fs::read(&package).expect("read");
-        let last = bytes.len() - 1;
-        bytes[last] ^= 0x01;
-        fs::write(&package, bytes).expect("tamper");
-        assert!(verify_share(&package, PASSWORD).is_err());
+    fn expired_payload_is_rejected_for_content_access() {
+        let payload = SharePayload {
+            format_version: FORMAT_VERSION,
+            created_at_ms: 1,
+            expires_at_ms: 2,
+            sender_label: "Alice".to_owned(),
+            recipient_label: "Bob".to_owned(),
+            secret_text: Some("secret".to_owned()),
+            attachments: Vec::new(),
+        };
+        validate_payload(&payload).expect("valid expired payload");
+        assert!(reject_if_expired(&payload).is_err());
     }
 
     #[test]
