@@ -64,12 +64,16 @@ impl AgentClient {
         let descriptor_bytes = fs::read(self.paths.runtime_file())
             .map_err(|_| AgentError::Unavailable("agent runtime descriptor is unavailable"))?;
         if descriptor_bytes.len() > MAX_WIRE_BYTES {
-            return Err(AgentError::Protocol("agent runtime descriptor is oversized"));
+            return Err(AgentError::Protocol(
+                "agent runtime descriptor is oversized",
+            ));
         }
         let descriptor: RuntimeDescriptor = serde_json::from_slice(&descriptor_bytes)
             .map_err(|_| AgentError::Protocol("agent runtime descriptor is malformed"))?;
         if descriptor.format_version != 1 || descriptor.protocol_major != AGENT_PROTOCOL_MAJOR {
-            return Err(AgentError::Protocol("agent runtime descriptor is incompatible"));
+            return Err(AgentError::Protocol(
+                "agent runtime descriptor is incompatible",
+            ));
         }
 
         let key = read_session_key(&self.paths)?;
@@ -115,13 +119,17 @@ impl AgentClient {
             .read_line(&mut line)
             .map_err(|_| AgentError::Io("agent response could not be read"))?;
         if count == 0 || count >= MAX_WIRE_BYTES {
-            return Err(AgentError::Protocol("agent response is missing or oversized"));
+            return Err(AgentError::Protocol(
+                "agent response is missing or oversized",
+            ));
         }
 
         let response: ResponseWire = serde_json::from_str(line.trim_end())
             .map_err(|_| AgentError::Protocol("agent response is malformed"))?;
         if response.request_id != request.request_id {
-            return Err(AgentError::Protocol("agent response request ID does not match"));
+            return Err(AgentError::Protocol(
+                "agent response request ID does not match",
+            ));
         }
         verify_hex(&key, &response_message(&response), &response.auth_tag_hex)?;
         if !response.ok {
