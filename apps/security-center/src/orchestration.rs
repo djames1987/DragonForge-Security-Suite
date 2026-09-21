@@ -20,6 +20,10 @@ pub fn password_manager_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-desktop")
 }
 
+pub fn agent_sibling(center_executable: &Path) -> Option<PathBuf> {
+    sibling_executable(center_executable, "dragonforge-agent")
+}
+
 pub fn file_vault_sibling(center_executable: &Path) -> Option<PathBuf> {
     sibling_executable(center_executable, "dragonforge-file-vault")
 }
@@ -62,6 +66,39 @@ fn launch_sibling(target: PathBuf, display_name: &str) -> CoreResult<()> {
             format!("unable to start the {display_name} application"),
         )
     })?;
+    Ok(())
+}
+
+pub fn launch_agent() -> CoreResult<()> {
+    let current = env::current_exe().map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the Security Center executable path",
+        )
+    })?;
+    let target = agent_sibling(&current).ok_or_else(|| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to resolve the DragonForge Agent sibling path",
+        )
+    })?;
+
+    if !target.is_file() {
+        return Err(CoreError::new_safe(
+            ErrorCode::InvalidConfiguration,
+            "DragonForge Agent is not installed beside Security Center",
+        ));
+    }
+
+    Command::new(target)
+        .arg("--serve")
+        .spawn()
+        .map_err(|_| {
+            CoreError::new_safe(
+                ErrorCode::Internal,
+                "unable to start the DragonForge Agent",
+            )
+        })?;
     Ok(())
 }
 
@@ -206,10 +243,27 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use super::{
-        authenticator_sibling, backup_recovery_sibling, file_vault_sibling,
+        agent_sibling, authenticator_sibling, backup_recovery_sibling, file_vault_sibling,
         integrity_monitor_sibling, network_guard_sibling, password_manager_sibling,
         secure_share_sibling, security_scanner_sibling,
     };
+
+    #[test]
+    fn agent_path_is_strictly_sibling_scoped() {
+        let center = if cfg!(target_os = "windows") {
+            Path::new(r"C:\DragonForge\dragonforge-security-center.exe")
+        } else {
+            Path::new("/opt/dragonforge/dragonforge-security-center")
+        };
+
+        let expected = if cfg!(target_os = "windows") {
+            PathBuf::from(r"C:\DragonForge\dragonforge-agent.exe")
+        } else {
+            PathBuf::from("/opt/dragonforge/dragonforge-agent")
+        };
+
+        assert_eq!(agent_sibling(center), Some(expected));
+    }
 
     #[test]
     fn password_manager_path_is_strictly_sibling_scoped() {
