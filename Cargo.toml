@@ -7,6 +7,7 @@ members = [
     "apps/security-scanner",
     "apps/integrity-monitor",
     "apps/network-guard",
+    "apps/backup-recovery",
     "services/password-manager-sync",
     "crates/dragonforge-core",
     "crates/dragonforge-file-vault",
@@ -14,6 +15,7 @@ members = [
     "crates/dragonforge-security-scanner",
     "crates/dragonforge-integrity-monitor",
     "crates/dragonforge-network-guard",
+    "crates/dragonforge-backup-recovery",
     "crates/dragonforge-crypto",
     "crates/dragonforge-vault",
 ]
