@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge Backup & Recovery</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast" class="toast" hidden></div>
+  <div class="shell">
+    <aside>
+      <div class="brand"><div class="mark">DF</div><div><strong>DragonForge</strong><span>Backup & Recovery</span></div></div>
+      <button class="nav active" data-view="create">Create Backup</button>
+      <button class="nav" data-view="verify">Verify / Inspect</button>
+      <button class="nav" data-view="restore">Restore</button>
+      <button class="nav" data-view="about">About</button>
+      <div class="note">Backups are encrypted. Restore never overwrites an existing destination. Passwords are command-scoped and are not stored by this app.</div>
+      <div class="phase">Phase 9</div>
+    </aside>
+    <main>
+      <header><div><div class="eyebrow">DragonForge Security Suite</div><h1 id="title">Create encrypted backup</h1></div></header>
+
+      <section id="view-create" class="view active">
+        <div class="panel">
+          <div class="section-head"><div><div class="eyebrow">Sources</div><h2>Suite and user data</h2></div><button id="discover" class="secondary">Discover suite data</button></div>
+          <p class="muted">Enter one source file or folder per line. Existing DragonForge configuration/data paths can be discovered automatically.</p>
+          <textarea id="sources" rows="8" spellcheck="false" placeholder="C:\Users\you\Documents&#10;C:\Users\you\AppData\Roaming\DragonForge"></textarea>
+          <div id="discovered" class="discovered"></div>
+        </div>
+        <div class="panel form-grid">
+          <label><span>Backup destination</span><input id="create-destination" placeholder="D:\Backups\dragonforge.dfbackup"></label>
+          <label><span>Backup password</span><input id="create-password" type="password" autocomplete="new-password" placeholder="At least 12 characters"></label>
+          <label><span>Confirm password</span><input id="create-confirm" type="password" autocomplete="new-password"></label>
+          <button id="create-backup" class="primary">Create encrypted backup</button>
+        </div>
+        <div id="create-result" class="result" hidden></div>
+      </section>
+
+      <section id="view-verify" class="view">
+        <div class="panel form-grid">
+          <label><span>Backup file</span><input id="verify-path" placeholder="D:\Backups\dragonforge.dfbackup"></label>
+          <label><span>Password</span><input id="verify-password" type="password" autocomplete="current-password"></label>
+          <div class="button-row"><button id="inspect-backup" class="secondary">Inspect</button><button id="verify-backup" class="primary">Verify integrity</button></div>
+        </div>
+        <div id="verify-result" class="result" hidden></div>
+      </section>
+
+      <section id="view-restore" class="view">
+        <div class="warning">Restore requires a destination path that does not already exist. DragonForge will not overwrite existing restored data.</div>
+        <div class="panel form-grid">
+          <label><span>Backup file</span><input id="restore-path" placeholder="D:\Backups\dragonforge.dfbackup"></label>
+          <label><span>Restore destination</span><input id="restore-destination" placeholder="D:\Recovered\DragonForge"></label>
+          <label><span>Password</span><input id="restore-password" type="password" autocomplete="current-password"></label>
+          <button id="restore-backup" class="danger">Verify and restore</button>
+        </div>
+        <div id="restore-result" class="result" hidden></div>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Backup & Recovery</h2><p>Phase 9 creates encrypted, authenticated .dfbackup packages for selected suite data and user files. Each restored file is checked against its encrypted SHA-256 manifest before the restore is finalized.</p><p>The format is independent from Password Manager and File Vault formats. Backups reject symbolic links and traversal-like paths, use bounded archive limits, and restore through a temporary sibling directory before an atomic-style rename.</p></div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
