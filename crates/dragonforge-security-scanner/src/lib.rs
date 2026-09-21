@@ -117,7 +117,7 @@ impl ProbeRunner for PlatformRunner {
                 r#"try { (Get-ItemProperty 'HKLM:SYSTEMCurrentControlSetControlTerminal Server' -Name fDenyTSConnections).fDenyTSConnections } catch { "Unknown" }"#
             }
             Probe::Listeners => {
-                r#"try { Get-NetTCPConnection -State Listen | Sort-Object LocalPort,LocalAddress -Unique | ForEach-Object { "$($_.LocalAddress)|$($_.LocalPort)" } } catch { "Unknown" }"#
+                r#"try { Get-NetTCPConnection -State Listen | Sort-Object LocalPort,LocalAddress -Unique | Select-Object -First 256 | ForEach-Object { "$($_.LocalAddress)|$($_.LocalPort)" } } catch { "Unknown" }"#
             }
         };
 
@@ -125,8 +125,6 @@ impl ProbeRunner for PlatformRunner {
             .args([
                 "-NoProfile",
                 "-NonInteractive",
-                "-ExecutionPolicy",
-                "Bypass",
                 "-Command",
                 script,
             ])
