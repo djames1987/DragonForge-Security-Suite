@@ -146,11 +146,27 @@ Delivered:
 See [PHASE_7_INTEGRITY_MONITOR.md](PHASE_7_INTEGRITY_MONITOR.md).
 
 ## Phase 8 — Network Guard
-**Status: Next**
+**Status: Implementation Complete — Local Verification Pending**
 
-Per-process network visibility, DNS monitoring, and eventually application-level firewall controls.
+Delivered:
+- dedicated Network Guard engine crate and Tauri desktop application;
+- Windows-first per-process TCP connection visibility;
+- Windows-first UDP endpoint visibility;
+- Windows DNS client cache visibility;
+- process, listener, and wildcard-exposure summaries;
+- bounded probe output and row counts;
+- fixed native probes with no arbitrary shell input;
+- no packet payload capture, traffic blocking, connection termination, or firewall mutation;
+- Security Center integration with strict sibling-app launch;
+- Phase 8 verification tooling and CI coverage;
+- suite-wide build-all-apps-for-testing script.
+
+Persistent enforcement remains deferred to the future DragonForge Agent so it can be implemented behind an authenticated, narrow privilege boundary.
+
+See [PHASE_8_NETWORK_GUARD.md](PHASE_8_NETWORK_GUARD.md).
 
 ## Phase 9 — Backup & Recovery
+**Status: Next**
 
 Encrypted, verifiable backup/recovery for suite data and selected user data.
 
