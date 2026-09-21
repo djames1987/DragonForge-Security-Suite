@@ -127,8 +127,7 @@ pub fn create_share(
     let cipher_len = plaintext
         .len()
         .checked_add(TAG_LEN)
-        .ok_or(ShareError::InvalidInput("share payload is too large"))?
-        as u64;
+        .ok_or(ShareError::InvalidInput("share payload is too large"))? as u64;
     let aad = build_header(&salt, &nonce_bytes, cipher_len);
     let ciphertext = cipher
         .encrypt(
@@ -501,7 +500,9 @@ fn validate_payload(payload: &SharePayload) -> Result<()> {
         decoded_verified_bytes(attachment)?;
         total = total
             .checked_add(attachment.size)
-            .ok_or(ShareError::Integrity("share attachment byte count overflowed"))?;
+            .ok_or(ShareError::Integrity(
+                "share attachment byte count overflowed",
+            ))?;
         if total > MAX_TOTAL_BYTES {
             return Err(ShareError::Integrity(
                 "share exceeds the safe total attachment-size limit",
@@ -525,9 +526,9 @@ fn decoded_verified_bytes(attachment: &StoredAttachment) -> Result<Vec<u8>> {
 
 fn summary_from_payload(payload: &SharePayload, verified: bool) -> Result<ShareSummary> {
     let total_attachment_bytes = payload.attachments.iter().try_fold(0_u64, |total, item| {
-        total
-            .checked_add(item.size)
-            .ok_or(ShareError::Integrity("share attachment byte count overflowed"))
+        total.checked_add(item.size).ok_or(ShareError::Integrity(
+            "share attachment byte count overflowed",
+        ))
     })?;
     Ok(ShareSummary {
         format_version: payload.format_version,
@@ -536,7 +537,10 @@ fn summary_from_payload(payload: &SharePayload, verified: bool) -> Result<ShareS
         expired: now_ms() >= payload.expires_at_ms,
         sender_label: payload.sender_label.clone(),
         recipient_label: payload.recipient_label.clone(),
-        has_secret: payload.secret_text.as_ref().is_some_and(|secret| !secret.is_empty()),
+        has_secret: payload
+            .secret_text
+            .as_ref()
+            .is_some_and(|secret| !secret.is_empty()),
         attachment_count: payload.attachments.len(),
         total_attachment_bytes,
         verified,
