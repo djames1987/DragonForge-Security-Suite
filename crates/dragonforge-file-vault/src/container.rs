@@ -55,9 +55,10 @@ pub fn create_vault(
     sources: &[PathBuf],
     password: &[u8],
 ) -> Result<VaultSummary> {
-    if password.is_empty() || sources.is_empty() {
+    if sources.is_empty() {
         return Err(FileVaultError::InvalidPath);
     }
+    validate_password(password)?;
 
     let output = output.as_ref();
     if output.exists() {
@@ -453,9 +454,7 @@ fn decode_entries(bytes: &[u8]) -> Result<Vec<DecodedEntry>> {
 }
 
 fn open_entries(container: &Path, password: &[u8]) -> Result<Vec<DecodedEntry>> {
-    if password.is_empty() {
-        return Err(FileVaultError::InvalidPassword);
-    }
+    validate_password(password)?;
 
     let bytes = fs::read(container).map_err(|_| FileVaultError::Io)?;
     if bytes.len() <= HEADER_LEN {
@@ -481,6 +480,13 @@ fn open_entries(container: &Path, password: &[u8]) -> Result<Vec<DecodedEntry>> 
 
     let plaintext = Zeroizing::new(plaintext?);
     decode_entries(&plaintext)
+}
+
+fn validate_password(password: &[u8]) -> Result<()> {
+    if password.len() < 12 {
+        return Err(FileVaultError::PasswordTooShort);
+    }
+    Ok(())
 }
 
 fn derive_key(password: &[u8], salt: &[u8; SALT_LEN]) -> Result<[u8; KEY_LEN]> {
@@ -656,23 +662,35 @@ mod tests {
 
         let vault = temp.path().join("archive.dfvault");
         let summary =
-            create_vault(&vault, std::slice::from_ref(&source), b"test-password").expect("create");
+            create_vault(&vault, std::slice::from_ref(&source), b"test-password-123").expect("create");
         assert_eq!(summary.files, 2);
 
         let raw = fs::read(&vault).expect("vault bytes");
         assert!(!raw.windows(b"secret.txt".len()).any(|window| window == b"secret.txt"));
         assert!(!raw.windows(b"dragon fire".len()).any(|window| window == b"dragon fire"));
 
-        let listing = list_vault(&vault, b"test-password").expect("list");
+        let listing = list_vault(&vault, b"test-password-123").expect("list");
         assert!(listing.iter().any(|entry| entry.path == "private/secret.txt"));
         assert!(listing.iter().any(|entry| entry.path == "private/empty"));
 
         let extracted = temp.path().join("restored");
-        let result = extract_vault(&vault, &extracted, b"test-password").expect("extract");
+        let result = extract_vault(&vault, &extracted, b"test-password-123").expect("extract");
         assert_eq!(result.files, 2);
         assert_eq!(
             fs::read(extracted.join("private").join("secret.txt")).expect("restored"),
             b"dragon fire"
+        );
+    }
+
+    #[test]
+    fn short_passwords_are_rejected_by_native_engine() {
+        let temp = tempdir().expect("temp");
+        let source = temp.path().join("a.txt");
+        fs::write(&source, b"secret").expect("file");
+        let vault = temp.path().join("a.dfvault");
+        assert_eq!(
+            create_vault(&vault, &[source], b"short").expect_err("short password"),
+            FileVaultError::PasswordTooShort
         );
     }
 
@@ -682,9 +700,9 @@ mod tests {
         let source = temp.path().join("a.txt");
         fs::write(&source, b"secret").expect("file");
         let vault = temp.path().join("a.dfvault");
-        create_vault(&vault, &[source], b"correct").expect("create");
+        create_vault(&vault, &[source], b"correct-password").expect("create");
         assert_eq!(
-            verify_vault(&vault, b"wrong").expect_err("wrong password"),
+            verify_vault(&vault, b"wrong-password").expect_err("wrong password"),
             FileVaultError::InvalidPassword
         );
     }
@@ -695,7 +713,7 @@ mod tests {
         let source = temp.path().join("a.txt");
         fs::write(&source, b"secret").expect("file");
         let vault = temp.path().join("a.dfvault");
-        create_vault(&vault, &[source], b"correct").expect("create");
+        create_vault(&vault, &[source], b"correct-password").expect("create");
 
         let mut bytes = fs::read(&vault).expect("vault");
         let last = bytes.len() - 1;
@@ -703,7 +721,7 @@ mod tests {
         fs::write(&vault, bytes).expect("tamper");
 
         assert_eq!(
-            verify_vault(&vault, b"correct").expect_err("tampered"),
+            verify_vault(&vault, b"correct-password").expect_err("tampered"),
             FileVaultError::InvalidPassword
         );
     }
@@ -714,12 +732,12 @@ mod tests {
         let source = temp.path().join("a.txt");
         fs::write(&source, b"secret").expect("file");
         let vault = temp.path().join("a.dfvault");
-        create_vault(&vault, &[source], b"correct").expect("create");
+        create_vault(&vault, &[source], b"correct-password").expect("create");
 
         let destination = temp.path().join("existing");
         fs::create_dir(&destination).expect("existing");
         assert_eq!(
-            extract_vault(&vault, &destination, b"correct").expect_err("must reject"),
+            extract_vault(&vault, &destination, b"correct-password").expect_err("must reject"),
             FileVaultError::DestinationExists
         );
     }
@@ -740,7 +758,7 @@ mod tests {
 
         let vault = temp.path().join("a.dfvault");
         assert_eq!(
-            create_vault(&vault, &[link], b"correct").expect_err("symlink rejected"),
+            create_vault(&vault, &[link], b"correct-password").expect_err("symlink rejected"),
             FileVaultError::SymlinkNotAllowed
         );
     }
