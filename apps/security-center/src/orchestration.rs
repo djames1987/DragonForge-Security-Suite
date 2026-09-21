@@ -99,10 +99,7 @@ pub fn launch_agent() -> CoreResult<()> {
         command.creation_flags(CREATE_NO_WINDOW);
     }
     command.spawn().map_err(|_| {
-        CoreError::new_safe(
-            ErrorCode::Internal,
-            "unable to start the DragonForge Agent",
-        )
+        CoreError::new_safe(ErrorCode::Internal, "unable to start the DragonForge Agent")
     })?;
     Ok(())
 }

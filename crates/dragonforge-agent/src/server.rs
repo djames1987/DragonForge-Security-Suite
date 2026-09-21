@@ -140,7 +140,9 @@ fn handle_connection(
         .read_line(&mut line)
         .map_err(|_| AgentError::Io("agent request could not be read"))?;
     if count == 0 || count >= MAX_WIRE_BYTES {
-        return Err(AgentError::Protocol("agent request is missing or oversized"));
+        return Err(AgentError::Protocol(
+            "agent request is missing or oversized",
+        ));
     }
     let request: RequestWire = serde_json::from_str(line.trim_end())
         .map_err(|_| AgentError::Protocol("agent request is malformed"))?;
@@ -198,11 +200,19 @@ fn validate_request(
     let current = now_ms();
     let skew = current.abs_diff(request.timestamp_ms);
     if skew > MAX_CLOCK_SKEW_MS {
-        return Err(AgentError::Authentication("agent request timestamp is stale"));
+        return Err(AgentError::Authentication(
+            "agent request timestamp is stale",
+        ));
     }
-    verify_hex(session_key, &request_message(request), &request.auth_tag_hex)?;
+    verify_hex(
+        session_key,
+        &request_message(request),
+        &request.auth_tag_hex,
+    )?;
     if !replay.insert_new(request.nonce_b64.clone()) {
-        return Err(AgentError::Authentication("agent request nonce was replayed"));
+        return Err(AgentError::Authentication(
+            "agent request nonce was replayed",
+        ));
     }
     Ok(())
 }
@@ -228,9 +238,9 @@ fn write_runtime_files(paths: &AgentPaths, port: u16, session_key: &[u8]) -> Res
 }
 
 fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
-    let parent = path
-        .parent()
-        .ok_or(AgentError::Io("agent runtime parent directory is unavailable"))?;
+    let parent = path.parent().ok_or(AgentError::Io(
+        "agent runtime parent directory is unavailable",
+    ))?;
     fs::create_dir_all(parent)
         .map_err(|_| AgentError::Io("agent runtime directory could not be created"))?;
     let temporary = path.with_extension("tmp");
@@ -368,7 +378,10 @@ mod tests {
 
         let deadline = Instant::now() + Duration::from_secs(2);
         while !paths.runtime_file().is_file() {
-            assert!(Instant::now() < deadline, "agent runtime file was not created");
+            assert!(
+                Instant::now() < deadline,
+                "agent runtime file was not created"
+            );
             thread::sleep(Duration::from_millis(10));
         }
 
@@ -377,7 +390,12 @@ mod tests {
             .expect("health");
         assert!(health.available);
         assert_eq!(health.state, "healthy");
-        assert!(health.capabilities.iter().any(|item| item == "authenticated-ipc"));
+        assert!(
+            health
+                .capabilities
+                .iter()
+                .any(|item| item == "authenticated-ipc")
+        );
 
         handle.join().expect("server thread");
         assert!(!paths.runtime_file().exists());
