@@ -19,6 +19,7 @@ Phase 5 adds DragonForge Authenticator as a dedicated local TOTP/HOTP applicatio
 - encrypted recovery-code storage and explicit reveal workflow;
 - persistent HOTP counter advancement;
 - encrypted store master-password rotation with fresh salt/nonce;
+- explicit local lock action that clears the retained password, displayed codes, and revealed recovery material;
 - Security Center integration and strict sibling executable launch;
 - local Phase 5 verification script and CI coverage.
 
