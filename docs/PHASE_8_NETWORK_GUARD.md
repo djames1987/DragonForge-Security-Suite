@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 8 adds a Windows-first, visibility-only Network Guard application.
 
@@ -85,7 +85,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase8-net
 
 The verifier covers formatting, compile checks, strict Clippy, tests, JavaScript syntax checks, prior-suite regression gates, and the all-apps build script.
 
-A passing local verifier log is required before Phase 8 is marked **Verified Complete**.
+Local Windows verification passed on 2026-09-21.
+
+Verified log:
+`dragonforge-phase8-network-guard-20260921-133952.log`
+
+SHA-256:
+`B9734604E9E3550B9742C6440FB21B5E6B418CB7E810317B6CB63AC153FA1549`
+
+The passing run completed formatting checks, workspace compile checks, strict Clippy, Network Guard tests, prior-suite regression tests, JavaScript syntax checks, and the full seven-application desktop build.
 
 ## Phase 9 handoff
 
