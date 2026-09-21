@@ -33,7 +33,10 @@ impl SafeLogger {
     pub fn write(&self, level: &str, code: &str, public_message: &str) -> CoreResult<()> {
         if let Some(parent) = self.path.parent() {
             fs::create_dir_all(parent).map_err(|_| {
-                CoreError::new_safe(ErrorCode::Internal, "unable to create Security Center log directory")
+                CoreError::new_safe(
+                    ErrorCode::Internal,
+                    "unable to create Security Center log directory",
+                )
             })?;
         }
 
@@ -50,9 +53,19 @@ impl SafeLogger {
             .create(true)
             .append(true)
             .open(&self.path)
-            .map_err(|_| CoreError::new_safe(ErrorCode::Internal, "unable to open Security Center log"))?;
+            .map_err(|_| {
+                CoreError::new_safe(
+                    ErrorCode::Internal,
+                    "unable to open Security Center log",
+                )
+            })?;
         file.write_all(line.as_bytes())
-            .map_err(|_| CoreError::new_safe(ErrorCode::Internal, "unable to write Security Center log"))
+            .map_err(|_| {
+                CoreError::new_safe(
+                    ErrorCode::Internal,
+                    "unable to write Security Center log",
+                )
+            })
     }
 }
 
