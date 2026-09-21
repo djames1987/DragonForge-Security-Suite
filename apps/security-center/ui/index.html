@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>DragonForge Security Center</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">DF</div>
+        <div>
+          <div class="brand-name">DragonForge</div>
+          <div class="brand-subtitle">Security Center</div>
+        </div>
+      </div>
+
+      <nav class="nav-list" aria-label="Security Center">
+        <button class="nav-item active" data-view="overview"><span>⌂</span>Overview</button>
+        <button class="nav-item" data-view="components"><span>▦</span>Components</button>
+        <button class="nav-item" data-view="activity"><span>≋</span>Activity</button>
+        <button class="nav-item" data-view="settings"><span>⚙</span>Settings</button>
+        <button class="nav-item" data-view="about"><span>◇</span>About</button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <div class="agent-card">
+        <div class="status-dot muted"></div>
+        <div>
+          <strong id="sidebar-agent-label">Agent not installed</strong>
+          <span id="sidebar-agent-detail">Background service is a future phase.</span>
+        </div>
+      </div>
+      <div class="phase-badge">Phase 3</div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h1 id="page-title">Security overview</h1>
+        </div>
+        <div class="topbar-actions">
+          <span id="platform-pill" class="platform-pill">Detecting platform…</span>
+          <button id="refresh-button" class="primary-button">Refresh health</button>
+        </div>
+      </header>
+
+      <section id="view-overview" class="view active">
+        <div class="hero-grid">
+          <article class="hero-card">
+            <div class="hero-orb">
+              <span id="health-icon">✓</span>
+            </div>
+            <div>
+              <div class="eyebrow">Suite status</div>
+              <h2 id="health-label">Loading…</h2>
+              <p id="health-copy">Collecting component health from the local suite registry.</p>
+            </div>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong id="metric-active">—</strong>
+            <small>running components</small>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Integrated</span>
+            <strong id="metric-integrated">—</strong>
+            <small>verified suite products</small>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Roadmap</span>
+            <strong id="metric-planned">—</strong>
+            <small>planned / future components</small>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Protection surface</div>
+            <h2>Suite components</h2>
+          </div>
+          <button class="text-button" data-go="components">View all components →</button>
+        </div>
+        <div id="overview-components" class="component-grid compact-grid"></div>
+
+        <div class="overview-lower">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <div class="eyebrow">Recent activity</div>
+                <h2>Local security events</h2>
+              </div>
+              <button class="text-button" data-go="activity">Full activity →</button>
+            </div>
+            <div id="overview-events" class="event-list"></div>
+          </section>
+
+          <section class="panel agent-panel">
+            <div class="panel-heading">
+              <div>
+                <div class="eyebrow">Background protection</div>
+                <h2>DragonForge Agent</h2>
+              </div>
+            </div>
+            <div class="agent-visual">
+              <div class="agent-shield">DF</div>
+              <div>
+                <strong id="agent-label">Agent not installed</strong>
+                <p id="agent-detail">Background service transport is reserved for a later phase.</p>
+              </div>
+            </div>
+            <div class="info-box">
+              Phase 3 does not fabricate an agent connection. The dashboard uses the Phase 2 authenticated IPC policy boundary, while the privileged transport/service remains disabled until its dedicated phase.
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="view-components" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Component registry</div>
+            <h2>DragonForge applications & services</h2>
+            <p>Current suite integrations and roadmap components, without pretending future products are installed.</p>
+          </div>
+        </div>
+        <div id="all-components" class="component-grid"></div>
+      </section>
+
+      <section id="view-activity" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Diagnostics</div>
+            <h2>Activity history</h2>
+            <p>Redaction-safe in-memory events generated by Security Center.</p>
+          </div>
+          <button id="clear-events" class="secondary-button">Clear in-memory history</button>
+        </div>
+        <section class="panel">
+          <div id="activity-events" class="event-list full"></div>
+        </section>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Local preferences</div>
+            <h2>Security Center settings</h2>
+            <p>Stored under the current user's DragonForge configuration directory. No passwords, tokens, or vault contents belong here.</p>
+          </div>
+        </div>
+
+        <form id="settings-form" class="settings-card">
+          <label class="setting-row">
+            <div>
+              <strong>Open on Overview</strong>
+              <span>Use the suite overview as the default landing page.</span>
+            </div>
+            <input id="setting-overview" type="checkbox">
+          </label>
+
+          <label class="setting-row">
+            <div>
+              <strong>Event retention</strong>
+              <span>Maximum number of local in-memory activity records.</span>
+            </div>
+            <select id="setting-retention">
+              <option value="100">100 events</option>
+              <option value="250">250 events</option>
+              <option value="500">500 events</option>
+              <option value="1000">1,000 events</option>
+              <option value="2000">2,000 events</option>
+            </select>
+          </label>
+
+          <label class="setting-row">
+            <div>
+              <strong>Include diagnostic identifiers</strong>
+              <span>Disabled by default. Future diagnostics may include stable non-secret identifiers when enabled.</span>
+            </div>
+            <input id="setting-identifiers" type="checkbox">
+          </label>
+
+          <div class="settings-footer">
+            <span id="settings-state" class="muted-text">Settings loaded locally.</span>
+            <button type="submit" class="primary-button">Save settings</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="view-about" class="view">
+        <div class="about-card">
+          <div class="about-mark">DF</div>
+          <div class="eyebrow">DragonForge Security Suite</div>
+          <h2>Security Center</h2>
+          <p>
+            The unified visibility and orchestration surface for DragonForge security products.
+            Phase 3 establishes the dashboard, component registry, local event aggregation,
+            settings persistence, safe logging, and agent IPC boundary.
+          </p>
+          <div class="about-meta">
+            <span>Version 0.1.0</span>
+            <span>•</span>
+            <span>Rust + Tauri</span>
+            <span>•</span>
+            <span>Local-first</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
