@@ -163,7 +163,7 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
     OsRng.fill_bytes(&mut nonce_bytes);
 
     let key = derive_key(password, &salt)?;
-    let cipher = Aes256Gcm::new_from_slice(key.as_ref())
+    let cipher = Aes256Gcm::new_from_slice(&key[..])
         .map_err(|_| BackupError::Crypto("backup cipher could not be initialized"))?;
     let cipher_len = plaintext
         .len()
@@ -180,14 +180,14 @@ pub fn create_backup(sources: &[PathBuf], destination: &Path, password: &str) ->
         )
         .map_err(|_| BackupError::Crypto("backup encryption failed"))?;
 
-    if let Some(parent) = destination.parent() {
+    if let Some(parent) = nonempty_parent(destination) {
         fs::create_dir_all(parent)
             .map_err(|_| BackupError::Io("backup destination directory could not be created"))?;
     }
     let temporary = temporary_sibling(destination)?;
     fs::write(&temporary, [&aad[..], &ciphertext].concat())
         .map_err(|_| BackupError::Io("encrypted backup could not be written"))?;
-    if let Err(_error) = fs::rename(&temporary, destination) {
+    if fs::rename(&temporary, destination).is_err() {
         let _ = fs::remove_file(&temporary);
         return Err(BackupError::Io("encrypted backup could not be finalized"));
     }
@@ -213,7 +213,7 @@ pub fn restore_backup(path: &Path, password: &str, destination: &Path) -> Result
 
     let payload = decrypt_payload(path, password)?;
     validate_payload(&payload)?;
-    if let Some(parent) = destination.parent() {
+    if let Some(parent) = nonempty_parent(destination) {
         fs::create_dir_all(parent)
             .map_err(|_| BackupError::Io("restore parent directory could not be created"))?;
     }
@@ -495,10 +495,12 @@ fn digest_hex(bytes: &[u8]) -> String {
     digest.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
+fn nonempty_parent(path: &Path) -> Option<&Path> {
+    path.parent().filter(|parent| !parent.as_os_str().is_empty())
+}
+
 fn temporary_sibling(destination: &Path) -> Result<PathBuf> {
-    let parent = destination
-        .parent()
-        .ok_or(BackupError::InvalidInput("destination must have a parent directory"))?;
+    let parent = nonempty_parent(destination).unwrap_or_else(|| Path::new("."));
     let mut random = [0_u8; 8];
     OsRng.fill_bytes(&mut random);
     let token = random.iter().map(|byte| format!("{byte:02x}")).collect::<String>();
