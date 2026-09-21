@@ -26,7 +26,7 @@ impl From<EventRecord> for DashboardEvent {
             .unwrap_or(u64::MAX);
 
         Self {
-            id: event.event_id(),
+            id: event.event_id().try_into().unwrap_or(u64::MAX),
             timestamp_ms,
             component: event.component().as_str(),
             kind: event.kind().as_str(),
