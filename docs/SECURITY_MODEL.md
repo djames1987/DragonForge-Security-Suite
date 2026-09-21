@@ -119,3 +119,20 @@ Security requirements:
 - the future DragonForge Agent remains explicitly unavailable until a real authenticated transport/service exists.
 
 The current in-memory activity view is not a tamper-resistant audit log and must not be represented as one.
+
+
+## File Vault container boundary
+
+Phase 4 introduces the `.dfvault` local encrypted-container format.
+
+Security requirements:
+- AES-256-GCM authenticated encryption protects the entire logical archive payload;
+- Argon2id derives the container key from a user password;
+- filenames and directory structure are encrypted along with file contents;
+- format version and KDF parameters are explicit and authenticated;
+- symbolic links, traversal components, absolute archive paths, duplicate paths, and oversized inputs are rejected;
+- existing container/extraction destinations are never overwritten;
+- extraction is staged into a temporary sibling directory and cleaned up on failure;
+- File Vault passwords are not stored in settings, logs, or container metadata.
+
+The current Phase 4 implementation is a local container product, not a secure-deletion tool and not a replacement for full-disk encryption. Plaintext source files remain under the user's control after container creation.
