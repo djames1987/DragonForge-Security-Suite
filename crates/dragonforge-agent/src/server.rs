@@ -58,7 +58,7 @@ impl AgentServer {
             .map_err(|_| AgentError::InvalidState("DragonForge Agent is already starting"))?;
         let _guard = RuntimeGuard {
             paths: self.paths.clone(),
-            _lock: lock,
+            _lock: Some(lock),
         };
 
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
@@ -92,11 +92,12 @@ impl AgentServer {
 #[derive(Debug)]
 struct RuntimeGuard {
     paths: AgentPaths,
-    _lock: fs::File,
+    _lock: Option<fs::File>,
 }
 
 impl Drop for RuntimeGuard {
     fn drop(&mut self) {
+        let _ = self._lock.take();
         cleanup_stale_runtime(&self.paths);
     }
 }
