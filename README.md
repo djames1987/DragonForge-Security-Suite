@@ -85,6 +85,11 @@ The migration preserved the rule **move first, refactor second**. No intentional
 
 See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migration baseline record.
 
+### Password Manager sync server
+
+The Password Manager's multi-device sync backend lives under `services/password-manager-sync/`. A complete PostgreSQL + Docker setup guide is available at [services/password-manager-sync/README.md](services/password-manager-sync/README.md), including account provisioning, Docker Compose startup, automatic database migrations, device enrollment, client configuration, backup guidance, and the HTTPS requirement for non-loopback deployments.
+
+
 ## Design goals
 
 - Security-first, auditable Rust components.
