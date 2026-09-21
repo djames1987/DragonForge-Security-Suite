@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 7 Integrity Monitor verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, and an on-demand Windows-first integrity baseline monitor.
+> **Current status:** Phase 8 Network Guard implemented; local verification is pending. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, and Windows-first per-process network visibility.
 
 ## Canonical repository
 
@@ -23,13 +23,15 @@ DragonForge-Security-Suite/
 │   ├── file-vault/                    # Encrypted file/folder container application
 │   ├── authenticator/                 # Encrypted TOTP/HOTP desktop application
 │   ├── security-scanner/              # Read-only system posture scanner
-│   └── integrity-monitor/             # Integrity baseline/change monitor
+│   ├── integrity-monitor/             # Integrity baseline/change monitor
+│   └── network-guard/                 # Per-process network visibility
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
 │   ├── dragonforge-file-vault/        # File Vault container engine
 │   ├── dragonforge-authenticator/     # Authenticator OTP + encrypted store engine
 │   ├── dragonforge-security-scanner/  # Security posture assessment engine
 │   ├── dragonforge-integrity-monitor/ # Integrity baseline/change engine
+│   ├── dragonforge-network-guard/     # Network visibility engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -48,7 +50,8 @@ DragonForge-Security-Suite/
 │   ├── PHASE_4_FILE_VAULT.md
 │   ├── PHASE_5_AUTHENTICATOR.md
 │   ├── PHASE_6_SECURITY_SCANNER.md
-│   └── PHASE_7_INTEGRITY_MONITOR.md
+│   ├── PHASE_7_INTEGRITY_MONITOR.md
+│   └── PHASE_8_NETWORK_GUARD.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -94,8 +97,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 5 — Authenticator: **Verified Complete**
 - Phase 6 — Security Scanner: **Verified Complete**
 - Phase 7 — Integrity Monitor: **Verified Complete**
-- Phase 8 — Network Guard: **Next**
-- Phase 9 — Backup & Recovery
+- Phase 8 — Network Guard: **Implementation Complete — Local Verification Pending**
+- Phase 9 — Backup & Recovery: **Next**
 - Phase 10 — Secure Share
 - Phase 11 — DragonForge Agent
 
@@ -210,3 +213,34 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase7-int
 ```
 
 See [docs/PHASE_7_INTEGRITY_MONITOR.md](docs/PHASE_7_INTEGRITY_MONITOR.md).
+
+
+## Network Guard
+
+Phase 8 adds a Windows-first, visibility-only network application under `apps/network-guard/`.
+
+Current capabilities:
+- map TCP connections and listeners to owning process IDs and process names;
+- inventory UDP endpoints by owning process;
+- show the Windows DNS client cache;
+- summarize process count, TCP/UDP endpoints, listeners, and wildcard listeners;
+- refresh on demand using fixed native probes;
+- integrate with Security Center using an exact sibling executable path.
+
+Phase 8 does not capture packet payloads, block traffic, terminate connections, or modify Windows Firewall. Persistent enforcement is reserved for the future DragonForge Agent.
+
+Run Phase 8 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase8-network-guard-tests.ps1
+```
+
+Build every desktop application for hands-on testing with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-all-apps-for-testing.ps1
+```
+
+Use `-Profile release` for release-profile test builds.
+
+See [docs/PHASE_8_NETWORK_GUARD.md](docs/PHASE_8_NETWORK_GUARD.md).
