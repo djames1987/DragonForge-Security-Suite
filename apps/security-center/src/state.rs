@@ -3,7 +3,7 @@ use std::sync::{Mutex, MutexGuard};
 use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
 
-use crate::agent::{AgentClient, AgentStatus, UnavailableAgentClient};
+use crate::agent::{validate_future_agent_request, AgentClient, AgentStatus, UnavailableAgentClient};
 use crate::events::{DashboardEvent, EventStore};
 use crate::logging::SafeLogger;
 use crate::model::{ComponentRegistry, ComponentStatus, HealthSummary};
@@ -52,6 +52,15 @@ impl AppState {
                 Severity::Warning,
                 "security-center.settings-fallback",
                 "Invalid local settings were ignored; safe defaults are active",
+            );
+        }
+        if !validate_future_agent_request(1) {
+            events.push(
+                Component::SecurityCenter,
+                EventKind::Ipc,
+                Severity::Critical,
+                "security-center.agent-policy-invalid",
+                "Future Agent IPC policy validation failed",
             );
         }
 
