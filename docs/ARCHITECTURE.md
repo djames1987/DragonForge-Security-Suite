@@ -16,7 +16,7 @@ The current runtime/repository model is:
      +-----------+-----------+
      |           |           |
  Password     File Vault  Authenticator
- Manager      (future)    (future)
+ Manager      (current)   (future)
      |
      +---- Password Manager sync service
      |
@@ -42,9 +42,9 @@ Interactive end-user applications.
 Current:
 - `security-center/`
 - `password-manager/`
+- `file-vault/`
 
 Future:
-- File Vault
 - Authenticator
 - Security Scanner
 - Network Guard UI
@@ -66,6 +66,7 @@ Reusable Rust libraries.
 
 Current:
 - `dragonforge-core`: suite-wide, non-cryptographic foundation.
+- `dragonforge-file-vault`: File Vault product-owned encrypted-container engine.
 - `dragonforge-crypto`: migrated Password Manager cryptographic foundation.
 - `dragonforge-vault`: migrated encrypted vault implementation.
 
@@ -222,3 +223,24 @@ Its internal boundaries are:
 4. Settings contain preferences only; passwords, keys, tokens, vault content, or recovery material must never be stored there.
 5. Activity records and log messages must use safe summaries and the shared redaction policy.
 6. The future Agent remains unavailable until an authenticated OS transport and service are implemented. The dashboard must not infer an authenticated peer from UI or payload data.
+
+
+## 11. Phase 4 File Vault
+
+File Vault is split into a product-owned container engine and a Tauri desktop UI:
+
+- `crates/dragonforge-file-vault/` owns the `.dfvault` format, cryptographic envelope, validation, limits, and extraction rules.
+- `apps/file-vault/` exposes only narrow native commands for create, inspect, verify, and extract operations.
+- Security Center marks File Vault as Integrated and launches only the expected sibling executable.
+
+The File Vault format is deliberately independent from the Password Manager vault format. Phase 4 does not refactor or broaden Password Manager cryptographic APIs.
+
+### Container trust rules
+
+1. Filenames, relative paths, directory structure, and file contents are inside one AES-256-GCM authenticated ciphertext.
+2. Header/version/KDF parameters are authenticated as associated data.
+3. Argon2id parameters are encoded and validated as part of the format contract.
+4. Symbolic links and traversal-like paths are rejected.
+5. Creation and extraction do not overwrite existing destinations.
+6. Extraction occurs in a randomized temporary sibling directory and is renamed into place only after success.
+7. File Vault passwords are never persisted by the File Vault application.
