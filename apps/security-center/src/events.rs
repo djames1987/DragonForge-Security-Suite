@@ -142,4 +142,23 @@ mod tests {
         assert_eq!(recent[0].code, "three");
         assert_eq!(recent[1].code, "two");
     }
+
+    #[test]
+    fn shrinking_capacity_evicts_oldest_events() {
+        let mut store = EventStore::new(4);
+        for code in ["one", "two", "three", "four"] {
+            store.push(
+                Component::SecurityCenter,
+                EventKind::Health,
+                Severity::Info,
+                code,
+                code,
+            );
+        }
+        store.set_capacity(2);
+        let recent = store.recent(10);
+        assert_eq!(recent.len(), 2);
+        assert_eq!(recent[0].code, "four");
+        assert_eq!(recent[1].code, "three");
+    }
 }
