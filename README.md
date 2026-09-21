@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 3 Security Center implemented. DragonForge now has a desktop dashboard for suite health, component visibility, activity, local settings, safe logging, and non-privileged application orchestration.
+> **Current status:** Phase 4 File Vault implemented. DragonForge now includes the Security Center, Password Manager, and a dedicated encrypted file/folder container application.
 
 ## Canonical repository
 
@@ -19,9 +19,11 @@ The standalone Password Manager repository remains useful as the pre-migration h
 DragonForge-Security-Suite/
 ├── apps/
 │   ├── security-center/               # Unified Tauri desktop dashboard
-│   └── password-manager/              # Migrated Password Manager desktop application
+│   ├── password-manager/              # Migrated Password Manager desktop application
+│   └── file-vault/                    # Encrypted file/folder container application
 ├── crates/
 │   ├── dragonforge-core/              # Suite-wide non-cryptographic foundation
+│   ├── dragonforge-file-vault/        # File Vault container engine
 │   ├── dragonforge-crypto/            # Migrated Password Manager cryptography
 │   └── dragonforge-vault/             # Migrated encrypted vault implementation
 ├── services/
@@ -36,7 +38,8 @@ DragonForge-Security-Suite/
 │   ├── SECURITY_MODEL.md
 │   ├── PHASE_1_1_BASELINE.md
 │   ├── PHASE_2_SHARED_FOUNDATION.md
-│   └── PHASE_3_SECURITY_CENTER.md
+│   ├── PHASE_3_SECURITY_CENTER.md
+│   └── PHASE_4_FILE_VAULT.md
 ├── scripts/
 │   └── password-manager/              # Migrated validation and packaging scripts
 ├── assets/
@@ -78,8 +81,8 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 - Phase 1.1 — Post-Migration Baseline Cleanup: **Complete**
 - Phase 2 — Shared foundation: **Complete**
 - Phase 3 — Security Center: **Complete**
-- Phase 4 — File Vault: **Next**
-- Phase 5 — Authenticator
+- Phase 4 — File Vault: **Complete**
+- Phase 5 — Authenticator: **Next**
 - Phase 6 — Security Scanner
 - Phase 7 — Integrity Monitor
 - Phase 8 — Network Guard
@@ -111,3 +114,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase3-sec
 ```
 
 See [docs/PHASE_3_SECURITY_CENTER.md](docs/PHASE_3_SECURITY_CENTER.md).
+
+
+## File Vault
+
+Phase 4 adds a local-only Tauri application for encrypted `.dfvault` containers.
+
+Current capabilities:
+- encrypt one or more files/folders into a new authenticated container;
+- encrypt filenames, relative paths, directory structure, and file bytes;
+- inspect and verify a container with its password;
+- extract into a new destination without overwriting existing data;
+- reject symlink sources and traversal-like archive paths;
+- enforce bounded entry/path/data limits;
+- integrate with Security Center as an installed suite component.
+
+Run Phase 4 verification on Windows with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase4-file-vault-tests.ps1
+```
+
+See [docs/PHASE_4_FILE_VAULT.md](docs/PHASE_4_FILE_VAULT.md).
