@@ -6,10 +6,13 @@ on:
     paths:
       - "apps/security-center/**"
       - "apps/file-vault/**"
+      - "apps/authenticator/**"
       - "crates/dragonforge-core/**"
       - "crates/dragonforge-file-vault/**"
+      - "crates/dragonforge-authenticator/**"
       - "scripts/run-phase3-security-center-tests.ps1"
       - "scripts/run-phase4-file-vault-tests.ps1"
+      - "scripts/run-phase5-authenticator-tests.ps1"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
@@ -33,7 +36,7 @@ env:
 
 jobs:
   suite-applications:
-    name: Security Center + File Vault
+    name: Security Center + File Vault + Authenticator
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -57,19 +60,20 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Check suite applications
-        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app --all-targets
+        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app --all-targets
 
       - name: Clippy suite applications
-        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app --all-targets -- -D warnings
+        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app --all-targets -- -D warnings
 
       - name: Test suite applications
-        run: cargo test -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app --all-targets
+        run: cargo test -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app --all-targets
 
       - name: Check application JavaScript
         shell: pwsh
         run: |
           node --check apps/security-center/ui/app.js
           node --check apps/file-vault/ui/app.js
+          node --check apps/authenticator/ui/app.js
 
       - name: Build suite applications
         shell: pwsh
@@ -77,3 +81,4 @@ jobs:
           cargo build -p dragonforge-desktop --bin dragonforge-desktop
           cargo build -p dragonforge-security-center
           cargo build -p dragonforge-file-vault-app
+          cargo build -p dragonforge-authenticator-app
