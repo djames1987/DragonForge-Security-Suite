@@ -113,6 +113,25 @@ See [docs/PHASE_1_1_BASELINE.md](docs/PHASE_1_1_BASELINE.md) for the post-migrat
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
+## Portable test release
+
+The first external-test package is prepared as **v0.1.0-alpha.1**, a Windows x64 portable pre-release. Test machines do not need Rust, Cargo, Node.js, Git, or the source checkout; all ten suite executables are packaged together so Security Center can continue to use exact sibling launch paths.
+
+Release builders can create the ZIP with:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-release.ps1
+~~~
+
+Publishing the pre-release from a clean, up-to-date main checkout uses:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1
+~~~
+
+See [docs/PORTABLE_RELEASES.md](docs/PORTABLE_RELEASES.md) and [docs/releases/v0.1.0-alpha.1.md](docs/releases/v0.1.0-alpha.1.md).
+
+
 
 ## Security Center
 
