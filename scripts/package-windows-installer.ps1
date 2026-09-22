@@ -2,7 +2,8 @@ param(
     [string]$Version = "0.1.0-alpha.2",
     [switch]$SkipBuild,
     [string]$ExpectedCommit,
-    [string]$ReleaseTag
+    [string]$ReleaseTag,
+    [switch]$SignRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,7 +66,7 @@ try {
     }
     $ReleaseChannel = if ($Version -match '-') { "pre-release / external testing" } else { "stable" }
 
-    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -KeepStage -ExpectedCommit $Commit -ReleaseTag $ReleaseTag
+    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -KeepStage -ExpectedCommit $Commit -ReleaseTag $ReleaseTag -SignRelease:$SignRelease
     if ($LASTEXITCODE -ne 0) { throw "Portable staging failed before installer compilation." }
     if (-not (Test-Path -LiteralPath $PortableStage -PathType Container)) { throw "Portable staging directory is missing: $PortableStage" }
 
@@ -85,6 +86,7 @@ Git commit: $Commit
 Git tag: $(if ($ReleaseTag) { $ReleaseTag } else { "un-tagged" })
 Built (UTC): $([DateTime]::UtcNow.ToString("o"))
 Platform: Windows x64 installer
+Code signing: $(if ($SignRelease) { "Authenticode SHA-256 + RFC 3161 timestamp" } else { "unsigned development/test build" })
 "@
     Set-Content -LiteralPath (Join-Path $InstallerStage "BUILD-INFO.txt") -Value $BuildInfo -Encoding UTF8
 
@@ -113,6 +115,11 @@ Platform: Windows x64 installer
     & $Iscc @Arguments
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed with exit code $LASTEXITCODE." }
     if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) { throw "Expected installer artifact was not found: $InstallerPath" }
+
+    if ($SignRelease) {
+        & (Join-Path $PSScriptRoot "sign-windows-files.ps1") -Path @($InstallerPath) -Description "DragonForge Security Suite Installer $Version"
+        if ($LASTEXITCODE -ne 0) { throw "Installer Authenticode signing failed." }
+    }
 
     $InstallerHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $InstallerPath).Hash
     "$InstallerHash  $InstallerName" | Set-Content -LiteralPath $InstallerHashPath -Encoding ASCII
