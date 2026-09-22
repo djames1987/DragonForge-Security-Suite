@@ -2,7 +2,7 @@
 
 DragonForge Security Suite supports both a portable Windows ZIP and a suite-level per-user installer.
 
-Phase 12.3 makes releases **tag-bound and verified before publication**. Direct ad-hoc packaging scripts remain implementation building blocks, but publishable releases should use the workflow below.
+Phase 12.3 makes releases **tag-bound and verified before publication**. Phase 12.4 adds optional Authenticode signing for prereleases and mandatory signing for stable tags. Direct ad-hoc packaging scripts remain implementation building blocks, but publishable releases should use the workflow below.
 
 ## 1. Prepare the version
 
@@ -40,6 +40,14 @@ It produces the portable ZIP, installer, SHA-256 sidecars, generated release not
 
 Use `-NoInstaller` only for an intentionally portable-only release.
 
+For signed builds, configure the signing environment described in [PHASE_12_4_CODE_SIGNING.md](PHASE_12_4_CODE_SIGNING.md) and add `-SignRelease`:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tagged-windows-release.ps1 -Tag v0.1.0-alpha.3 -SignRelease
+~~~
+
+Stable tags without a prerelease suffix fail closed unless `-SignRelease` is enabled.
+
 ## 3. Publish verified assets
 
 GitHub CLI must be installed and authenticated:
@@ -67,6 +75,6 @@ A normal tagged Windows build produces:
 
 The packaged applications need no Rust, Cargo, Node.js, Git, or source checkout. They require 64-bit Windows 10/11 and Microsoft Edge WebView2 Runtime.
 
-The Phase 12.3 pipeline is still unsigned. SmartScreen/unknown-publisher warnings remain expected until Phase 12.4 code signing is implemented.
+Phase 12.4 supports SHA-256 Authenticode signatures with RFC 3161 timestamping. Unsigned prerelease/development builds may still produce unknown-publisher or SmartScreen warnings. Signed builds establish publisher identity and integrity but do not guarantee immediate SmartScreen reputation.
 
 Existing published releases such as `v0.1.0-alpha.1` remain immutable.
