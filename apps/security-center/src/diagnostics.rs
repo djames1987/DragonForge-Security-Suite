@@ -2,7 +2,7 @@ use std::fs;
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use dragonforge_core::{LogPolicy, SuitePaths, Component, sanitize_diagnostic_text};
+use dragonforge_core::{Component, LogPolicy, SuitePaths, sanitize_diagnostic_text};
 use serde::Serialize;
 use serde_json::json;
 
@@ -115,7 +115,10 @@ pub fn render(snapshot: &DashboardSnapshot) -> Result<String, String> {
         .map_err(|_| "unable to create redaction-safe diagnostic report".to_owned())
 }
 
-pub fn write_support_bundle(snapshot: &DashboardSnapshot, logger: &SafeLogger) -> Result<String, String> {
+pub fn write_support_bundle(
+    snapshot: &DashboardSnapshot,
+    logger: &SafeLogger,
+) -> Result<String, String> {
     let diagnostic_text = render(snapshot)?;
     let diagnostics: serde_json::Value = serde_json::from_str(&diagnostic_text)
         .map_err(|_| "unable to assemble support bundle diagnostics".to_owned())?;
@@ -264,5 +267,4 @@ mod tests {
         let raw_log = fs::read_to_string(logger.path()).expect("read log");
         assert!(!raw_log.contains("should-not-escape"));
     }
-
 }
