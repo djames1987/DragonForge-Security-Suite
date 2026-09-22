@@ -69,8 +69,8 @@ impl AgentServer {
             let (mut stream, _) = listener
                 .accept()
                 .map_err(|_| AgentError::Io("agent client connection failed"))?;
-            let shutdown = handle_connection(&mut stream, &session_key, started, &mut replay)
-                .unwrap_or(false);
+            let shutdown =
+                handle_connection(&mut stream, &session_key, started, &mut replay).unwrap_or(false);
             handled += 1;
             if shutdown || max_connections.is_some_and(|limit| handled >= limit) {
                 break;
@@ -465,7 +465,10 @@ mod tests {
 
         let deadline = Instant::now() + Duration::from_secs(2);
         while !paths.runtime_file().is_file() {
-            assert!(Instant::now() < deadline, "agent runtime file was not created");
+            assert!(
+                Instant::now() < deadline,
+                "agent runtime file was not created"
+            );
             thread::sleep(Duration::from_millis(10));
         }
 
