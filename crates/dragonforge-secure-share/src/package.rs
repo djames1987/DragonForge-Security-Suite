@@ -790,6 +790,7 @@ mod tests {
         let package = dir.path().join("secret.dfshare");
         assert!(create_share(&options, &package, PASSWORD).is_err());
     }
+
     #[test]
     fn truncated_and_unsupported_version_packages_are_rejected() {
         let dir = tempdir().expect("tempdir");
@@ -805,5 +806,4 @@ mod tests {
         fs::write(&package, unsupported).expect("unsupported");
         assert!(verify_share(&package, PASSWORD).is_err());
     }
-
 }
