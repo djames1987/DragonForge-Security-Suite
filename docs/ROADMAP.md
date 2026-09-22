@@ -359,7 +359,7 @@ See [PHASE_12_4_CODE_SIGNING.md](PHASE_12_4_CODE_SIGNING.md).
 
 
 ## Phase 12.5 — Crash Handling & Diagnostics
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - shared component-scoped rotating logger with 1 MiB default active-log threshold and three bounded backups;
@@ -372,7 +372,10 @@ Delivered:
 - WebView2 version detection on Windows with explicit null when unavailable;
 - existing diagnostic identifier opt-in preserved for Agent PID;
 - automated redaction, rotation, and failure-record tests;
-- dedicated Phase 12.5 Windows verification tooling and documentation.
+- dedicated Phase 12.5 Windows verification tooling and documentation;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including rustfmt, targeted compile checks, strict Clippy with `-D warnings`, all 9 Agent tests, all 21 Core tests, all 24 Security Center tests, JavaScript syntax validation, and required Phase 12.5 artifact checks;
+- verified log: `dragonforge-phase12.5-crash-diagnostics-20260922-121347.log`;
+- verified log SHA-256: `6BAD86F67AC0DF2233A0101BB1AD9812D98418C9DF6C813376FAB60D9637B80C`.
 
 See [PHASE_12_5_CRASH_DIAGNOSTICS.md](PHASE_12_5_CRASH_DIAGNOSTICS.md).
 
