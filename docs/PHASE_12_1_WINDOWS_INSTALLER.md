@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.1 adds a first-class Windows installer while preserving the portable package and the suite's exact-sibling executable model.
 
@@ -73,3 +73,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12.1-
 ~~~
 
 The verifier performs source checks plus a real installer compilation and writes a timestamped log and SHA-256 sidecar under `test-logs\`.
+
+## Verified local result
+
+Phase 12.1 completed its authoritative Windows verification on `DRACO`.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12.1-installer-20260922-103728.log`
+- Log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`
+- Installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`
+
+The passing run covered formatting, targeted compile checks, strict Clippy, Agent and Security Center tests, JavaScript syntax validation, release-profile builds for all ten suite executables, portable package creation, real Inno Setup installer compilation, installer checksum verification, and automatic removal of temporary portable/installer staging directories.
+
+The manual clean-machine installer checklist remains an external acceptance activity and is not a substitute for this automated verification record.
