@@ -25,6 +25,15 @@ Use disposable test data during the alpha cycle.
 
 From Security Center, start DragonForge Agent and launch Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, and Secure Share. Confirm all applications remain sibling executables in the same installation directory.
 
+## Agent lifecycle at sign-in
+
+- Confirm the installed Startup shortcut points to the exact installed `dragonforge-agent.exe --serve`.
+- Sign out/in or reboot a disposable test system.
+- Confirm the Agent starts as the current normal user without elevation.
+- Open Security Center and confirm it reconnects to the existing authenticated Agent session.
+- Stop the Agent from Security Center and confirm a same-session refresh does not immediately restart it.
+- Start or restart the Agent and confirm authenticated health returns.
+
 ## Upgrade
 
 - Leave the installed suite in place.
