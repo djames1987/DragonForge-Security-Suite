@@ -699,4 +699,22 @@ mod tests {
         let backup = dir.path().join("sample.dfbackup");
         assert!(create_backup(&[link], &backup, PASSWORD).is_err());
     }
+    #[test]
+    fn truncated_and_unsupported_version_backups_are_rejected() {
+        let dir = tempdir().expect("tempdir");
+        let source = dir.path().join("file.txt");
+        fs::write(&source, b"secret").expect("source");
+        let backup = dir.path().join("sample.dfbackup");
+        create_backup(&[source], &backup, PASSWORD).expect("create");
+
+        let original = fs::read(&backup).expect("read");
+        fs::write(&backup, &original[..original.len() / 2]).expect("truncate");
+        assert!(verify_backup(&backup, PASSWORD).is_err());
+
+        let mut unsupported = original;
+        unsupported[8..10].copy_from_slice(&u16::MAX.to_le_bytes());
+        fs::write(&backup, unsupported).expect("unsupported");
+        assert!(verify_backup(&backup, PASSWORD).is_err());
+    }
+
 }
