@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.6 aligns the DragonForge desktop applications around one visible and behavioral suite contract without collapsing their product-specific security workflows.
 
@@ -62,3 +62,15 @@ Run:
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12.6-ux-consistency-tests.ps1
 
 The verifier checks Rust formatting/compile health, JavaScript syntax for all nine desktop applications, current version/suite-phase metadata, shared stylesheet accessibility markers, sensitive-action confirmation wiring, stale Agent wording, and the required Phase 12.6 documentation.
+
+## Verified Windows result
+
+Phase 12.6 completed authoritative Windows verification on `DRACO`.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12.6-ux-consistency-20260922-142449.log`
+- Log SHA-256: `C5AB4E9062CF311920241640525BA0B4EE0570BE9329C7271FBA69A02AE227EE`
+
+The passing run covered rustfmt, targeted Rust compile checks, JavaScript syntax validation for all nine desktop applications, suite/version metadata checks, the shared keyboard-focus and disabled-control CSS baseline, sensitive-action confirmation wiring, stale pre-Agent terminology checks, and required Phase 12.6 documentation.
