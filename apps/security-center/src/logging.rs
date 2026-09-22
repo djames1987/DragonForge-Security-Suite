@@ -1,8 +1,6 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use dragonforge_core::{
-    Component, ComponentLogger, CoreResult, LogPolicy, install_safe_panic_hook,
-};
+use dragonforge_core::{Component, ComponentLogger, CoreResult, install_safe_panic_hook};
 
 #[derive(Debug, Clone)]
 pub struct SafeLogger {
@@ -32,10 +30,6 @@ impl SafeLogger {
         self.inner.write(level, code, public_message)
     }
 
-    pub fn record_failure(&self, code: &str, public_summary: &str) -> CoreResult<()> {
-        self.inner.record_failure(code, public_summary)
-    }
-
     #[must_use]
     pub fn read_last_failure(&self) -> Option<String> {
         self.inner.read_last_failure()
@@ -50,6 +44,7 @@ impl SafeLogger {
 #[cfg(test)]
 mod tests {
     use std::fs;
+    use std::path::PathBuf;
 
     use dragonforge_core::LogPolicy;
     use tempfile::tempdir;
