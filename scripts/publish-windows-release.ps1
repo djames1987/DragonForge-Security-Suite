@@ -25,7 +25,7 @@ $InstallerHashPath = "$InstallerPath.sha256"
 $ManifestPath = Join-Path $DistRoot "release-manifest-$Tag.json"
 $ManifestHashPath = "$ManifestPath.sha256"
 $NotesPath = Join-Path $DistRoot "release-notes-$Tag.md"
-$UpdateChannel = if ($Version -match '-alpha(?:\\.|$)') { "alpha" } elseif ($Version -match '-beta(?:\\.|$)') { "beta" } elseif (-not $IsPrerelease) { "stable" } else { throw "Only alpha, beta, and stable release channels are supported." }
+$UpdateChannel = if ($Version -match '-alpha(?:\.|$)') { "alpha" } elseif ($Version -match '-beta(?:\.|$)') { "beta" } elseif (-not $IsPrerelease) { "stable" } else { throw "Only alpha, beta, and stable release channels are supported." }
 $UpdateManifestPath = Join-Path $DistRoot "DragonForge-Security-Suite-update-$UpdateChannel.json"
 $UpdateManifestHashPath = "$UpdateManifestPath.sha256"
 
