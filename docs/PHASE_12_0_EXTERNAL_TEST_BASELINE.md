@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.0 shifts DragonForge from feature expansion to repeatable external testing. It establishes the support, diagnostics, test-matrix, and portable-package verification baseline needed before installer work.
 
@@ -40,3 +40,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12-ex
 ~~~
 
 The script writes a timestamped log and SHA-256 sidecar under test-logs/.
+
+## Verified local result
+
+Phase 12.0 completed its authoritative Windows verification on a second development machine, providing a cross-machine validation of the baseline.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- PowerShell: `5.1.26100.9444`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12-external-test-baseline-20260922-093452.log`
+- SHA-256: `96A158EA38F10E8A2F46F092E25C55CBE27E0C3F8BDF359EE844141BE18CDE88`
+
+The passing run covered `cargo fmt --all --check`, targeted `cargo check`, strict Clippy with `-D warnings`, Agent and Security Center tests including the Phase 12.0 diagnostic-redaction test, JavaScript syntax validation, and required external-test/release-support artifacts.
