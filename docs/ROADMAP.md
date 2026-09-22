@@ -430,12 +430,21 @@ See [PHASE_12_7_SECURITY_HARDENING.md](PHASE_12_7_SECURITY_HARDENING.md).
 ## Phase 13 — Beta Readiness & Release Qualification
 **Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- turn the existing external-test checklist into a repeatable beta qualification system;
-- define release-blocking versus advisory criteria;
-- record machine/environment evidence in a machine-readable qualification record;
-- verify release-profile builds, installer/portable expectations, Agent lifecycle, diagnostics, and all-app smoke coverage;
-- preserve the rule that the full Windows 10/11, VM/physical, fresh/established-profile matrix must be evidenced rather than assumed.
+Delivered:
+- formal six-scenario beta qualification matrix covering Windows 10/11, physical/VM, standard/admin-non-elevated, fresh/established profile, WebView2 present/missing, installer/portable, and reboot cases;
+- explicit release-blocking versus advisory defect criteria and beta release gate;
+- machine-readable qualification-record generator that verifies the log SHA-256 and exact Phase 13 PASS marker before recording evidence;
+- scenario IDs constrained to BQ-01 through BQ-06;
+- fail-closed beta evidence evaluator requiring all six scenarios to pass for the same candidate commit;
+- authoritative Windows verifier covering the complete workspace with all features, strict Clippy, full tests, JavaScript/browser-extension tests, locked Cargo metadata, and RustSec advisory audit;
+- real release-profile construction of all ten expected executables;
+- qualification-only portable ZIP and Inno Setup installer builds with external/internal SHA-256 verification;
+- automatic cleanup of qualification-only artifacts while retaining reusable Cargo build cache;
+- Suite Phase 13 metadata across all nine desktop UIs and Security Center diagnostics;
+- external-test and installer checklists connected to retained Phase 13 evidence;
+- suite CI awareness for Phase 13 scripts, artifacts, PowerShell syntax, and current-phase metadata.
+
+The Phase 13 implementation can be verified on one authoritative machine, but the suite may be labeled beta only after all required matrix rows have evidence and the release-blocking defect gate is clear.
 
 See [PHASE_13_BETA_READINESS.md](PHASE_13_BETA_READINESS.md).
 
