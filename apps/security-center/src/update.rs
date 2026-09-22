@@ -10,7 +10,7 @@ use dragonforge_update::{
 };
 use reqwest::blocking::Client;
 use semver::Version;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 const UPDATE_KEY_ID: &str = match option_env!("DRAGONFORGE_UPDATE_KEY_ID") {
     Some(value) => value,
@@ -20,6 +20,21 @@ const UPDATE_PUBLIC_KEY_HEX: Option<&str> = option_env!("DRAGONFORGE_UPDATE_PUBL
 const ALPHA_FEED: Option<&str> = option_env!("DRAGONFORGE_UPDATE_FEED_ALPHA");
 const BETA_FEED: Option<&str> = option_env!("DRAGONFORGE_UPDATE_FEED_BETA");
 const STABLE_FEED: Option<&str> = option_env!("DRAGONFORGE_UPDATE_FEED_STABLE");
+const DEFAULT_RELEASES_API: &str =
+    "https://api.github.com/repos/djames1987/DragonForge-Security-Suite/releases?per_page=50";
+const MAX_RELEASE_DISCOVERY_BYTES: u64 = 2 * 1024 * 1024;
+
+#[derive(Debug, Deserialize)]
+struct GitHubRelease {
+    draft: bool,
+    assets: Vec<GitHubReleaseAsset>,
+}
+
+#[derive(Debug, Deserialize)]
+struct GitHubReleaseAsset {
+    name: String,
+    browser_download_url: String,
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdateStatus {
@@ -73,7 +88,7 @@ impl UpdateManager {
 
     pub fn check(&self, channel: UpdateChannel) -> Result<UpdateStatus, String> {
         let current_version = env!("CARGO_PKG_VERSION").to_owned();
-        if feed_for(channel).is_none() || UPDATE_PUBLIC_KEY_HEX.is_none() {
+        if UPDATE_PUBLIC_KEY_HEX.is_none() {
             return Ok(UpdateStatus {
                 configured: false,
                 channel,
@@ -215,33 +230,9 @@ impl UpdateManager {
     }
 
     fn fetch_verified(&self, channel: UpdateChannel) -> Result<VerifiedUpdateManifest, String> {
-        let feed = feed_for(channel)
-            .ok_or_else(|| "secure update feed is not configured for this channel".to_owned())?;
-        if !feed.starts_with("https://") || feed.len() > 2_048 {
-            return Err("configured update feed must use bounded HTTPS".to_owned());
-        }
         let public_key = UPDATE_PUBLIC_KEY_HEX
             .ok_or_else(|| "secure update public key is not configured in this build".to_owned())?;
-
-        let response = self
-            .client
-            .get(feed)
-            .send()
-            .map_err(|_| "unable to retrieve the secure update manifest".to_owned())?;
-        if !response.status().is_success() || response.url().scheme() != "https" {
-            return Err(
-                "secure update manifest request did not remain on successful HTTPS".to_owned(),
-            );
-        }
-        if response
-            .content_length()
-            .is_some_and(|length| length > MAX_MANIFEST_BYTES as u64)
-        {
-            return Err("secure update manifest exceeds the maximum allowed size".to_owned());
-        }
-        let bytes = response
-            .bytes()
-            .map_err(|_| "unable to read the secure update manifest".to_owned())?;
+        let bytes = self.fetch_manifest_bytes(channel)?;
         verify_manifest(
             &bytes,
             UPDATE_KEY_ID,
@@ -249,6 +240,52 @@ impl UpdateManager {
             env!("CARGO_PKG_VERSION"),
             channel,
         )
+    }
+
+    fn fetch_manifest_bytes(&self, channel: UpdateChannel) -> Result<Vec<u8>, String> {
+        if let Some(feed) = feed_for(channel) {
+            return self.fetch_bounded_https(feed, MAX_MANIFEST_BYTES as u64);
+        }
+
+        let discovery = self.fetch_bounded_https(DEFAULT_RELEASES_API, MAX_RELEASE_DISCOVERY_BYTES)?;
+        let releases: Vec<GitHubRelease> = serde_json::from_slice(&discovery)
+            .map_err(|_| "release discovery response is invalid JSON".to_owned())?;
+        let expected_name = channel_asset_name(channel);
+        let manifest_url = releases
+            .iter()
+            .filter(|release| !release.draft)
+            .flat_map(|release| release.assets.iter())
+            .find(|asset| asset.name == expected_name)
+            .map(|asset| asset.browser_download_url.as_str())
+            .ok_or_else(|| "no signed update manifest is published for the selected channel".to_owned())?;
+        self.fetch_bounded_https(manifest_url, MAX_MANIFEST_BYTES as u64)
+    }
+
+    fn fetch_bounded_https(&self, url: &str, maximum_bytes: u64) -> Result<Vec<u8>, String> {
+        if !url.starts_with("https://") || url.len() > 2_048 {
+            return Err("secure update source must use bounded HTTPS".to_owned());
+        }
+        let response = self
+            .client
+            .get(url)
+            .send()
+            .map_err(|_| "unable to retrieve secure update metadata".to_owned())?;
+        if !response.status().is_success() || response.url().scheme() != "https" {
+            return Err("secure update request did not remain on successful HTTPS".to_owned());
+        }
+        if response
+            .content_length()
+            .is_some_and(|length| length > maximum_bytes)
+        {
+            return Err("secure update response exceeds the maximum allowed size".to_owned());
+        }
+        let bytes = response
+            .bytes()
+            .map_err(|_| "unable to read secure update metadata".to_owned())?;
+        if bytes.len() as u64 > maximum_bytes {
+            return Err("secure update response exceeds the maximum allowed size".to_owned());
+        }
+        Ok(bytes.to_vec())
     }
 }
 
@@ -258,6 +295,10 @@ fn feed_for(channel: UpdateChannel) -> Option<&'static str> {
         UpdateChannel::Beta => BETA_FEED,
         UpdateChannel::Stable => STABLE_FEED,
     }
+}
+
+fn channel_asset_name(channel: UpdateChannel) -> String {
+    format!("DragonForge-Security-Suite-update-{channel}.json")
 }
 
 #[cfg(windows)]
@@ -281,19 +322,22 @@ fn verify_authenticode(_path: &Path) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::feed_for;
+    use super::channel_asset_name;
     use dragonforge_update::UpdateChannel;
 
     #[test]
-    fn channels_do_not_fall_through_to_other_feeds() {
-        let alpha = feed_for(UpdateChannel::Alpha);
-        let beta = feed_for(UpdateChannel::Beta);
-        let stable = feed_for(UpdateChannel::Stable);
-        if alpha.is_some() && beta.is_some() {
-            assert_ne!(alpha, beta);
-        }
-        if beta.is_some() && stable.is_some() {
-            assert_ne!(beta, stable);
-        }
+    fn channel_assets_are_explicit_and_distinct() {
+        assert_eq!(
+            channel_asset_name(UpdateChannel::Alpha),
+            "DragonForge-Security-Suite-update-alpha.json"
+        );
+        assert_eq!(
+            channel_asset_name(UpdateChannel::Beta),
+            "DragonForge-Security-Suite-update-beta.json"
+        );
+        assert_eq!(
+            channel_asset_name(UpdateChannel::Stable),
+            "DragonForge-Security-Suite-update-stable.json"
+        );
     }
 }
