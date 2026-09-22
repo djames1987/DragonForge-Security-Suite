@@ -211,3 +211,26 @@ docker compose restart sync
 - Revision checks prevent blind overwrite during normal synchronization.
 - The client validates downloaded encrypted vault structure and vault identity before local replacement.
 - Plain HTTP is intentionally limited to loopback by the client.
+
+
+## Phase 15 production hardening
+
+For production deployment set `DRAGONFORGE_SYNC_ENVIRONMENT=production`. Production startup fails closed unless the server has PostgreSQL support, `DRAGONFORGE_SYNC_DATABASE_URL` is configured, the admin token is a 64-character hexadecimal secret, `DRAGONFORGE_SYNC_TLS_PROXY=true`, and `DRAGONFORGE_SYNC_PUBLIC_BASE_URL` is a bounded `https://` URL.
+
+The raw Rust listener is HTTP. Keep it private to the host/container network and terminate public TLS at a trusted reverse proxy. The default Compose publication remains loopback-only.
+
+Phase 15 also applies a bounded request-rate window in addition to the existing request body limit and timeout. Defaults are 240 requests per 60 seconds per hashed credential/device bucket and can be adjusted with `DRAGONFORGE_SYNC_RATE_LIMIT_REQUESTS` and `DRAGONFORGE_SYNC_RATE_LIMIT_WINDOW_SECONDS`.
+
+Before deployment upgrades, create a verified database backup:
+
+~~~powershell
+.\..\..\scripts\password-manager\backup-sync-server.ps1
+~~~
+
+Restores require a matching SHA-256 sidecar and explicit acknowledgement:
+
+~~~powershell
+.\..\..\scripts\password-manager\restore-sync-server.ps1 -BackupPath <dump> -AcknowledgeDataReplacement
+~~~
+
+See `docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md` and `docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md` for the compatibility and migration policy.
