@@ -120,6 +120,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.2 — Agent Lifecycle: **Verified Complete**
 - Phase 12.3 — Release Engineering: **Verified Complete**
 - Phase 12.4 — Code Signing: **Implementation Complete — Local Verification Pending**
+- Phase 12.4 — Code Signing: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
