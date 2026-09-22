@@ -26,8 +26,20 @@ services:
       DRAGONFORGE_SYNC_BIND: 0.0.0.0:8787
       DRAGONFORGE_SYNC_DATABASE_URL: postgres://dragonforge:${POSTGRES_PASSWORD}@postgres:5432/dragonforge_sync
       DRAGONFORGE_SYNC_ADMIN_TOKEN: ${DRAGONFORGE_SYNC_ADMIN_TOKEN}
+      DRAGONFORGE_SYNC_ENVIRONMENT: ${DRAGONFORGE_SYNC_ENVIRONMENT:-production}
+      DRAGONFORGE_SYNC_TLS_PROXY: ${DRAGONFORGE_SYNC_TLS_PROXY:-true}
+      DRAGONFORGE_SYNC_PUBLIC_BASE_URL: ${DRAGONFORGE_SYNC_PUBLIC_BASE_URL}
+      DRAGONFORGE_SYNC_RATE_LIMIT_REQUESTS: ${DRAGONFORGE_SYNC_RATE_LIMIT_REQUESTS:-240}
+      DRAGONFORGE_SYNC_RATE_LIMIT_WINDOW_SECONDS: ${DRAGONFORGE_SYNC_RATE_LIMIT_WINDOW_SECONDS:-60}
     ports:
       - "127.0.0.1:8787:8787"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
 volumes:
   dragonforge_sync_postgres:

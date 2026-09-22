@@ -85,9 +85,13 @@ fn write_native_message(writer: &mut impl Write, message: &[u8]) -> io::Result<(
 }
 
 fn valid_extension_origin(origin: &str) -> bool {
-    (origin.starts_with("chrome-extension://") || origin.starts_with("moz-extension://"))
-        && !origin.contains('\n')
-        && !origin.contains('\r')
+    let Some(id) = origin
+        .strip_prefix("chrome-extension://")
+        .and_then(|value| value.strip_suffix('/'))
+    else {
+        return false;
+    };
+    id.len() == 32 && id.bytes().all(|byte| matches!(byte, b'a'..=b'p'))
 }
 
 #[cfg(test)]
@@ -108,8 +112,13 @@ mod tests {
 
     #[test]
     fn native_origin_requires_extension_scheme() {
-        assert!(valid_extension_origin("chrome-extension://abcdef/"));
-        assert!(valid_extension_origin("moz-extension://abcdef/"));
+        assert!(valid_extension_origin(
+            "chrome-extension://abcdefghijklmnopabcdefghijklmnop/"
+        ));
+        assert!(!valid_extension_origin("chrome-extension://abcdef/"));
+        assert!(!valid_extension_origin(
+            "moz-extension://abcdefghijklmnopabcdefghijklmnop/"
+        ));
         assert!(!valid_extension_origin("https://example.com"));
         assert!(!valid_extension_origin(""));
     }

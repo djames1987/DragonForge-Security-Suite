@@ -40,6 +40,8 @@ pub enum ApiError {
     Conflict { current_revision: u64 },
     #[error("recovery state changed")]
     RecoveryConflict,
+    #[error("too many requests")]
+    RateLimited { retry_after_seconds: u64 },
     #[error("service unavailable")]
     Unavailable,
 }
@@ -85,6 +87,14 @@ impl IntoResponse for ApiError {
                 StatusCode::CONFLICT,
                 "recoveryConflict",
                 "recovery state changed; restart recovery with the current recovery kit".to_owned(),
+                None,
+            ),
+            Self::RateLimited {
+                retry_after_seconds,
+            } => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "rateLimited",
+                format!("request rate exceeded; retry after {retry_after_seconds} seconds"),
                 None,
             ),
             Self::Unavailable => (
