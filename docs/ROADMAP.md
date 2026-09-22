@@ -283,7 +283,7 @@ See [PHASE_12_1_WINDOWS_INSTALLER.md](PHASE_12_1_WINDOWS_INSTALLER.md).
 
 
 ## Phase 12.2 — Agent Lifecycle
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - automatic exact-sibling Agent startup when Security Center requests dashboard/health state;
@@ -298,7 +298,10 @@ Delivered:
 - portable-build on-demand recovery with no persistence changes;
 - health capability reporting for `graceful-shutdown` and `restartable-session`;
 - tests for authenticated shutdown cleanup and manual-stop suppression;
-- dedicated Phase 12.2 Windows verification tooling and documentation.
+- dedicated Phase 12.2 Windows verification tooling and documentation;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0): formatting, targeted compile checks, strict Clippy, 9 Agent tests, 22 Security Center tests, JavaScript validation, and required Phase 12.2 artifact checks;
+- verified log: `dragonforge-phase12.2-agent-lifecycle-20260922-110040.log`;
+- verified log SHA-256: `D7D5EF5979C9AAA250D527192457D6DB476274A30F50A2C2253C81EC1D70B2E5`.
 
 Phase 12.2 remains normal-user and per-user. It does not introduce a privileged Windows service, elevation, firewall mutation, process termination, quarantine, or arbitrary command execution.
 
