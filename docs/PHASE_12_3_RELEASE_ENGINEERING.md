@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.3 converts DragonForge release creation from manually coordinated packaging into a tag-bound, fail-closed release workflow.
 
@@ -108,3 +108,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12.3-
 ~~~
 
 The verifier checks formatting, targeted compile/Clippy/tests, JavaScript syntax, PowerShell syntax for every release script, version consistency, locked Cargo metadata, release-script invariants, and required Phase 12.3 artifacts.
+
+## Verified Windows result
+
+Phase 12.3 completed authoritative Windows verification on `DRACO`.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12.3-release-engineering-20260922-112111.log`
+- Log SHA-256: `E896E0343DD622D1116AD3D63A29FBC8E9E10B9A157900EF762BE354B4C9E037`
+
+The passing run covered rustfmt, targeted compile checks, strict Clippy, all 9 Agent tests, all 22 Security Center tests, JavaScript syntax validation, tracked `Cargo.lock`, `cargo metadata --locked`, suite-wide release-version consistency checks, PowerShell syntax validation for every release script, and the required exact-tag/publication/artifact-verification invariants.
