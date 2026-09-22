@@ -8,6 +8,7 @@
 //! crates/components.
 
 pub mod config;
+pub mod diagnostics;
 pub mod error;
 pub mod event;
 pub mod ipc;
@@ -15,6 +16,7 @@ pub mod platform;
 pub mod redaction;
 
 pub use config::{ConfigKey, ConfigSource, ResolvedConfig};
+pub use diagnostics::{ComponentLogger, install_safe_panic_hook, sanitize_diagnostic_text};
 pub use error::{CoreError, CoreResult, ErrorCode};
 pub use event::{EventKind, EventRecord, Severity};
 pub use ipc::{
@@ -40,6 +42,19 @@ pub enum Component {
 }
 
 impl Component {
+    pub const ALL: [Self; 10] = [
+        Self::SecurityCenter,
+        Self::PasswordManager,
+        Self::Agent,
+        Self::FileVault,
+        Self::Authenticator,
+        Self::SecurityScanner,
+        Self::IntegrityMonitor,
+        Self::NetworkGuard,
+        Self::BackupRecovery,
+        Self::SecureShare,
+    ];
+
     /// Stable machine-readable component identifier.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
@@ -64,20 +79,7 @@ mod tests {
 
     #[test]
     fn component_ids_are_stable_and_nonempty() {
-        let components = [
-            Component::SecurityCenter,
-            Component::PasswordManager,
-            Component::Agent,
-            Component::FileVault,
-            Component::Authenticator,
-            Component::SecurityScanner,
-            Component::IntegrityMonitor,
-            Component::NetworkGuard,
-            Component::BackupRecovery,
-            Component::SecureShare,
-        ];
-
-        for component in components {
+        for component in Component::ALL {
             assert!(!component.as_str().is_empty());
         }
     }

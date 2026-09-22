@@ -1,66 +1,49 @@
-use std::fs::{self, OpenOptions};
-use std::io::Write;
-use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::path::{Path, PathBuf};
 
-use dragonforge_core::{Component, CoreError, CoreResult, ErrorCode, LogPolicy, SuitePaths};
+use dragonforge_core::{
+    Component, ComponentLogger, CoreResult, LogPolicy, install_safe_panic_hook,
+};
 
 #[derive(Debug, Clone)]
 pub struct SafeLogger {
-    path: PathBuf,
-    policy: LogPolicy,
+    inner: ComponentLogger,
 }
 
 impl SafeLogger {
     pub fn discover(include_identifiers: bool) -> CoreResult<Self> {
-        let paths = SuitePaths::discover()?;
-        let directory = paths
-            .component_data_dir(Component::SecurityCenter)
-            .join("logs");
         Ok(Self {
-            path: directory.join("security-center.log"),
-            policy: LogPolicy {
-                include_identifiers,
-                ..LogPolicy::default()
-            },
+            inner: ComponentLogger::discover(Component::SecurityCenter, include_identifiers)?,
         })
     }
 
     #[cfg(test)]
     #[must_use]
     pub fn from_path(path: PathBuf, policy: LogPolicy) -> Self {
-        Self { path, policy }
+        Self {
+            inner: ComponentLogger::from_path(path, policy).with_rotation(4_096, 2),
+        }
+    }
+
+    pub fn install_panic_hook(&self) {
+        install_safe_panic_hook(self.inner.clone(), Component::SecurityCenter);
     }
 
     pub fn write(&self, level: &str, code: &str, public_message: &str) -> CoreResult<()> {
-        if let Some(parent) = self.path.parent() {
-            fs::create_dir_all(parent).map_err(|_| {
-                CoreError::new_safe(
-                    ErrorCode::Internal,
-                    "unable to create Security Center log directory",
-                )
-            })?;
-        }
+        self.inner.write(level, code, public_message)
+    }
 
-        let timestamp_ms = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis();
-        let level = self.policy.sanitize_public(level);
-        let code = self.policy.sanitize_public(code);
-        let message = self.policy.sanitize_public(public_message);
-        let line = format!("{timestamp_ms} {level} {code} {message}\n");
+    pub fn record_failure(&self, code: &str, public_summary: &str) -> CoreResult<()> {
+        self.inner.record_failure(code, public_summary)
+    }
 
-        let mut file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&self.path)
-            .map_err(|_| {
-                CoreError::new_safe(ErrorCode::Internal, "unable to open Security Center log")
-            })?;
-        file.write_all(line.as_bytes()).map_err(|_| {
-            CoreError::new_safe(ErrorCode::Internal, "unable to write Security Center log")
-        })
+    #[must_use]
+    pub fn read_last_failure(&self) -> Option<String> {
+        self.inner.read_last_failure()
+    }
+
+    #[must_use]
+    pub fn path(&self) -> &Path {
+        self.inner.path()
     }
 }
 
@@ -84,5 +67,18 @@ mod tests {
         let content = fs::read_to_string(path).expect("read");
         assert!(content.contains("safe second-line"));
         assert!(!content.contains("safe\nsecond-line"));
+    }
+
+    #[test]
+    fn logger_redacts_obvious_secret_markers() {
+        let dir = tempdir().expect("temporary directory");
+        let path = dir.path().join("security-center.log");
+        let logger = SafeLogger::from_path(path.clone(), LogPolicy::default());
+        logger
+            .write("error", "test.secret", "password=hunter2")
+            .expect("write");
+        let content = fs::read_to_string(path).expect("read");
+        assert!(content.contains("[REDACTED]"));
+        assert!(!content.contains("hunter2"));
     }
 }

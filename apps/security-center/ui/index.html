@@ -35,7 +35,7 @@
           <span id="sidebar-agent-detail">Checking authenticated local agent.</span>
         </div>
       </div>
-      <div class="phase-badge">Suite Phase 12.2</div>
+      <div class="phase-badge">Suite Phase 12.5</div>
     </aside>
 
     <main class="content">
@@ -206,12 +206,12 @@
           <p>
             The unified visibility and orchestration surface for DragonForge security products.
             Security Center provides the dashboard, component registry, local event aggregation,
-            settings persistence, safe logging, strict sibling-app orchestration, authenticated Agent integration, and external-test diagnostics.
+            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, and external-test diagnostics.
           </p>
           <div class="about-meta">
             <span>Version 0.1.0</span>
             <span>•</span>
-            <span>Phase 12.2</span>
+            <span>Phase 12.5</span>
             <span>•</span>
             <span>Rust + Tauri</span>
             <span>•</span>
@@ -219,6 +219,15 @@
           </div>
           <div class="about-actions">
             <button id="copy-diagnostics" class="primary-button">Copy diagnostics</button>
+            <button id="create-support-bundle" class="secondary-button">Create support bundle</button>
+          </div>
+          <div class="info-box">
+            <strong>Last recorded Security Center failure</strong>
+            <p id="last-failure">No recorded crash/failure is currently available.</p>
+          </div>
+          <div class="info-box">
+            <strong>Component failure status</strong>
+            <div id="component-failures" class="muted-text">Loading component diagnostics…</div>
           </div>
           <p class="muted">
             Diagnostics include build/platform/component state only. Vault contents, credentials,

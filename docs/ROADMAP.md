@@ -359,17 +359,22 @@ See [PHASE_12_4_CODE_SIGNING.md](PHASE_12_4_CODE_SIGNING.md).
 
 
 ## Phase 12.5 — Crash Handling & Diagnostics
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- add panic/crash logging that never records secrets;
-- provide per-component diagnostic logs with consistent metadata and redaction policy;
-- implement bounded log rotation and retention;
-- create an exportable support bundle suitable for bug reports;
-- add automated redaction tests covering credentials, vault paths/content, sync/admin tokens, OTP seeds, recovery material, private keys, and sensitive user data;
-- add Security Center visibility for the most recent failure/status of each installed application;
-- extend diagnostic metadata to include WebView2 version and per-component application versions;
-- keep diagnostic collection metadata-focused and opt-in where identifiers could increase privacy risk.
+Delivered:
+- shared component-scoped rotating logger with 1 MiB default active-log threshold and three bounded backups;
+- secret-aware diagnostic sanitization for credentials, vault references, sync/admin tokens, OTP seeds, recovery material, private keys, sensitive paths/content, and authorization headers;
+- panic hooks that persist fixed public failure metadata without serializing panic payloads;
+- Security Center and DragonForge Agent panic-hook adoption;
+- per-component namespaced last-failure records and Security Center visibility across all ten suite components;
+- redaction-safe support bundle generation with component log metadata and bounded sanitized Security Center log tail;
+- diagnostic schema v2 with per-component application version metadata;
+- WebView2 version detection on Windows with explicit null when unavailable;
+- existing diagnostic identifier opt-in preserved for Agent PID;
+- automated redaction, rotation, and failure-record tests;
+- dedicated Phase 12.5 Windows verification tooling and documentation.
+
+See [PHASE_12_5_CRASH_DIAGNOSTICS.md](PHASE_12_5_CRASH_DIAGNOSTICS.md).
 
 
 ## Phase 12.6 — UX Consistency

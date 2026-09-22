@@ -4,8 +4,12 @@ use std::env;
 use std::process::ExitCode;
 
 use dragonforge_agent::{AgentClient, AgentServer};
+use dragonforge_core::{Component, ComponentLogger, install_safe_panic_hook};
 
 fn main() -> ExitCode {
+    if let Ok(logger) = ComponentLogger::discover(Component::Agent, false) {
+        install_safe_panic_hook(logger, Component::Agent);
+    }
     match env::args().nth(1).as_deref() {
         Some("--health") => health(),
         Some("--stop") => stop(),
