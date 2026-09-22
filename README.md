@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.3 Release Engineering is implementation complete with local verification pending. Release preparation, exact-tag builds, artifact manifests, release-note generation, Cargo.lock enforcement, and pre-publication verification are now automated.
+> **Current status:** Phase 12.3 Release Engineering is verified complete. Release preparation, exact-tag builds, artifact manifests, release-note generation, Cargo.lock enforcement, and pre-publication verification are now validated on Windows.
 
 ## Canonical repository
 
@@ -118,7 +118,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.0 — External Test Baseline: **Verified Complete**
 - Phase 12.1 — Windows Installer: **Verified Complete**
 - Phase 12.2 — Agent Lifecycle: **Verified Complete**
-- Phase 12.3 — Release Engineering: **Implementation Complete — Local Verification Pending**
+- Phase 12.3 — Release Engineering: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -159,6 +159,10 @@ Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9E
 Phase 12.3 makes release source identity and artifact integrity fail-closed. Version stamping updates the workspace, all Tauri applications, Security Center's visible version, and Inno binary metadata. Tagged builds require tracked/locked dependencies, exact tag-to-HEAD identity, verified portable contents, installer/ZIP SHA-256 sidecars, generated release notes, and a machine-readable release manifest before GitHub publication.
 
 See [docs/PHASE_12_3_RELEASE_ENGINEERING.md](docs/PHASE_12_3_RELEASE_ENGINEERING.md).
+
+Phase 12.3 Windows verification: **PASS** on `DRACO` (Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12.3-release-engineering-20260922-112111.log`  
+Verified log SHA-256: `E896E0343DD622D1116AD3D63A29FBC8E9E10B9A157900EF762BE354B4C9E037`
 
 ## Portable test release
 
