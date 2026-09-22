@@ -37,7 +37,7 @@ impl AgentServer {
         Ok(Self::from_paths(AgentPaths::discover()?))
     }
 
-    pub fn run(&self) -> Result<()> {
+    pub fn run(&self) -> Result<bool> {
         self.run_internal(None)
     }
 
@@ -69,9 +69,10 @@ impl AgentServer {
             let (mut stream, _) = listener
                 .accept()
                 .map_err(|_| AgentError::Io("agent client connection failed"))?;
-            let _ = handle_connection(&mut stream, &session_key, started, &mut replay);
+            let shutdown = handle_connection(&mut stream, &session_key, started, &mut replay)
+                .unwrap_or(false);
             handled += 1;
-            if max_connections.is_some_and(|limit| handled >= limit) {
+            if shutdown || max_connections.is_some_and(|limit| handled >= limit) {
                 break;
             }
         }
@@ -159,8 +160,17 @@ fn handle_connection(
                     "health".to_owned(),
                     "authenticated-ipc".to_owned(),
                     "background-lifetime".to_owned(),
+                    "graceful-shutdown".to_owned(),
+                    "restartable-session".to_owned(),
                 ],
             }),
+            error: None,
+            auth_tag_hex: String::new(),
+        },
+        Ok(()) if request.action == "shutdown" => ResponseWire {
+            request_id: request.request_id,
+            ok: true,
+            health: None,
             error: None,
             auth_tag_hex: String::new(),
         },
@@ -187,7 +197,8 @@ fn handle_connection(
     stream
         .write_all(&encoded)
         .and_then(|_| stream.write_all(b"\n"))
-        .map_err(|_| AgentError::Io("agent response could not be written"))
+        .map_err(|_| AgentError::Io("agent response could not be written"))?;
+    Ok(request.action == "shutdown" && signed.ok)
 }
 
 fn validate_request(
@@ -396,6 +407,33 @@ mod tests {
                 .iter()
                 .any(|item| item == "authenticated-ipc")
         );
+
+        handle.join().expect("server thread");
+        assert!(!paths.runtime_file().exists());
+        assert!(!paths.credential_file().exists());
+        assert!(!paths.lock_file().exists());
+    }
+
+    #[test]
+    fn authenticated_shutdown_stops_server_and_cleans_runtime() {
+        let dir = tempdir().expect("tempdir");
+        let paths = crate::AgentPaths::from_root(dir.path());
+        let server_paths = paths.clone();
+        let handle = thread::spawn(move || {
+            AgentServer::from_paths(server_paths)
+                .run_internal(None)
+                .expect("server");
+        });
+
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while !paths.runtime_file().is_file() {
+            assert!(Instant::now() < deadline, "agent runtime file was not created");
+            thread::sleep(Duration::from_millis(10));
+        }
+
+        crate::AgentClient::from_paths(paths.clone())
+            .shutdown()
+            .expect("authenticated shutdown");
 
         handle.join().expect("server thread");
         assert!(!paths.runtime_file().exists());
