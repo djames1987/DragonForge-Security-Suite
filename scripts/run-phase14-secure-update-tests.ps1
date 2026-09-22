@@ -32,6 +32,11 @@ try {
     Invoke-Checked cargo "test" "--workspace" "--all-features" "--locked"
     Invoke-Checked cargo "metadata" "--locked" "--format-version" "1" "--no-deps"
 
+    Write-Host ""
+    Write-Host ">>> RustSec dependency advisory audit"
+    & (Join-Path $PSScriptRoot "run-dependency-audit.ps1") -InstallIfMissing
+    if ($LASTEXITCODE -ne 0) { throw "Dependency security audit failed." }
+
     foreach ($Path in @(
         "apps/security-center/ui/app.js",
         "apps/password-manager/ui/app.js",
@@ -63,9 +68,14 @@ try {
         if (-not $UpdateSource.Contains($Text)) { throw "Update engine invariant missing: $Text" }
     }
     $CenterSource = Get-Content -Raw "apps/security-center/src/update.rs"
-    foreach ($Text in @("DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX","Get-AuthenticodeSignature","sha256_hex","install_prepared","Command::new(&prepared.path)")) {
+    foreach ($Text in @("DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX","Get-AuthenticodeSignature","sha256_hex","install_prepared","Command::new(&prepared.path)","DEFAULT_RELEASES_API","DragonForge-Security-Suite-update-")) {
         if (-not $CenterSource.Contains($Text)) { throw "Security Center update invariant missing: $Text" }
     }
+    $SignerSource = Get-Content -Raw "crates/dragonforge-update/src/bin/sign_update_manifest.rs"
+    foreach ($Text in @("DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX","Zeroizing","update signing key does not match the pinned release public key")) {
+        if (-not $SignerSource.Contains($Text)) { throw "Update signer invariant missing: $Text" }
+    }
+
     $PublishSource = Get-Content -Raw "scripts/publish-windows-release.ps1"
     foreach ($Text in @("Phase 14 update-capable releases must be Authenticode-signed","generate-signed-update-manifest.ps1","DRAGONFORGE_UPDATE_SIGNING_KEY_HEX")) {
         if (-not $PublishSource.Contains($Text)) { throw "Release pipeline update invariant missing: $Text" }
@@ -83,6 +93,7 @@ try {
         "publish-windows-release.ps1",
         "build-tagged-windows-release.ps1",
         "verify-release-artifacts.ps1",
+        "run-dependency-audit.ps1",
         "run-phase14-secure-update-tests.ps1"
     )) {
         $Path = Join-Path $PSScriptRoot $Script
