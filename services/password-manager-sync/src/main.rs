@@ -24,18 +24,10 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let tls_proxy = env::var("DRAGONFORGE_SYNC_TLS_PROXY")
         .is_ok_and(|value| value.eq_ignore_ascii_case("true"));
     let public_base_url = env::var("DRAGONFORGE_SYNC_PUBLIC_BASE_URL").ok();
-    let rate_limit_requests = parse_bounded_u32_env(
-        "DRAGONFORGE_SYNC_RATE_LIMIT_REQUESTS",
-        240,
-        10,
-        10_000,
-    )?;
-    let rate_limit_window_seconds = parse_bounded_u64_env(
-        "DRAGONFORGE_SYNC_RATE_LIMIT_WINDOW_SECONDS",
-        60,
-        1,
-        3_600,
-    )?;
+    let rate_limit_requests =
+        parse_bounded_u32_env("DRAGONFORGE_SYNC_RATE_LIMIT_REQUESTS", 240, 10, 10_000)?;
+    let rate_limit_window_seconds =
+        parse_bounded_u64_env("DRAGONFORGE_SYNC_RATE_LIMIT_WINDOW_SECONDS", 60, 1, 3_600)?;
 
     let mut admin_token = env::var("DRAGONFORGE_SYNC_ADMIN_TOKEN").ok();
     validate_runtime_config(
@@ -120,9 +112,8 @@ fn validate_runtime_config(
             "production sync requires PostgreSQL support and DRAGONFORGE_SYNC_DATABASE_URL",
         ));
     }
-    let admin_token = admin_token.ok_or_else(|| {
-        invalid("production sync requires DRAGONFORGE_SYNC_ADMIN_TOKEN")
-    })?;
+    let admin_token = admin_token
+        .ok_or_else(|| invalid("production sync requires DRAGONFORGE_SYNC_ADMIN_TOKEN"))?;
     if admin_token.len() != 64 || !admin_token.bytes().all(|byte| byte.is_ascii_hexdigit()) {
         return Err(invalid(
             "production DRAGONFORGE_SYNC_ADMIN_TOKEN must be a 64-character hexadecimal secret",
@@ -133,9 +124,8 @@ fn validate_runtime_config(
             "production sync requires DRAGONFORGE_SYNC_TLS_PROXY=true",
         ));
     }
-    let public_base_url = public_base_url.ok_or_else(|| {
-        invalid("production sync requires DRAGONFORGE_SYNC_PUBLIC_BASE_URL")
-    })?;
+    let public_base_url = public_base_url
+        .ok_or_else(|| invalid("production sync requires DRAGONFORGE_SYNC_PUBLIC_BASE_URL"))?;
     if !public_base_url.starts_with("https://")
         || public_base_url.len() > 2048
         || public_base_url.chars().any(char::is_whitespace)
@@ -160,7 +150,10 @@ fn parse_bounded_u32_env(
         return Ok(default);
     };
     let value = raw.parse::<u32>().map_err(|_| {
-        std::io::Error::new(std::io::ErrorKind::InvalidInput, format!("{name} must be an integer"))
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("{name} must be an integer"),
+        )
     })?;
     if !(minimum..=maximum).contains(&value) {
         return Err(std::io::Error::new(
@@ -181,7 +174,10 @@ fn parse_bounded_u64_env(
         return Ok(default);
     };
     let value = raw.parse::<u64>().map_err(|_| {
-        std::io::Error::new(std::io::ErrorKind::InvalidInput, format!("{name} must be an integer"))
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("{name} must be an integer"),
+        )
     })?;
     if !(minimum..=maximum).contains(&value) {
         return Err(std::io::Error::new(
@@ -198,7 +194,6 @@ async fn shutdown_signal() {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::validate_runtime_config;
@@ -206,11 +201,77 @@ mod tests {
     #[test]
     fn production_requires_persistent_database_tls_and_strong_admin_secret() {
         let bind = "0.0.0.0:8787".parse().unwrap();
-        assert!(validate_runtime_config(bind, true, true, Some("postgres://db"), Some(&"a".repeat(64)), true, Some("https://sync.example.com")).is_ok());
-        assert!(validate_runtime_config(bind, true, false, Some("postgres://db"), Some(&"a".repeat(64)), true, Some("https://sync.example.com")).is_err());
-        assert!(validate_runtime_config(bind, true, true, None, Some(&"a".repeat(64)), true, Some("https://sync.example.com")).is_err());
-        assert!(validate_runtime_config(bind, true, true, Some("postgres://db"), Some("weak"), true, Some("https://sync.example.com")).is_err());
-        assert!(validate_runtime_config(bind, true, true, Some("postgres://db"), Some(&"a".repeat(64)), false, Some("https://sync.example.com")).is_err());
-        assert!(validate_runtime_config(bind, true, true, Some("postgres://db"), Some(&"a".repeat(64)), true, Some("http://sync.example.com")).is_err());
+        assert!(
+            validate_runtime_config(
+                bind,
+                true,
+                true,
+                Some("postgres://db"),
+                Some(&"a".repeat(64)),
+                true,
+                Some("https://sync.example.com")
+            )
+            .is_ok()
+        );
+        assert!(
+            validate_runtime_config(
+                bind,
+                true,
+                false,
+                Some("postgres://db"),
+                Some(&"a".repeat(64)),
+                true,
+                Some("https://sync.example.com")
+            )
+            .is_err()
+        );
+        assert!(
+            validate_runtime_config(
+                bind,
+                true,
+                true,
+                None,
+                Some(&"a".repeat(64)),
+                true,
+                Some("https://sync.example.com")
+            )
+            .is_err()
+        );
+        assert!(
+            validate_runtime_config(
+                bind,
+                true,
+                true,
+                Some("postgres://db"),
+                Some("weak"),
+                true,
+                Some("https://sync.example.com")
+            )
+            .is_err()
+        );
+        assert!(
+            validate_runtime_config(
+                bind,
+                true,
+                true,
+                Some("postgres://db"),
+                Some(&"a".repeat(64)),
+                false,
+                Some("https://sync.example.com")
+            )
+            .is_err()
+        );
+        assert!(
+            validate_runtime_config(
+                bind,
+                true,
+                true,
+                Some("postgres://db"),
+                Some(&"a".repeat(64)),
+                true,
+                Some("http://sync.example.com")
+            )
+            .is_err()
+        );
     }
 }
