@@ -8,6 +8,7 @@
 //! crates/components.
 
 pub mod config;
+pub mod diagnostics;
 pub mod error;
 pub mod event;
 pub mod ipc;
@@ -15,6 +16,7 @@ pub mod platform;
 pub mod redaction;
 
 pub use config::{ConfigKey, ConfigSource, ResolvedConfig};
+pub use diagnostics::{ComponentLogger, install_safe_panic_hook, sanitize_diagnostic_text};
 pub use error::{CoreError, CoreResult, ErrorCode};
 pub use event::{EventKind, EventRecord, Severity};
 pub use ipc::{
