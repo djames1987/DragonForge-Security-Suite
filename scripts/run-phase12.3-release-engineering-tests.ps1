@@ -45,7 +45,7 @@ try {
     Invoke-Checked cargo "metadata" "--locked" "--format-version" "1" "--no-deps"
 
     $WorkspaceManifest = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "Cargo.toml")
-    if ($WorkspaceManifest -notmatch '(?m)^version\s*=\s*"([^"]+)"\s*
+    if ($WorkspaceManifest -notmatch '(?m)^version\s*=\s*"([^"]+)"\s*$') {
         throw "Workspace version could not be resolved."
     }
     $CurrentVersion = $Matches[1]
