@@ -124,6 +124,13 @@ try {
         Write-Host "OK  $Required"
     }
 
+    foreach ($App in @("security-center","password-manager","file-vault","authenticator","security-scanner","integrity-monitor","network-guard","backup-recovery","secure-share")) {
+        $Html = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "apps\$App\ui\index.html")
+        if (-not $Html.Contains("Suite Phase 13")) { throw "$App does not expose current Suite Phase 13 metadata." }
+    }
+    $DiagnosticsSource = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "apps\security-center\src\diagnostics.rs")
+    if (-not $DiagnosticsSource.Contains('const PHASE: &str = "13";')) { throw "Security Center diagnostics do not report Phase 13." }
+
     $Matrix = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "docs\BETA_QUALIFICATION_MATRIX.md")
     foreach ($Id in @("BQ-01","BQ-02","BQ-03","BQ-04","BQ-05","BQ-06")) {
         if (-not $Matrix.Contains($Id)) { throw "Beta qualification scenario missing: $Id" }
