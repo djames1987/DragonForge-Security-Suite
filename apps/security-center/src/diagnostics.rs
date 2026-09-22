@@ -79,7 +79,11 @@ pub fn render(snapshot: &DashboardSnapshot) -> Result<String, String> {
             state: &snapshot.agent.state,
             transport: &snapshot.agent.transport,
             capabilities: &snapshot.agent.capabilities,
-            pid: include_identifiers.then_some(snapshot.agent.pid).flatten(),
+            pid: if include_identifiers {
+                snapshot.agent.pid
+            } else {
+                None
+            },
         },
         components: snapshot
             .components
