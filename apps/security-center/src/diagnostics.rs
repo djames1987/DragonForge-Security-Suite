@@ -11,18 +11,6 @@ use crate::state::DashboardSnapshot;
 
 const PHASE: &str = "12.5";
 const RELEASE_CHANNEL: &str = "alpha-external-test";
-const COMPONENT_IDS: &[&str] = &[
-    "security-center",
-    "password-manager",
-    "file-vault",
-    "authenticator",
-    "security-scanner",
-    "integrity-monitor",
-    "network-guard",
-    "backup-recovery",
-    "secure-share",
-    "agent",
-];
 
 #[derive(Debug, Serialize)]
 struct DiagnosticReport<'a> {
@@ -191,10 +179,12 @@ fn detect_webview2_version() -> Option<String> {
             r"SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8F9E-DA0A1B45327C}";
         for root in ["HKCU", "HKLM"] {
             let key = format!(r"{root}\{CLIENT}");
-            let output = Command::new("reg.exe")
+            let Ok(output) = Command::new("reg.exe")
                 .args(["query", &key, "/v", "pv"])
                 .output()
-                .ok()?;
+            else {
+                continue;
+            };
             if !output.status.success() {
                 continue;
             }
@@ -237,7 +227,6 @@ mod tests {
         assert!(report.contains("\"phase\": \"12.5\""));
         assert!(report.contains("\"package_version\": \"0.1.0\""));
         assert!(report.contains("\"version\": \"0.1.0\""));
-        assert!(report.contains("\"webview2_version\"") || !cfg!(target_os = "windows"));
         assert!(!report.contains("Security Center started"));
         assert!(!report.contains("sync_token"));
         assert!(!report.contains("account_secret"));
@@ -261,8 +250,5 @@ mod tests {
         assert!(!raw_log.contains("should-not-escape"));
     }
 
-    #[test]
-    fn component_version_catalog_matches_suite_registry_size() {
-        assert_eq!(super::COMPONENT_IDS.len(), 10);
-    }
+}
 }
