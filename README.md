@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.0 External Test Baseline is implementation complete with local verification pending. DragonForge now has a frozen portable alpha, structured external-test coverage, redaction-safe support diagnostics, and standardized issue reporting.
+> **Current status:** Phase 12.0 External Test Baseline is verified complete. DragonForge now has a frozen portable alpha, structured external-test coverage, redaction-safe support diagnostics, standardized issue reporting, and a cross-machine Windows verification baseline.
 
 ## Canonical repository
 
@@ -115,7 +115,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 9 — Backup & Recovery: **Verified Complete**
 - Phase 10 — Secure Share: **Verified Complete**
 - Phase 11 — DragonForge Agent: **Verified Complete**
-- Phase 12.0 — External Test Baseline: **Implementation Complete — Local Verification Pending**
+- Phase 12.0 — External Test Baseline: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -126,6 +126,10 @@ Phase 12.0 establishes the external-test process for DragonForge. Security Cente
 Future portable releases include a package-integrity verifier and the external test checklist. Bugs should be filed with the external-test issue template and must never include real credentials, recovery material, OTP seeds, vault contents, or sensitive user files.
 
 See [docs/PHASE_12_0_EXTERNAL_TEST_BASELINE.md](docs/PHASE_12_0_EXTERNAL_TEST_BASELINE.md).
+
+Phase 12.0 local verification result: **PASS** on a second Windows development machine (`DRACO`, Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12-external-test-baseline-20260922-093452.log`  
+Verified log SHA-256: `96A158EA38F10E8A2F46F092E25C55CBE27E0C3F8BDF359EE844141BE18CDE88`
 
 
 ## Portable test release

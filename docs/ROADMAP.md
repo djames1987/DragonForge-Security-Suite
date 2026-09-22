@@ -233,7 +233,7 @@ See [PHASE_11_DRAGONFORGE_AGENT.md](PHASE_11_DRAGONFORGE_AGENT.md).
 
 
 ## Phase 12.0 — External Test Baseline
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - redaction-safe Security Center diagnostic report with one-click copy action;
@@ -243,7 +243,10 @@ Delivered:
 - external Windows test matrix and tester checklist;
 - structured external-test GitHub bug report template;
 - future portable-release package integrity verifier and bundled external tester checklist;
-- Phase 12.0 local verification script with log + SHA-256 sidecar.
+- Phase 12.0 local verification script with log + SHA-256 sidecar;
+- cross-machine Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including formatting, targeted compile checks, strict Clippy with `-D warnings`, Agent and Security Center tests, JavaScript syntax validation, and required Phase 12.0 artifact checks;
+- verified log: `dragonforge-phase12-external-test-baseline-20260922-093452.log`;
+- verified log SHA-256: `96A158EA38F10E8A2F46F092E25C55CBE27E0C3F8BDF359EE844141BE18CDE88`.
 
 The existing v0.1.0-alpha.1 release remains frozen. Fixes discovered through external testing should ship in a new pre-release rather than replacing that release in place.
 
