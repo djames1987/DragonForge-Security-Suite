@@ -51,8 +51,15 @@ if ($env:OS -ne "Windows_NT") {
 }
 
 Push-Location $RepoRoot
+$PreviousBuildCommit = $env:DRAGONFORGE_BUILD_COMMIT
 try {
     New-Item -ItemType Directory -Force -Path $DistRoot | Out-Null
+
+    $Commit = (& git rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $Commit) {
+        throw "Unable to determine the release commit."
+    }
+    $env:DRAGONFORGE_BUILD_COMMIT = $Commit
 
     if (-not $SkipBuild) {
         & (Join-Path $PSScriptRoot "build-all-apps-for-testing.ps1") -Profile release
@@ -86,11 +93,6 @@ try {
 
     Copy-Item -LiteralPath (Join-Path $RepoRoot "SECURITY.md") -Destination (Join-Path $StageRoot "SECURITY.md")
     Copy-Item -LiteralPath (Join-Path $RepoRoot "docs\EXTERNAL_TEST_CHECKLIST.md") -Destination (Join-Path $StageRoot "EXTERNAL-TEST-CHECKLIST.md")
-
-    $Commit = (& git rev-parse HEAD).Trim()
-    if ($LASTEXITCODE -ne 0 -or -not $Commit) {
-        throw "Unable to determine the release commit."
-    }
 
     $BuildInfo = @"
 DragonForge Security Suite
@@ -280,6 +282,11 @@ Get-Content -LiteralPath $Manifest | ForEach-Object {
     Write-Host "Commit: $Commit"
 }
 finally {
+    if ($null -eq $PreviousBuildCommit) {
+        Remove-Item Env:DRAGONFORGE_BUILD_COMMIT -ErrorAction SilentlyContinue
+    } else {
+        $env:DRAGONFORGE_BUILD_COMMIT = $PreviousBuildCommit
+    }
     Pop-Location
 }
 ) {
