@@ -15,11 +15,13 @@ $Targets = @(
     (Join-Path $Root "agent\agent.lock")
 )
 $BroadPrincipals = @("Everyone", "BUILTIN\Users", "Authenticated Users", "NT AUTHORITY\Authenticated Users")
-$BroadMask = [System.Security.AccessControl.FileSystemRights]::Write -bor
+$BroadMask = (
+    [System.Security.AccessControl.FileSystemRights]::Write -bor
     [System.Security.AccessControl.FileSystemRights]::Modify -bor
     [System.Security.AccessControl.FileSystemRights]::FullControl -bor
     [System.Security.AccessControl.FileSystemRights]::CreateFiles -bor
     [System.Security.AccessControl.FileSystemRights]::Delete
+)
 $Findings = 0
 
 foreach ($Target in $Targets) {
