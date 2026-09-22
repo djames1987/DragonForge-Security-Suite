@@ -1236,19 +1236,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dragonforge-update"
-version = "0.1.0"
-dependencies = [
- "dragonforge-crypto",
- "hex",
- "semver",
- "serde",
- "serde_json",
- "sha2",
- "zeroize",
-]
-
-[[package]]
 name = "dragonforge-security-scanner"
 version = "0.1.0"
 dependencies = [
@@ -1284,6 +1271,19 @@ dependencies = [
  "tower",
  "tower-http",
  "uuid",
+ "zeroize",
+]
+
+[[package]]
+name = "dragonforge-update"
+version = "0.1.0"
+dependencies = [
+ "dragonforge-crypto",
+ "hex",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
  "zeroize",
 ]
 
