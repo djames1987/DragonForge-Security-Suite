@@ -26,7 +26,12 @@ $TauriConfigs = @(
 )
 
 function Assert-Or-SetText {
-    param([string]$Path, [string]$Pattern, [string]$Replacement, [string]$Expected)
+    param(
+        [Parameter(Mandatory = $true)] [string]$Path,
+        [Parameter(Mandatory = $true)] [string]$Pattern,
+        [Parameter(Mandatory = $true)] [string]$Replacement,
+        [Parameter(Mandatory = $true)] [string]$Expected
+    )
     $Full = Join-Path $RepoRoot $Path
     $Text = Get-Content -Raw -LiteralPath $Full
     if ($CheckOnly) {
@@ -40,91 +45,23 @@ function Assert-Or-SetText {
 
 Push-Location $RepoRoot
 try {
-    Assert-Or-SetText "Cargo.toml" '(?m)^version = "[^"]+"$' ('version = "' + $Version + '"') ('(?m)^version = "' + [regex]::Escape($Version) + '"$')
-
+    Assert-Or-SetText -Path "Cargo.toml" -Pattern '(?m)^version = "[^"]+"$' -Replacement ('version = "' + $Version + '"') -Expected ('(?m)^version = "' + [regex]::Escape($Version) + '"$')
     foreach ($Config in $TauriConfigs) {
-        Assert-Or-SetText $Config '"version"\s*:\s*"[^"]+"' ('"version": "' + $Version + '"') ('"version"\s*:\s*"' + [regex]::Escape($Version) + '"')
+        Assert-Or-SetText -Path $Config -Pattern '"version"\s*:\s*"[^"]+"' -Replacement ('"version": "' + $Version + '"') -Expected ('"version"\s*:\s*"' + [regex]::Escape($Version) + '"')
     }
-
-    Assert-Or-SetText "apps/security-center/ui/index.html" 'Version [0-9A-Za-z.-]+' ('Version ' + $Version) ('Version ' + [regex]::Escape($Version))
-    Assert-Or-SetText "installer/DragonForgeSecuritySuite.iss" '(?m)^VersionInfoVersion=[0-9.]+
-        & cargo metadata --format-version 1 --no-deps *> $null
-        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
-    }
-
-    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
-        throw "Cargo.lock is missing."
-    }
-
-    Write-Host "RELEASE VERSION STAMP: PASS"
-    Write-Host "Version: $Version"
-    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
-}
-finally {
-    Pop-Location
-}
- ('VersionInfoVersion=' + $NumericVersion) ('(?m)^VersionInfoVersion=' + [regex]::Escape($NumericVersion) + '
-        & cargo metadata --format-version 1 --no-deps *> $null
-        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
-    }
-
-    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
-        throw "Cargo.lock is missing."
-    }
-
-    Write-Host "RELEASE VERSION STAMP: PASS"
-    Write-Host "Version: $Version"
-    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
-}
-finally {
-    Pop-Location
-}
-)
-    Assert-Or-SetText "installer/DragonForgeSecuritySuite.iss" '(?m)^VersionInfoProductVersion=[0-9.]+
-        & cargo metadata --format-version 1 --no-deps *> $null
-        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
-    }
-
-    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
-        throw "Cargo.lock is missing."
-    }
-
-    Write-Host "RELEASE VERSION STAMP: PASS"
-    Write-Host "Version: $Version"
-    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
-}
-finally {
-    Pop-Location
-}
- ('VersionInfoProductVersion=' + $NumericVersion) ('(?m)^VersionInfoProductVersion=' + [regex]::Escape($NumericVersion) + '
-        & cargo metadata --format-version 1 --no-deps *> $null
-        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
-    }
-
-    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
-        throw "Cargo.lock is missing."
-    }
-
-    Write-Host "RELEASE VERSION STAMP: PASS"
-    Write-Host "Version: $Version"
-    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
-}
-finally {
-    Pop-Location
-}
-)
+    Assert-Or-SetText -Path "apps/security-center/ui/index.html" -Pattern 'Version [0-9A-Za-z.-]+' -Replacement ('Version ' + $Version) -Expected ('Version ' + [regex]::Escape($Version))
+    Assert-Or-SetText -Path "installer/DragonForgeSecuritySuite.iss" -Pattern '(?m)^VersionInfoVersion=[0-9.]+$' -Replacement ('VersionInfoVersion=' + $NumericVersion) -Expected ('(?m)^VersionInfoVersion=' + [regex]::Escape($NumericVersion) + '$')
+    Assert-Or-SetText -Path "installer/DragonForgeSecuritySuite.iss" -Pattern '(?m)^VersionInfoProductVersion=[0-9.]+$' -Replacement ('VersionInfoProductVersion=' + $NumericVersion) -Expected ('(?m)^VersionInfoProductVersion=' + [regex]::Escape($NumericVersion) + '$')
 
     if (-not $CheckOnly) {
         & cargo metadata --format-version 1 --no-deps *> $null
         if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
     }
-
-    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
-        throw "Cargo.lock is missing."
-    }
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) { throw "Cargo.lock is missing." }
 
     Write-Host "RELEASE VERSION STAMP: PASS"
     Write-Host "Version: $Version"
+    Write-Host "Numeric version: $NumericVersion"
     Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
 }
 finally {
