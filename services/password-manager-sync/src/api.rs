@@ -1,13 +1,15 @@
 use std::{
-    sync::Arc,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use axum::{
     Json, Router,
-    body::Bytes,
+    body::{Body, Bytes},
     extract::{Path, State},
-    http::{HeaderMap, HeaderValue, StatusCode, header},
+    http::{HeaderMap, HeaderValue, Request, StatusCode, header},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{get, post},
 };
@@ -31,18 +33,86 @@ const HEADER_DEVICE_ID: &str = "x-dragonforge-device-id";
 const HEADER_DEVICE_TIMESTAMP: &str = "x-dragonforge-device-timestamp";
 const HEADER_DEVICE_SIGNATURE: &str = "x-dragonforge-device-signature";
 const MAX_DEVICE_CLOCK_SKEW_SECONDS: u64 = 300;
+const DEFAULT_RATE_LIMIT_REQUESTS: u32 = 240;
+const DEFAULT_RATE_LIMIT_WINDOW: Duration = Duration::from_secs(60);
+const MAX_RATE_LIMIT_KEYS: usize = 4096;
 
 #[derive(Clone)]
 pub struct AppState {
     store: Arc<dyn SyncStore>,
     admin_token_hash: Option<[u8; 32]>,
+    rate_limiter: Arc<RequestRateLimiter>,
+}
+
+struct RequestRateLimiter {
+    inner: Mutex<HashMap<[u8; 32], RateWindow>>,
+    max_requests: u32,
+    window: Duration,
+}
+
+struct RateWindow {
+    started: Instant,
+    count: u32,
+}
+
+impl RequestRateLimiter {
+    fn new(max_requests: u32, window: Duration) -> Self {
+        Self {
+            inner: Mutex::new(HashMap::new()),
+            max_requests: max_requests.max(1),
+            window: window.max(Duration::from_secs(1)),
+        }
+    }
+
+    fn check(&self, headers: &HeaderMap) -> Result<(), u64> {
+        let now = Instant::now();
+        let mut windows = self.inner.lock().map_err(|_| self.window.as_secs())?;
+        if windows.len() >= MAX_RATE_LIMIT_KEYS {
+            windows.retain(|_, value| now.duration_since(value.started) < self.window);
+        }
+
+        let mut key = rate_limit_key(headers);
+        if windows.len() >= MAX_RATE_LIMIT_KEYS && !windows.contains_key(&key) {
+            key = Sha256::digest(b"dragonforge-rate-limit-overflow").into();
+        }
+
+        let entry = windows.entry(key).or_insert(RateWindow {
+            started: now,
+            count: 0,
+        });
+        let elapsed = now.duration_since(entry.started);
+        if elapsed >= self.window {
+            entry.started = now;
+            entry.count = 0;
+        }
+        if entry.count >= self.max_requests {
+            return Err(self.window.saturating_sub(elapsed).as_secs().max(1));
+        }
+        entry.count += 1;
+        Ok(())
+    }
 }
 
 impl AppState {
     pub fn new(store: Arc<dyn SyncStore>, admin_token: Option<&str>) -> Self {
+        Self::with_rate_limit(
+            store,
+            admin_token,
+            DEFAULT_RATE_LIMIT_REQUESTS,
+            DEFAULT_RATE_LIMIT_WINDOW,
+        )
+    }
+
+    pub fn with_rate_limit(
+        store: Arc<dyn SyncStore>,
+        admin_token: Option<&str>,
+        max_requests: u32,
+        window: Duration,
+    ) -> Self {
         Self {
             store,
             admin_token_hash: admin_token.map(hash_sync_token),
+            rate_limiter: Arc::new(RequestRateLimiter::new(max_requests, window)),
         }
     }
 
@@ -52,6 +122,7 @@ impl AppState {
 }
 
 pub fn build_router(state: AppState) -> Router {
+    let limiter_state = state.clone();
     Router::new()
         .route("/v1/health", get(health))
         .route("/v1/accounts", post(create_account))
@@ -67,7 +138,50 @@ pub fn build_router(state: AppState) -> Router {
             StatusCode::REQUEST_TIMEOUT,
             Duration::from_secs(30),
         ))
+        .layer(middleware::from_fn(security_headers))
+        .layer(middleware::from_fn_with_state(
+            limiter_state,
+            enforce_rate_limit,
+        ))
         .with_state(state)
+}
+
+async fn enforce_rate_limit(
+    State(state): State<AppState>,
+    request: Request<Body>,
+    next: Next,
+) -> Result<Response, ApiError> {
+    state
+        .rate_limiter
+        .check(request.headers())
+        .map_err(|retry_after_seconds| ApiError::RateLimited {
+            retry_after_seconds,
+        })?;
+    Ok(next.run(request).await)
+}
+
+async fn security_headers(request: Request<Body>, next: Next) -> Response {
+    let mut response = next.run(request).await;
+    let headers = response.headers_mut();
+    headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    headers.insert(
+        header::X_CONTENT_TYPE_OPTIONS,
+        HeaderValue::from_static("nosniff"),
+    );
+    headers.insert(
+        header::REFERRER_POLICY,
+        HeaderValue::from_static("no-referrer"),
+    );
+    response
+}
+
+fn rate_limit_key(headers: &HeaderMap) -> [u8; 32] {
+    let material = headers
+        .get(header::AUTHORIZATION)
+        .or_else(|| headers.get(HEADER_ADMIN_TOKEN))
+        .or_else(|| headers.get(HEADER_DEVICE_ID))
+        .map_or(b"anonymous".as_slice(), HeaderValue::as_bytes);
+    Sha256::digest(material).into()
 }
 
 async fn health() -> Json<HealthResponse> {
