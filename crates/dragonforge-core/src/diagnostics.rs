@@ -26,10 +26,10 @@ impl ComponentLogger {
     pub fn discover(component: Component, include_identifiers: bool) -> CoreResult<Self> {
         let paths = SuitePaths::discover()?;
         Ok(Self::from_path(
-            paths.component_data_dir(component).join("logs").join(format!(
-                "{}.log",
-                component.as_str()
-            )),
+            paths
+                .component_data_dir(component)
+                .join("logs")
+                .join(format!("{}.log", component.as_str())),
             LogPolicy {
                 include_identifiers,
                 ..LogPolicy::default()
@@ -73,7 +73,9 @@ impl ComponentLogger {
             .create(true)
             .append(true)
             .open(&self.path)
-            .map_err(|_| CoreError::new_safe(ErrorCode::Internal, "unable to open component log"))?;
+            .map_err(|_| {
+                CoreError::new_safe(ErrorCode::Internal, "unable to open component log")
+            })?;
         file.write_all(line.as_bytes())
             .map_err(|_| CoreError::new_safe(ErrorCode::Internal, "unable to write component log"))
     }
@@ -115,7 +117,10 @@ impl ComponentLogger {
     fn ensure_parent(&self) -> CoreResult<()> {
         if let Some(parent) = self.path.parent() {
             fs::create_dir_all(parent).map_err(|_| {
-                CoreError::new_safe(ErrorCode::Internal, "unable to create component log directory")
+                CoreError::new_safe(
+                    ErrorCode::Internal,
+                    "unable to create component log directory",
+                )
             })?;
         }
         Ok(())
@@ -152,7 +157,10 @@ pub fn install_safe_panic_hook(logger: ComponentLogger, component: Component) {
     std::panic::set_hook(Box::new(move |_| {
         let _ = logger.record_failure(
             "process.panic",
-            &format!("{} terminated after an unexpected panic", component.as_str()),
+            &format!(
+                "{} terminated after an unexpected panic",
+                component.as_str()
+            ),
         );
     }));
 }
@@ -183,7 +191,10 @@ pub fn sanitize_diagnostic_text(policy: LogPolicy, value: &str) -> String {
         "authorization:",
         "bearer ",
     ];
-    if SENSITIVE_MARKERS.iter().any(|marker| lowered.contains(marker)) {
+    if SENSITIVE_MARKERS
+        .iter()
+        .any(|marker| lowered.contains(marker))
+    {
         return "[REDACTED]".to_owned();
     }
     policy.sanitize_public(value)
@@ -252,8 +263,8 @@ mod tests {
     fn component_logger_rotates_bounded_files() {
         let dir = test_dir("rotation");
         let path = dir.join("component.log");
-        let logger = ComponentLogger::from_path(path.clone(), LogPolicy::default())
-            .with_rotation(4_096, 2);
+        let logger =
+            ComponentLogger::from_path(path.clone(), LogPolicy::default()).with_rotation(4_096, 2);
         for _ in 0..100 {
             logger
                 .write("info", "rotation.test", &"x".repeat(128))
