@@ -92,7 +92,6 @@ async fn health_reports_protocol_version() {
     assert_eq!(body["maxSupportedProtocolVersion"], 2);
 }
 
-
 #[tokio::test]
 async fn rate_limit_and_security_headers_are_enforced() {
     let router = build_router(AppState::with_rate_limit(
