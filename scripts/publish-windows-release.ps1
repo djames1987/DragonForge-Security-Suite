@@ -1,6 +1,7 @@
 param(
     [string]$Version = "0.1.0-alpha.1",
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$IncludeInstaller
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,7 +10,9 @@ $Tag = "v$Version"
 $PackageName = "DragonForge-Security-Suite-v$Version-win-x64"
 $ZipPath = Join-Path $RepoRoot "dist\$PackageName.zip"
 $HashPath = "$ZipPath.sha256"
-$NotesPath = Join-Path $RepoRoot "docs\releases\v0.1.0-alpha.1.md"
+$InstallerPath = Join-Path $RepoRoot "dist\$PackageName-setup.exe"
+$InstallerHashPath = "$InstallerPath.sha256"
+$NotesPath = Join-Path $RepoRoot "docs\releases\v$Version.md"
 
 Push-Location $RepoRoot
 try {
@@ -48,6 +51,13 @@ try {
         throw "Portable release packaging failed."
     }
 
+    if ($IncludeInstaller) {
+        & (Join-Path $PSScriptRoot "package-windows-installer.ps1") -Version $Version -SkipBuild
+        if ($LASTEXITCODE -ne 0) {
+            throw "Windows installer packaging failed."
+        }
+    }
+
     if (-not (Test-Path -LiteralPath $NotesPath -PathType Leaf)) {
         throw "Release notes not found: $NotesPath"
     }
@@ -65,10 +75,12 @@ try {
         throw "GitHub release $Tag already exists."
     }
 
-    $Arguments = @(
-        "release", "create", $Tag,
-        $ZipPath,
-        $HashPath,
+    $Assets = @($ZipPath, $HashPath)
+    if ($IncludeInstaller) {
+        $Assets += @($InstallerPath, $InstallerHashPath)
+    }
+
+    $Arguments = @("release", "create", $Tag) + $Assets + @(
         "--repo", "djames1987/DragonForge-Security-Suite",
         "--target", $Local,
         "--title", "DragonForge Security Suite $Tag",

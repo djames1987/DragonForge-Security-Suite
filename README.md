@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.0 External Test Baseline is verified complete. DragonForge now has a frozen portable alpha, structured external-test coverage, redaction-safe support diagnostics, standardized issue reporting, and a cross-machine Windows verification baseline.
+> **Current status:** Phase 12.1 Windows Installer is implementation complete with local verification pending. Phase 12.0 remains verified complete, and DragonForge now has both portable-release and per-user installer paths for external Windows testing.
 
 ## Canonical repository
 
@@ -116,6 +116,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 10 — Secure Share: **Verified Complete**
 - Phase 11 — DragonForge Agent: **Verified Complete**
 - Phase 12.0 — External Test Baseline: **Verified Complete**
+- Phase 12.1 — Windows Installer: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -131,6 +132,20 @@ Phase 12.0 local verification result: **PASS** on a second Windows development m
 Verified log: `dragonforge-phase12-external-test-baseline-20260922-093452.log`  
 Verified log SHA-256: `96A158EA38F10E8A2F46F092E25C55CBE27E0C3F8BDF359EE844141BE18CDE88`
 
+
+## Windows installer
+
+Phase 12.1 adds a suite-level, per-user Windows installer while preserving the exact-sibling layout required by Security Center. The normal install path is under `%LOCALAPPDATA%\Programs\DragonForge Security Suite`, so the alpha installer does not require administrator elevation.
+
+Build it with:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-installer.ps1
+~~~
+
+Inno Setup 6 is required on the build machine. The installer preserves DragonForge user data on uninstall by design, creates Start Menu integration, offers an optional desktop shortcut, warns when WebView2 is not detected, and can be included in future pre-releases with `publish-windows-release.ps1 -IncludeInstaller`.
+
+See [docs/PHASE_12_1_WINDOWS_INSTALLER.md](docs/PHASE_12_1_WINDOWS_INSTALLER.md) and [docs/INSTALLER_TEST_CHECKLIST.md](docs/INSTALLER_TEST_CHECKLIST.md).
 
 ## Portable test release
 
