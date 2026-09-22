@@ -39,17 +39,19 @@ Release builds configure these compile-time environment variables:
 
 - `DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX` — pinned ML-DSA-65 public key;
 - `DRAGONFORGE_UPDATE_KEY_ID` — stable public key identifier;
-- `DRAGONFORGE_UPDATE_FEED_ALPHA`;
-- `DRAGONFORGE_UPDATE_FEED_BETA`;
-- `DRAGONFORGE_UPDATE_FEED_STABLE`.
+Security Center discovers channel manifests from the repository's GitHub Releases assets by the exact names
+`DragonForge-Security-Suite-update-alpha.json`, `...-beta.json`, and `...-stable.json`.
+Optional compile-time overrides (`DRAGONFORGE_UPDATE_FEED_ALPHA`, `DRAGONFORGE_UPDATE_FEED_BETA`, and
+`DRAGONFORGE_UPDATE_FEED_STABLE`) may point a channel at another bounded HTTPS source for private/test deployments.
 
-A build without a public key or feed remains usable but reports secure updates as unconfigured; it does not fall back to unsigned metadata.
+A build without a public key remains usable but reports secure updates as unconfigured; it does not fall back to unsigned metadata.
 
 Release publication additionally requires:
 
 - `DRAGONFORGE_UPDATE_SIGNING_KEY_HEX` — the 32-byte ML-DSA-65 private seed, supplied only to the offline/release publishing environment.
 
-The private signing seed is never stored in the repository or application.
+The private signing seed is never stored in the repository or application. The signing utility also
+requires the derived public key to match `DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX` and zeroizes seed material on drop.
 
 ## Release pipeline
 
