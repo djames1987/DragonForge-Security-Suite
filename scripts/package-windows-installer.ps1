@@ -39,6 +39,8 @@ function Find-InnoCompiler {
     $Command = Get-Command "ISCC.exe" -ErrorAction SilentlyContinue
     if ($Command) { return $Command.Source }
     $Candidates = @()
+    if ($env:LOCALAPPDATA) { $Candidates += (Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6\ISCC.exe") }
+    if ($env:LOCALAPPDATA) { $Candidates += (Join-Path $env:LOCALAPPDATA "Inno Setup 6\ISCC.exe") }
     if (${env:ProgramFiles(x86)}) { $Candidates += (Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6\ISCC.exe") }
     if ($env:ProgramFiles) { $Candidates += (Join-Path $env:ProgramFiles "Inno Setup 6\ISCC.exe") }
     foreach ($Candidate in $Candidates) {
