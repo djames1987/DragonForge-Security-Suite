@@ -183,9 +183,8 @@ impl UpdateManager {
         fs::rename(&partial_path, &final_path)
             .map_err(|_| "unable to finalize the staged update installer".to_owned())?;
 
-        verify_authenticode(&final_path).map_err(|error| {
+        verify_authenticode(&final_path).inspect_err(|_| {
             let _ = fs::remove_file(&final_path);
-            error
         })?;
 
         let prepared = PreparedUpdate {
