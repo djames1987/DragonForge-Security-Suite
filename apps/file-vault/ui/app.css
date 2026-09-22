@@ -338,3 +338,29 @@ button:disabled { opacity: .55; cursor: not-allowed; }
   .shell { grid-template-columns: 190px minmax(0,1fr); }
   .password-grid, .summary { grid-template-columns: 1fr 1fr; }
 }
+
+/* Phase 12.6 suite UX baseline */
+.suite-version {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
