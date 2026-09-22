@@ -153,12 +153,6 @@ impl AppState {
         Ok(path)
     }
 
-    pub fn record_safe_failure(&self, code: &str, public_summary: &str) -> Result<(), String> {
-        self.logger
-            .record_failure(code, public_summary)
-            .map_err(|error| error.to_string())
-    }
-
     pub fn refresh_health(&self) -> Result<DashboardSnapshot, String> {
         self.lock_events()?.push(
             Component::SecurityCenter,
