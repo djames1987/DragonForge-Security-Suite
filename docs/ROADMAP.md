@@ -333,18 +333,26 @@ See [PHASE_12_3_RELEASE_ENGINEERING.md](PHASE_12_3_RELEASE_ENGINEERING.md).
 
 
 ## Phase 12.4 — Code Signing
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- design the Windows Authenticode signing path before production distribution;
-- identify certificate/provider requirements and secret-key handling constraints;
-- integrate signing into the release pipeline without exposing signing credentials to ordinary development workflows;
-- sign installer and executable release artifacts when a suitable certificate is available;
-- verify signatures after packaging and before GitHub release publication;
-- document certificate rotation, revocation, timestamping, and compromised-key response;
-- reduce SmartScreen/unknown-publisher friction for external testers and future production users.
+Delivered:
+- Windows Authenticode signing helper using Microsoft SignTool;
+- SHA-256 file digests and RFC 3161 timestamping with SHA-256;
+- support for Windows certificate-store thumbprints or externally supplied PFX credentials;
+- signing-secret isolation from the repository plus PFX/private-key ignore rules;
+- portable-release executable signing before internal SHA-256 manifests and ZIP creation;
+- installer signing after Inno compilation but before installer sidecar hashing;
+- immediate post-sign SignTool verification with timestamp requirement;
+- final release-artifact signature verification before publication;
+- signer subject/thumbprint and signing-state metadata in the machine-readable release manifest;
+- stable release tags fail closed unless signing is enabled;
+- prerelease/development builds may remain explicitly unsigned;
+- documented certificate rotation, revocation, timestamp outage, and compromised-key response procedures;
+- dedicated Phase 12.4 Windows verification tooling and documentation.
 
-Unsigned alpha builds must continue to state clearly that SmartScreen warnings are expected until signing is enabled.
+Authenticode improves publisher identity and integrity but does not guarantee immediate SmartScreen reputation.
+
+See [PHASE_12_4_CODE_SIGNING.md](PHASE_12_4_CODE_SIGNING.md).
 
 
 ## Phase 12.5 — Crash Handling & Diagnostics
