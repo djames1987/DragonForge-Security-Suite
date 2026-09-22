@@ -36,3 +36,8 @@ A release may be labeled **beta** only when all of the following are true.
 - known limitations are present in release notes.
 
 A Phase 13 implementation PASS is not itself permission to label a release beta unless the full matrix and defect gate are satisfied.
+
+
+## Evidence evaluation
+
+Use `scripts/evaluate-beta-qualification.ps1` against the exact candidate commit. The evaluator is fail-closed for missing BQ-01 through BQ-06 records, mixed candidate commits, failed Agent/suite-launch results, required reboot or installer failures, and missing disposable-test-data attestation.
