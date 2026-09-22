@@ -53,3 +53,8 @@ From Security Center, start DragonForge Agent and launch Password Manager, File 
 - Confirm Windows Credential Manager sync credentials are not intentionally removed by uninstall.
 
 Never attach or use production passwords, Account Secrets, recovery kits/codes, OTP seeds, sync/admin tokens, private keys, vault contents, or sensitive personal files during alpha testing.
+
+
+## Beta qualification evidence
+
+When this checklist is used for a required Phase 13 BQ scenario, retain the Phase 13 verifier log + sidecar and record the installer lifecycle result in the generated qualification JSON. Upgrade/uninstall preservation failures are release-blocking until resolved or the candidate is withdrawn.
