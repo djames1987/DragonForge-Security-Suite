@@ -309,17 +309,24 @@ See [PHASE_12_2_AGENT_LIFECYCLE.md](PHASE_12_2_AGENT_LIFECYCLE.md).
 
 
 ## Phase 12.3 — Release Engineering
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- automate suite-wide version stamping;
-- build portable ZIP and Windows installer artifacts from an exact Git tag;
-- produce SHA-256 manifests and sidecars for release artifacts;
-- generate version-specific release notes from repository-controlled metadata/templates;
-- enforce a committed `Cargo.lock` for release builds;
-- verify release artifact contents, hashes, build commit/tag identity, and expected executable set before publication;
-- ensure published assets cannot silently diverge from the source tag;
-- evolve the release pipeline toward signed builds without making code signing a hidden prerequisite for development builds.
+Delivered:
+- automated suite-wide version stamping across the Rust workspace, all nine Tauri apps, Security Center's visible version, and Inno binary metadata;
+- release-preparation workflow that refreshes and validates `Cargo.lock`;
+- exact-tag Windows release orchestrator that refuses dirty or non-matching source revisions;
+- tracked `Cargo.lock` enforcement plus `cargo metadata --locked`;
+- tag/commit identity injected into portable and installer BUILD-INFO metadata;
+- SHA-256 sidecars for ZIP, installer, and release manifest;
+- portable ZIP verification of all ten expected executables and every internal `SHA256SUMS.txt` entry;
+- machine-readable release manifest containing tag, commit, platform, executable set, artifact hashes/sizes, and signing state;
+- repository-controlled release-notes template with Git-history-driven note generation;
+- immutable GitHub publication flow that verifies an existing tag and refuses to overwrite an existing release;
+- prerelease/stable channel selection derived from the tag version;
+- explicit unsigned Phase 12.3 signing state ready for Phase 12.4 insertion;
+- dedicated Phase 12.3 Windows verification tooling and documentation.
+
+See [PHASE_12_3_RELEASE_ENGINEERING.md](PHASE_12_3_RELEASE_ENGINEERING.md).
 
 
 ## Phase 12.4 — Code Signing
