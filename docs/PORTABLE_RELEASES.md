@@ -43,3 +43,24 @@ The extracted package needs no Rust, Cargo, Node.js, Git, or source checkout. Te
 It requires 64-bit Windows 10/11 and Microsoft Edge WebView2 Runtime for the Tauri desktop applications.
 
 The release remains unsigned during this alpha stage, so SmartScreen warnings are expected.
+
+
+## Windows installer
+
+Phase 12.1 adds a suite-level Windows installer while retaining portable ZIP releases.
+
+Build the installer with:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-installer.ps1 -Version 0.1.0-alpha.2
+~~~
+
+The build machine requires Inno Setup 6. The script stages the same ten release executables plus appropriate support files, writes installer-specific BUILD-INFO.txt and SHA256SUMS.txt metadata, compiles a per-user installer, and emits an installer SHA-256 sidecar.
+
+To include the installer and its sidecar in a future GitHub pre-release:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1 -Version <version> -IncludeInstaller
+~~~
+
+The publish script resolves release notes from `docs/releases/v<version>.md`. Existing published releases remain immutable.
