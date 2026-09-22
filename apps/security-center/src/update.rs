@@ -134,9 +134,7 @@ impl UpdateManager {
             .send()
             .map_err(|_| "unable to download the verified update installer".to_owned())?;
         if !response.status().is_success() || response.url().scheme() != "https" {
-            return Err(
-                "update installer download did not remain on successful HTTPS".to_owned(),
-            );
+            return Err("update installer download did not remain on successful HTTPS".to_owned());
         }
         if response
             .content_length()
@@ -150,11 +148,15 @@ impl UpdateManager {
             .bytes()
             .map_err(|_| "unable to read the update installer response".to_owned())?;
         if bytes.len() as u64 != artifact.bytes {
-            return Err("downloaded update installer size does not match signed metadata".to_owned());
+            return Err(
+                "downloaded update installer size does not match signed metadata".to_owned(),
+            );
         }
         let actual_hash = sha256_hex(&bytes);
         if !actual_hash.eq_ignore_ascii_case(&artifact.sha256) {
-            return Err("downloaded update installer SHA-256 does not match signed metadata".to_owned());
+            return Err(
+                "downloaded update installer SHA-256 does not match signed metadata".to_owned(),
+            );
         }
 
         let directory = std::env::temp_dir().join("DragonForge").join("updates");
@@ -247,7 +249,8 @@ impl UpdateManager {
             return self.fetch_bounded_https(feed, MAX_MANIFEST_BYTES as u64);
         }
 
-        let discovery = self.fetch_bounded_https(DEFAULT_RELEASES_API, MAX_RELEASE_DISCOVERY_BYTES)?;
+        let discovery =
+            self.fetch_bounded_https(DEFAULT_RELEASES_API, MAX_RELEASE_DISCOVERY_BYTES)?;
         let releases: Vec<GitHubRelease> = serde_json::from_slice(&discovery)
             .map_err(|_| "release discovery response is invalid JSON".to_owned())?;
         let expected_name = channel_asset_name(channel);
@@ -257,7 +260,9 @@ impl UpdateManager {
             .flat_map(|release| release.assets.iter())
             .find(|asset| asset.name == expected_name)
             .map(|asset| asset.browser_download_url.as_str())
-            .ok_or_else(|| "no signed update manifest is published for the selected channel".to_owned())?;
+            .ok_or_else(|| {
+                "no signed update manifest is published for the selected channel".to_owned()
+            })?;
         self.fetch_bounded_https(manifest_url, MAX_MANIFEST_BYTES as u64)
     }
 

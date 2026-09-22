@@ -129,7 +129,9 @@ pub fn verify_manifest(
         return Err("update manifest uses an unsupported signature algorithm".to_owned());
     }
     if manifest.signature.key_id != expected_key_id {
-        return Err("update manifest key identity does not match the pinned release key".to_owned());
+        return Err(
+            "update manifest key identity does not match the pinned release key".to_owned(),
+        );
     }
 
     let public_key = hex::decode(public_key_hex)
@@ -155,7 +157,9 @@ pub fn verify_manifest(
         return Err("update candidate would downgrade the installed version".to_owned());
     }
     if !version_matches_channel(&candidate, selected_channel) {
-        return Err("update version prerelease label does not match the selected channel".to_owned());
+        return Err(
+            "update version prerelease label does not match the selected channel".to_owned(),
+        );
     }
 
     Ok(VerifiedUpdateManifest {
@@ -169,7 +173,8 @@ pub fn sha256_hex(bytes: &[u8]) -> String {
 }
 
 fn signing_bytes(payload: &UpdateManifestPayload) -> Result<Vec<u8>, String> {
-    serde_json::to_vec(payload).map_err(|_| "unable to serialize update manifest payload".to_owned())
+    serde_json::to_vec(payload)
+        .map_err(|_| "unable to serialize update manifest payload".to_owned())
 }
 
 fn validate_payload_shape(payload: &UpdateManifestPayload) -> Result<(), String> {
@@ -218,8 +223,7 @@ fn validate_artifact(artifact: &UpdateArtifact) -> Result<(), String> {
     if !artifact.url.starts_with("https://") || artifact.url.len() > 2_048 {
         return Err("update artifact URL must use bounded HTTPS".to_owned());
     }
-    if artifact.sha256.len() != 64
-        || !artifact.sha256.bytes().all(|byte| byte.is_ascii_hexdigit())
+    if artifact.sha256.len() != 64 || !artifact.sha256.bytes().all(|byte| byte.is_ascii_hexdigit())
     {
         return Err("update artifact SHA-256 is invalid".to_owned());
     }
@@ -272,8 +276,12 @@ mod tests {
     #[test]
     fn signed_manifest_round_trip_verifies() {
         let key = MlDsa65KeyPair::from_seed(&[7_u8; 32]).expect("test key");
-        let signed = sign_manifest(payload("0.2.0-beta.1", UpdateChannel::Beta), "test-key", &key)
-            .expect("sign");
+        let signed = sign_manifest(
+            payload("0.2.0-beta.1", UpdateChannel::Beta),
+            "test-key",
+            &key,
+        )
+        .expect("sign");
         let json = serde_json::to_vec(&signed).expect("json");
         let verified = verify_manifest(
             &json,
@@ -289,27 +297,33 @@ mod tests {
     #[test]
     fn signature_tampering_is_rejected() {
         let key = MlDsa65KeyPair::from_seed(&[8_u8; 32]).expect("test key");
-        let signed = sign_manifest(payload("0.2.0-alpha.1", UpdateChannel::Alpha), "test-key", &key)
-            .expect("sign");
+        let signed = sign_manifest(
+            payload("0.2.0-alpha.1", UpdateChannel::Alpha),
+            "test-key",
+            &key,
+        )
+        .expect("sign");
         let mut value = serde_json::to_value(&signed).expect("value");
         value["payload"]["commit"] =
             serde_json::Value::String("fedcba9876543210fedcba9876543210fedcba98".to_owned());
         let json = serde_json::to_vec(&value).expect("json");
-        assert!(verify_manifest(
-            &json,
-            "test-key",
-            &hex::encode(key.verifying_key().as_bytes()),
-            "0.1.0",
-            UpdateChannel::Alpha,
-        )
-        .is_err());
+        assert!(
+            verify_manifest(
+                &json,
+                "test-key",
+                &hex::encode(key.verifying_key().as_bytes()),
+                "0.1.0",
+                UpdateChannel::Alpha,
+            )
+            .is_err()
+        );
     }
 
     #[test]
     fn downgrade_and_channel_mismatch_are_rejected() {
         let key = MlDsa65KeyPair::from_seed(&[9_u8; 32]).expect("test key");
-        let signed = sign_manifest(payload("0.1.0", UpdateChannel::Stable), "test-key", &key)
-            .expect("sign");
+        let signed =
+            sign_manifest(payload("0.1.0", UpdateChannel::Stable), "test-key", &key).expect("sign");
         let json = serde_json::to_vec(&signed).expect("json");
         let current = verify_manifest(
             &json,
@@ -321,29 +335,37 @@ mod tests {
         .expect("same version is a valid signed manifest");
         assert_eq!(current.payload.version, "0.1.0");
 
-        let older = sign_manifest(payload("0.1.0", UpdateChannel::Stable), "test-key", &key)
-            .expect("sign");
+        let older =
+            sign_manifest(payload("0.1.0", UpdateChannel::Stable), "test-key", &key).expect("sign");
         let older_json = serde_json::to_vec(&older).expect("json");
-        assert!(verify_manifest(
-            &older_json,
-            "test-key",
-            &hex::encode(key.verifying_key().as_bytes()),
-            "0.2.0",
-            UpdateChannel::Stable,
-        )
-        .is_err());
+        assert!(
+            verify_manifest(
+                &older_json,
+                "test-key",
+                &hex::encode(key.verifying_key().as_bytes()),
+                "0.2.0",
+                UpdateChannel::Stable,
+            )
+            .is_err()
+        );
 
-        let newer = sign_manifest(payload("0.2.0-beta.1", UpdateChannel::Beta), "test-key", &key)
-            .expect("sign");
-        let json = serde_json::to_vec(&newer).expect("json");
-        assert!(verify_manifest(
-            &json,
+        let newer = sign_manifest(
+            payload("0.2.0-beta.1", UpdateChannel::Beta),
             "test-key",
-            &hex::encode(key.verifying_key().as_bytes()),
-            "0.1.0",
-            UpdateChannel::Alpha,
+            &key,
         )
-        .is_err());
+        .expect("sign");
+        let json = serde_json::to_vec(&newer).expect("json");
+        assert!(
+            verify_manifest(
+                &json,
+                "test-key",
+                &hex::encode(key.verifying_key().as_bytes()),
+                "0.1.0",
+                UpdateChannel::Alpha,
+            )
+            .is_err()
+        );
     }
 
     #[test]
@@ -354,21 +376,26 @@ mod tests {
         assert!(sign_manifest(candidate, "test-key", &key).is_err());
     }
 
-
     #[test]
     fn wrong_pinned_key_identity_is_rejected() {
         let key = MlDsa65KeyPair::from_seed(&[11_u8; 32]).expect("test key");
-        let signed = sign_manifest(payload("0.2.0", UpdateChannel::Stable), "release-key-a", &key)
-            .expect("sign");
-        let json = serde_json::to_vec(&signed).expect("json");
-        assert!(verify_manifest(
-            &json,
-            "release-key-b",
-            &hex::encode(key.verifying_key().as_bytes()),
-            "0.1.0",
-            UpdateChannel::Stable,
+        let signed = sign_manifest(
+            payload("0.2.0", UpdateChannel::Stable),
+            "release-key-a",
+            &key,
         )
-        .is_err());
+        .expect("sign");
+        let json = serde_json::to_vec(&signed).expect("json");
+        assert!(
+            verify_manifest(
+                &json,
+                "release-key-b",
+                &hex::encode(key.verifying_key().as_bytes()),
+                "0.1.0",
+                UpdateChannel::Stable,
+            )
+            .is_err()
+        );
     }
 
     #[test]

@@ -18,16 +18,12 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let mut args = env::args_os().skip(1);
-    let input = args
-        .next()
-        .map(PathBuf::from)
-        .ok_or_else(|| {
-            "usage: dragonforge-sign-update-manifest <payload.json> <signed.json>".to_owned()
-        })?;
-    let output = args
-        .next()
-        .map(PathBuf::from)
-        .ok_or_else(|| "usage: dragonforge-sign-update-manifest <payload.json> <signed.json>".to_owned())?;
+    let input = args.next().map(PathBuf::from).ok_or_else(|| {
+        "usage: dragonforge-sign-update-manifest <payload.json> <signed.json>".to_owned()
+    })?;
+    let output = args.next().map(PathBuf::from).ok_or_else(|| {
+        "usage: dragonforge-sign-update-manifest <payload.json> <signed.json>".to_owned()
+    })?;
     if args.next().is_some() {
         return Err("unexpected extra arguments".to_owned());
     }

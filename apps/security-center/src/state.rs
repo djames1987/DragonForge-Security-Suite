@@ -508,7 +508,9 @@ impl AppState {
                     "security-center.update-checked",
                     summary,
                 );
-                let _ = self.logger.write("info", "security-center.update-checked", summary);
+                let _ = self
+                    .logger
+                    .write("info", "security-center.update-checked", summary);
             }
             Err(_) => {
                 self.lock_events()?.push(
