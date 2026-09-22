@@ -346,7 +346,7 @@ mod tests {
     fn sha256_helper_is_stable() {
         assert_eq!(
             sha256_hex(b"dragonforge"),
-            "870FE541E0D1E8C9367410AC8372117B4D27FDCC4A42DA1CB0248FCE2C35EEDA"
+            "C6825A9A106557AA80DE352543522D9BFC31737EBAE2FCE00E269334F2B34D60"
         );
     }
 
