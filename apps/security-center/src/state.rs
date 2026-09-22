@@ -492,7 +492,6 @@ impl AppState {
     }
 }
 
-
 fn component_failure_statuses() -> Vec<ComponentFailureStatus> {
     Component::ALL
         .into_iter()
