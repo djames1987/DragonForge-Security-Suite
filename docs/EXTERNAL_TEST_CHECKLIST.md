@@ -73,3 +73,13 @@ Use disposable test data only.
 Use the repository bug-report template and attach/paste the redaction-safe Security Center diagnostic report.
 
 Never submit real passwords, Account Secrets, recovery kits/codes, OTP seeds, sync/admin tokens, vault contents, private encryption keys, or sensitive personal files.
+
+
+## Phase 13 beta evidence
+
+For a required beta matrix machine:
+- run `scripts/run-phase13-beta-readiness-tests.ps1` from the source qualification checkout;
+- retain the generated log and SHA-256 sidecar;
+- complete the reboot/Agent/application/installer checks relevant to the assigned BQ scenario;
+- create the machine-readable record with `scripts/new-beta-qualification-record.ps1`;
+- do not mark an untested item as passed and do not reuse one machine's evidence for another required matrix row.
