@@ -10,6 +10,9 @@ if ($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
     throw "Version must be SemVer-like, for example 0.1.0-alpha.3"
 }
 
+$NumericParts = ($Version -split '-')[0].Split('.')
+$NumericVersion = "$($NumericParts[0]).$($NumericParts[1]).$($NumericParts[2]).0"
+
 $TauriConfigs = @(
     "apps/security-center/tauri.conf.json",
     "apps/password-manager/tauri.conf.json",
@@ -44,6 +47,72 @@ try {
     }
 
     Assert-Or-SetText "apps/security-center/ui/index.html" 'Version [0-9A-Za-z.-]+' ('Version ' + $Version) ('Version ' + [regex]::Escape($Version))
+    Assert-Or-SetText "installer/DragonForgeSecuritySuite.iss" '(?m)^VersionInfoVersion=[0-9.]+
+        & cargo metadata --format-version 1 --no-deps *> $null
+        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
+    }
+
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
+        throw "Cargo.lock is missing."
+    }
+
+    Write-Host "RELEASE VERSION STAMP: PASS"
+    Write-Host "Version: $Version"
+    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
+}
+finally {
+    Pop-Location
+}
+ ('VersionInfoVersion=' + $NumericVersion) ('(?m)^VersionInfoVersion=' + [regex]::Escape($NumericVersion) + '
+        & cargo metadata --format-version 1 --no-deps *> $null
+        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
+    }
+
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
+        throw "Cargo.lock is missing."
+    }
+
+    Write-Host "RELEASE VERSION STAMP: PASS"
+    Write-Host "Version: $Version"
+    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
+}
+finally {
+    Pop-Location
+}
+)
+    Assert-Or-SetText "installer/DragonForgeSecuritySuite.iss" '(?m)^VersionInfoProductVersion=[0-9.]+
+        & cargo metadata --format-version 1 --no-deps *> $null
+        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
+    }
+
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
+        throw "Cargo.lock is missing."
+    }
+
+    Write-Host "RELEASE VERSION STAMP: PASS"
+    Write-Host "Version: $Version"
+    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
+}
+finally {
+    Pop-Location
+}
+ ('VersionInfoProductVersion=' + $NumericVersion) ('(?m)^VersionInfoProductVersion=' + [regex]::Escape($NumericVersion) + '
+        & cargo metadata --format-version 1 --no-deps *> $null
+        if ($LASTEXITCODE -ne 0) { throw "Cargo metadata failed while refreshing Cargo.lock." }
+    }
+
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "Cargo.lock") -PathType Leaf)) {
+        throw "Cargo.lock is missing."
+    }
+
+    Write-Host "RELEASE VERSION STAMP: PASS"
+    Write-Host "Version: $Version"
+    Write-Host "Mode: $(if ($CheckOnly) { 'check-only' } else { 'updated' })"
+}
+finally {
+    Pop-Location
+}
+)
 
     if (-not $CheckOnly) {
         & cargo metadata --format-version 1 --no-deps *> $null
