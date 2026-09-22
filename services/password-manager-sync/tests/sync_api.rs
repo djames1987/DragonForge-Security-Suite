@@ -90,6 +90,35 @@ async fn health_reports_protocol_version() {
     assert_eq!(body["protocolVersion"], 2);
 }
 
+
+
+#[tokio::test]
+async fn rate_limit_and_security_headers_are_enforced() {
+    let router = build_router(AppState::with_rate_limit(
+        Arc::new(InMemoryStore::default()),
+        Some(ADMIN_TOKEN),
+        2,
+        std::time::Duration::from_secs(60),
+    ));
+
+    for expected in [StatusCode::OK, StatusCode::OK, StatusCode::TOO_MANY_REQUESTS] {
+        let response = router
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/v1/health")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), expected);
+        assert_eq!(response.headers()["cache-control"], "no-store");
+        assert_eq!(response.headers()["x-content-type-options"], "nosniff");
+        assert_eq!(response.headers()["referrer-policy"], "no-referrer");
+    }
+}
+
 #[tokio::test]
 async fn provisioning_requires_admin_token_and_returns_high_entropy_sync_token() {
     let router = app();
