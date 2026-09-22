@@ -16,6 +16,7 @@
     overview: "Security overview",
     components: "Suite components",
     activity: "Activity history",
+    updates: "Secure updates",
     settings: "Security Center settings",
     about: "About Security Center",
   };
@@ -206,6 +207,7 @@
     document.getElementById("setting-retention").value = String(settings.retain_event_count);
     document.getElementById("setting-identifiers").checked =
       settings.include_diagnostic_identifiers;
+    document.getElementById("setting-update-channel").value = settings.update_channel;
   }
   
   async function loadSnapshot() {
@@ -384,12 +386,14 @@
       start_on_overview: true,
       retain_event_count: 250,
       include_diagnostic_identifiers: false,
+      update_channel: "stable",
     };
     const settings = {
       ...current,
       start_on_overview: document.getElementById("setting-overview").checked,
       retain_event_count: Number(document.getElementById("setting-retention").value),
       include_diagnostic_identifiers: document.getElementById("setting-identifiers").checked,
+      update_channel: document.getElementById("setting-update-channel").value,
     };
   
     const status = document.getElementById("settings-state");
@@ -406,6 +410,62 @@
     }
   }
   
+
+  function renderUpdateStatus(status) {
+    const target = document.getElementById("update-status");
+    const version = document.getElementById("update-version");
+    const prepare = document.getElementById("prepare-update");
+    if (!target || !version || !prepare) return;
+    target.textContent = status.detail;
+    version.textContent = status.version
+      ? `Installed ${status.current_version} · Candidate ${status.version} · ${status.channel}`
+      : `Installed ${status.current_version} · ${status.channel}`;
+    prepare.disabled = !status.available;
+  }
+
+  async function checkUpdates() {
+    const button = document.getElementById("check-updates");
+    button.disabled = true;
+    try {
+      const status = await invoke("check_updates");
+      renderUpdateStatus(status);
+      toast(status.available ? "Verified update available." : status.detail);
+    } catch (error) {
+      document.getElementById("update-status").textContent =
+        "Update check failed closed. No installer was downloaded or executed.";
+      toast(String(error), true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function prepareUpdate() {
+    const button = document.getElementById("prepare-update");
+    button.disabled = true;
+    try {
+      const prepared = await invoke("prepare_update");
+      document.getElementById("update-status").textContent =
+        `Prepared ${prepared.version}. Signature, SHA-256, and Authenticode checks passed.`;
+      document.getElementById("install-update").disabled = !prepared.ready;
+      toast("Verified update installer is ready. Installation still requires your explicit action.");
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function installUpdate() {
+    const button = document.getElementById("install-update");
+    button.disabled = true;
+    try {
+      await invoke("install_prepared_update");
+      document.getElementById("update-status").textContent =
+        "Verified installer launched. Complete the installer normally; the running suite is not silently replaced.";
+      toast("Verified DragonForge installer launched.");
+    } catch (error) {
+      button.disabled = false;
+      toast(String(error), true);
+    }
+  }
 
   async function copyDiagnostics() {
     try {
@@ -454,6 +514,9 @@
     document.getElementById("restart-agent").addEventListener("click", restartAgent);
     document.getElementById("stop-agent").addEventListener("click", stopAgent);
     document.getElementById("clear-events").addEventListener("click", clearActivity);
+    document.getElementById("check-updates")?.addEventListener("click", checkUpdates);
+    document.getElementById("prepare-update")?.addEventListener("click", prepareUpdate);
+    document.getElementById("install-update")?.addEventListener("click", installUpdate);
     document.getElementById("settings-form").addEventListener("submit", saveSettings);
     document.getElementById("copy-diagnostics")?.addEventListener("click", copyDiagnostics);
     document.getElementById("create-support-bundle")?.addEventListener("click", createSupportBundle);
