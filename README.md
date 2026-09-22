@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.2 Agent Lifecycle is verified complete. The per-user Agent now has verified automatic start/recovery, authenticated graceful stop/restart, reconnect handling, and installed login startup while remaining non-elevated.
+> **Current status:** Phase 12.3 Release Engineering is implementation complete with local verification pending. Release preparation, exact-tag builds, artifact manifests, release-note generation, Cargo.lock enforcement, and pre-publication verification are now automated.
 
 ## Canonical repository
 
@@ -118,6 +118,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.0 — External Test Baseline: **Verified Complete**
 - Phase 12.1 — Windows Installer: **Verified Complete**
 - Phase 12.2 — Agent Lifecycle: **Verified Complete**
+- Phase 12.3 — Release Engineering: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -153,20 +154,34 @@ Verified log: `dragonforge-phase12.1-installer-20260922-103728.log`
 Verified log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`  
 Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`
 
+## Release engineering
+
+Phase 12.3 makes release source identity and artifact integrity fail-closed. Version stamping updates the workspace, all Tauri applications, Security Center's visible version, and Inno binary metadata. Tagged builds require tracked/locked dependencies, exact tag-to-HEAD identity, verified portable contents, installer/ZIP SHA-256 sidecars, generated release notes, and a machine-readable release manifest before GitHub publication.
+
+See [docs/PHASE_12_3_RELEASE_ENGINEERING.md](docs/PHASE_12_3_RELEASE_ENGINEERING.md).
+
 ## Portable test release
 
 The first external-test package is published and frozen as **v0.1.0-alpha.1**, a Windows x64 portable pre-release. Test machines do not need Rust, Cargo, Node.js, Git, or the source checkout; all ten suite executables are packaged together so Security Center can continue to use exact sibling launch paths.
 
-Release builders can create the ZIP with:
+Phase 12.3 replaces ad-hoc publication with a tag-bound release flow.
+
+Prepare a version on a clean working tree:
 
 ~~~powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-release.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\prepare-release.ps1 -Version <version>
 ~~~
 
-Publishing the pre-release from a clean, up-to-date main checkout uses:
+After reviewing/committing the stamped files and `Cargo.lock`, create and push an annotated `v<version>` tag. Build and verify that exact tag with:
 
 ~~~powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tagged-windows-release.ps1 -Tag v<version>
+~~~
+
+Publish only the already verified tagged source with:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1 -Tag v<version>
 ~~~
 
 See [docs/PORTABLE_RELEASES.md](docs/PORTABLE_RELEASES.md) and [docs/releases/v0.1.0-alpha.1.md](docs/releases/v0.1.0-alpha.1.md).
