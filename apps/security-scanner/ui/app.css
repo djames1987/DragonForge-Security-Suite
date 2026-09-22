@@ -70,3 +70,29 @@ p { color: #a5abb4; line-height: 1.55; }
   main { padding: 22px; }
   .metrics { grid-template-columns: repeat(2,1fr); }
 }
+
+/* Phase 12.6 suite UX baseline */
+.suite-version {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
