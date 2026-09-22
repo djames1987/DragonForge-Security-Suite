@@ -31,6 +31,7 @@ This is an automated DragonForge release-engineering note generated from reposit
 
 - Release artifacts are verified against SHA-256 sidecars and a release manifest before publication.
 - Artifact build metadata must identify the exact tagged commit.
-- The current release pipeline supports unsigned builds; Authenticode signing is Phase 12.4 work.
-- Until signing is enabled, Windows SmartScreen may show an unknown-publisher warning.
+- The release pipeline supports Authenticode signing with SHA-256 and RFC 3161 timestamping when a signing identity is configured.
+- Stable releases require signing; prerelease/development builds may remain explicitly unsigned.
+- Authenticode does not guarantee immediate SmartScreen reputation, although signed builds provide publisher identity and integrity verification.
 - DragonForge Agent remains per-user and non-elevated.
