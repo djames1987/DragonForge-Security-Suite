@@ -22,9 +22,16 @@ New-Item -ItemType Directory -Force -Path $OutputRoot | Out-Null
 $ZipPath = Join-Path $OutputRoot "dragonforge-browser-extension.zip"
 Remove-Item -Force -ErrorAction SilentlyContinue $ZipPath
 
-$ExtensionRoot = Join-Path $RepoRoot "apps\browser-extension"
+$ExtensionRoot = Join-Path $RepoRoot "extensions\password-manager-browser"
+$ManifestPath = Join-Path $ExtensionRoot "manifest.json"
+if (-not (Test-Path -LiteralPath $ManifestPath)) { throw "Browser extension manifest is missing." }
+$Manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
+if ($Manifest.manifest_version -ne 3) { throw "Browser extension must remain Manifest V3." }
+if ($null -ne $Manifest.host_permissions) { throw "Browser extension must not declare broad host_permissions." }
+if (@($Manifest.permissions) -contains "<all_urls>") { throw "Browser extension permissions are unexpectedly broad." }
+
 $Files = @(
-    (Join-Path $ExtensionRoot "manifest.json"),
+    $ManifestPath,
     (Join-Path $ExtensionRoot "src"),
     (Join-Path $ExtensionRoot "ui")
 )
