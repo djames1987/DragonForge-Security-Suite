@@ -20,7 +20,9 @@ fn run() -> Result<(), String> {
     let input = args
         .next()
         .map(PathBuf::from)
-        .ok_or_else(|| "usage: dragonforge-sign-update-manifest <payload.json> <signed.json>".to_owned())?;
+        .ok_or_else(|| {
+            "usage: dragonforge-sign-update-manifest <payload.json> <signed.json>".to_owned()
+        })?;
     let output = args
         .next()
         .map(PathBuf::from)
