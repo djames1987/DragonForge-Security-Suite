@@ -309,7 +309,7 @@ See [PHASE_12_2_AGENT_LIFECYCLE.md](PHASE_12_2_AGENT_LIFECYCLE.md).
 
 
 ## Phase 12.3 — Release Engineering
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - automated suite-wide version stamping across the Rust workspace, all nine Tauri apps, Security Center's visible version, and Inno binary metadata;
@@ -324,7 +324,10 @@ Delivered:
 - immutable GitHub publication flow that verifies an existing tag and refuses to overwrite an existing release;
 - prerelease/stable channel selection derived from the tag version;
 - explicit unsigned Phase 12.3 signing state ready for Phase 12.4 insertion;
-- dedicated Phase 12.3 Windows verification tooling and documentation.
+- dedicated Phase 12.3 Windows verification tooling and documentation;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including formatting, targeted compile checks, strict Clippy, Agent/Security Center tests, JavaScript syntax validation, tracked/locked Cargo metadata, suite-wide release-version consistency checks, PowerShell syntax validation for every release script, and repository-controlled release invariant checks;
+- verified log: `dragonforge-phase12.3-release-engineering-20260922-112111.log`;
+- verified log SHA-256: `E896E0343DD622D1116AD3D63A29FBC8E9E10B9A157900EF762BE354B4C9E037`.
 
 See [PHASE_12_3_RELEASE_ENGINEERING.md](PHASE_12_3_RELEASE_ENGINEERING.md).
 
