@@ -63,6 +63,7 @@ try {
         $TaggedCommit = (& git rev-parse "$ReleaseTag^{commit}").Trim()
         if ($LASTEXITCODE -ne 0 -or $TaggedCommit -ne $Commit) { throw "Release tag $ReleaseTag does not resolve to the current commit." }
     }
+    $ReleaseChannel = if ($Version -match '-') { "pre-release / external testing" } else { "stable" }
 
     & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -KeepStage -ExpectedCommit $Commit -ReleaseTag $ReleaseTag
     if ($LASTEXITCODE -ne 0) { throw "Portable staging failed before installer compilation." }
@@ -79,7 +80,7 @@ try {
     $BuildInfo = @"
 DragonForge Security Suite
 Version: v$Version
-Release channel: alpha / external testing
+Release channel: $ReleaseChannel
 Git commit: $Commit
 Git tag: $(if ($ReleaseTag) { $ReleaseTag } else { "un-tagged" })
 Built (UTC): $([DateTime]::UtcNow.ToString("o"))
