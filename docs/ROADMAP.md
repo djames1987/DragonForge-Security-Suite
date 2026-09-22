@@ -253,6 +253,26 @@ The existing v0.1.0-alpha.1 release remains frozen. Fixes discovered through ext
 See [PHASE_12_0_EXTERNAL_TEST_BASELINE.md](PHASE_12_0_EXTERNAL_TEST_BASELINE.md).
 
 
+## Phase 12.1 — Windows Installer
+**Status: Implementation Complete — Local Verification Pending**
+
+Delivered:
+- suite-level Inno Setup installer that keeps all ten DragonForge executables together;
+- per-user default installation under LocalAppData with no elevation required for the normal path;
+- stable installer AppId for in-place alpha upgrades;
+- Start Menu integration, optional desktop shortcut, and Security Center post-install launch;
+- explicit WebView2 detection/warning without silently downloading third-party executables;
+- upgrade-time exact-path Agent shutdown plus Windows application-closing integration;
+- uninstall behavior that removes installed program files while preserving DragonForge user data and externally stored vault/backup/share files;
+- installer-specific staged BUILD-INFO and SHA256SUMS metadata;
+- SHA-256 sidecar for the compiled installer;
+- optional GitHub pre-release publication of installer + checksum assets;
+- manual installer acceptance checklist;
+- Phase 12.1 Windows verification harness with real installer compilation.
+
+See [PHASE_12_1_WINDOWS_INSTALLER.md](PHASE_12_1_WINDOWS_INSTALLER.md).
+
+
 ## Later research
 
 Potential areas after the suite is mature:
