@@ -147,6 +147,7 @@
   }
 
   async function extractShare() {
+    if (!window.confirm("Verify and extract these attachments to the selected new destination? Existing destinations are not overwritten.")) return;
     const button = document.getElementById("extract-share");
     button.disabled = true;
     button.textContent = "Extracting…";

@@ -68,3 +68,29 @@ input:focus, textarea:focus, select:focus { border-color: #7c8796; }
 @media (max-width: 1000px) { .account-grid { grid-template-columns: repeat(2, minmax(230px, 1fr)); } .unlock { grid-template-columns: 1fr 1fr; } .unlock-actions { grid-column: 1 / -1; } }
 
 .password-change { max-width: 680px; margin: 16px auto 45px; text-align: left; }
+
+/* Phase 12.6 suite UX baseline */
+.suite-version {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+

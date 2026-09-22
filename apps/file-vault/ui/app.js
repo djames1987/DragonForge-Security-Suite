@@ -162,6 +162,7 @@
   async function extractContainer() {
     const credentials = currentOpenCredentials();
     const destinationPath = document.getElementById("extract-destination").value.trim();
+    if (!window.confirm("Extract this authenticated vault to the selected new destination? DragonForge will not overwrite an existing destination.")) return;
     try {
       const summary = await invoke("extract_container", {
         ...credentials,

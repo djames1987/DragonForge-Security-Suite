@@ -226,6 +226,7 @@
   async function saveRecovery() {
     const id = document.getElementById("recovery-account").value;
     if (!id) return toast("Select an account first.", true);
+    if (!window.confirm("Replace the encrypted recovery codes for this account? The previous stored recovery-code set will no longer be available.")) return;
     const codes = document.getElementById("recovery-codes").value
       .split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
     try {

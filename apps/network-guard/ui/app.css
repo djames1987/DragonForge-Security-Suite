@@ -1,1 +1,27 @@
 :root{font-family:Inter,"Segoe UI",sans-serif;color:#f4f5f7;background:#0d0f12;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#2b1c10 0,#111318 34%,#0b0d10 72%)}button{font:inherit}.shell{min-height:100vh;display:grid;grid-template-columns:240px 1fr}aside{padding:24px 18px;border-right:1px solid #2b2f35;background:#0d0f12;display:flex;flex-direction:column}.brand{display:flex;gap:12px;align-items:center;margin-bottom:30px}.brand strong,.brand span{display:block}.brand span{font-size:12px;color:#959ba5}.mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#ff8a1f,#a74700);color:#111;font-weight:800}.large{width:64px;height:64px;margin-bottom:18px}.nav{border:0;background:transparent;color:#a7adb7;text-align:left;padding:12px;border-radius:9px;cursor:pointer}.nav.active,.nav:hover{background:#1c2026;color:#fff}.note{margin-top:auto;padding:13px;border:1px solid #30343b;border-radius:12px;background:#15181d;color:#8f96a2;font-size:12px;line-height:1.45}.phase{margin-top:14px;color:#707783;font-size:12px}main{padding:28px 34px;overflow:auto}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}h1,h2,p{margin-top:0}.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#f68a2d;font-weight:700;margin-bottom:7px}.primary{border:0;border-radius:10px;padding:11px 18px;background:linear-gradient(135deg,#ff8b22,#db5f00);color:#111;font-weight:750;cursor:pointer}.view{display:none}.view.active{display:block}.metrics{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:14px;margin-bottom:22px}.metrics article{padding:18px;border:1px solid #2d3138;background:#15181d;border-radius:14px}.metrics span{display:block;color:#9299a4;font-size:12px}.metrics strong{display:block;font-size:29px;margin-top:7px}.section-head{display:flex;justify-content:space-between;align-items:end;margin:20px 0 12px}.section-head span{color:#858c97;font-size:12px}.table-wrap{overflow:auto;border:1px solid #2d3138;border-radius:14px;background:#15181d}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:11px 12px;text-align:left;border-bottom:1px solid #262a30;white-space:nowrap}th{color:#9ca3ad;background:#181c21}tr.attention td{background:#251b12}.warning{padding:10px 12px;margin:8px 0;border:1px solid #6a5127;background:#211a11;color:#e9bd75;border-radius:9px;font-size:12px}.about{max-width:760px;padding:28px;border:1px solid #30343b;border-radius:16px;background:#15181d}.about p{color:#a5abb4;line-height:1.55}.toast{position:fixed;right:22px;bottom:22px;z-index:20;padding:12px 14px;border:1px solid #3a414c;border-radius:10px;background:#20252c}.toast.error{border-color:#6d3832;color:#ffaaa2}@media(max-width:900px){.shell{grid-template-columns:190px 1fr}.metrics{grid-template-columns:repeat(2,1fr)}main{padding:22px}}
+
+/* Phase 12.6 suite UX baseline */
+.suite-version {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+

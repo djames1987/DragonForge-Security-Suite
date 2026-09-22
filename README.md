@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.5 Crash Handling & Diagnostics is verified complete. DragonForge now has shared rotating diagnostics, secret-safe panic records, per-component failure visibility, expanded version/WebView2 metadata, and redaction-safe support bundles.
+> **Current status:** Phase 12.6 UX Consistency is implementation complete with local verification pending. All nine DragonForge desktop applications now share current suite/version terminology, a common keyboard-focus and disabled-control baseline, consistent Security Center entry guidance, and aligned confirmations for sensitive replacement/restore/extract actions.
 
 ## Canonical repository
 
@@ -121,6 +121,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.3 — Release Engineering: **Verified Complete**
 - Phase 12.4 — Code Signing: **Verified Complete**
 - Phase 12.5 — Crash Handling & Diagnostics: **Verified Complete**
+- Phase 12.6 — UX Consistency: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -155,6 +156,12 @@ Phase 12.1 local verification result: **PASS** on `DRACO` (Windows NT 10.0.26200
 Verified log: `dragonforge-phase12.1-installer-20260922-103728.log`  
 Verified log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`  
 Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`
+
+## UX consistency
+
+Phase 12.6 aligns all nine DragonForge desktop applications around one visible and behavioral suite contract: current package/suite metadata, Security Center as the recommended entry point, visible keyboard focus, consistent disabled controls, and explicit confirmations for sensitive replacement/restore/extract actions.
+
+See [docs/PHASE_12_6_UX_CONSISTENCY.md](docs/PHASE_12_6_UX_CONSISTENCY.md).
 
 ## Crash handling & diagnostics
 
