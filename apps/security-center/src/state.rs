@@ -20,6 +20,7 @@ pub struct DashboardSnapshot {
     pub agent: AgentStatus,
     pub platform: &'static str,
     pub settings: SecurityCenterSettings,
+    pub last_failure: Option<String>,
 }
 
 pub struct AppState {
@@ -40,6 +41,7 @@ impl AppState {
             Err(_) => (SecurityCenterSettings::default(), true),
         };
         let logger = SafeLogger::discover(settings.include_diagnostic_identifiers)?;
+        logger.install_panic_hook();
         let mut events = EventStore::new(settings.retain_event_count);
         events.push(
             Component::SecurityCenter,
@@ -112,6 +114,7 @@ impl AppState {
             agent,
             platform: Platform::current().as_str(),
             settings: self.lock_settings()?.clone(),
+            last_failure: self.logger.read_last_failure(),
         })
     }
 
@@ -121,6 +124,30 @@ impl AppState {
 
     pub fn diagnostic_report(&self) -> Result<String, String> {
         crate::diagnostics::render(&self.snapshot()?)
+    }
+
+    pub fn create_support_bundle(&self) -> Result<String, String> {
+        let snapshot = self.snapshot()?;
+        let path = crate::diagnostics::write_support_bundle(&snapshot, &self.logger)?;
+        self.lock_events()?.push(
+            Component::SecurityCenter,
+            EventKind::Lifecycle,
+            Severity::Info,
+            "security-center.support-bundle-created",
+            "Redaction-safe support bundle created",
+        );
+        let _ = self.logger.write(
+            "info",
+            "security-center.support-bundle-created",
+            "Redaction-safe support bundle created",
+        );
+        Ok(path)
+    }
+
+    pub fn record_safe_failure(&self, code: &str, public_summary: &str) -> Result<(), String> {
+        self.logger
+            .record_failure(code, public_summary)
+            .map_err(|error| error.to_string())
     }
 
     pub fn refresh_health(&self) -> Result<DashboardSnapshot, String> {
