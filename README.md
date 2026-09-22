@@ -130,7 +130,7 @@ See [docs/PHASE_12_0_EXTERNAL_TEST_BASELINE.md](docs/PHASE_12_0_EXTERNAL_TEST_BA
 
 ## Portable test release
 
-The first external-test package is prepared as **v0.1.0-alpha.1**, a Windows x64 portable pre-release. Test machines do not need Rust, Cargo, Node.js, Git, or the source checkout; all ten suite executables are packaged together so Security Center can continue to use exact sibling launch paths.
+The first external-test package is published and frozen as **v0.1.0-alpha.1**, a Windows x64 portable pre-release. Test machines do not need Rust, Cargo, Node.js, Git, or the source checkout; all ten suite executables are packaged together so Security Center can continue to use exact sibling launch paths.
 
 Release builders can create the ZIP with:
 
