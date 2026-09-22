@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 11 DragonForge Agent is verified complete. DragonForge now includes Security Center, Password Manager, File Vault, Authenticator, Security Scanner, Integrity Monitor, Network Guard, Backup & Recovery, Secure Share, and an authenticated per-user background Agent.
+> **Current status:** Phase 12.0 External Test Baseline is implementation complete with local verification pending. DragonForge now has a frozen portable alpha, structured external-test coverage, redaction-safe support diagnostics, and standardized issue reporting.
 
 ## Canonical repository
 
@@ -115,8 +115,18 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 9 — Backup & Recovery: **Verified Complete**
 - Phase 10 — Secure Share: **Verified Complete**
 - Phase 11 — DragonForge Agent: **Verified Complete**
+- Phase 12.0 — External Test Baseline: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
+
+## External testing baseline
+
+Phase 12.0 establishes the external-test process for DragonForge. Security Center can now generate a redaction-safe support report from **About → Copy diagnostics**. External testers should follow [docs/EXTERNAL_TEST_CHECKLIST.md](docs/EXTERNAL_TEST_CHECKLIST.md) and the coverage matrix in [docs/EXTERNAL_TEST_MATRIX.md](docs/EXTERNAL_TEST_MATRIX.md).
+
+Future portable releases include a package-integrity verifier and the external test checklist. Bugs should be filed with the external-test issue template and must never include real credentials, recovery material, OTP seeds, vault contents, or sensitive user files.
+
+See [docs/PHASE_12_0_EXTERNAL_TEST_BASELINE.md](docs/PHASE_12_0_EXTERNAL_TEST_BASELINE.md).
+
 
 ## Portable test release
 
