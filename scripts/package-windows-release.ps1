@@ -1,7 +1,9 @@
 param(
     [string]$Version = "0.1.0-alpha.1",
     [switch]$SkipBuild,
-    [switch]$KeepStage
+    [switch]$KeepStage,
+    [string]$ExpectedCommit,
+    [string]$ReleaseTag
 )
 
 $ErrorActionPreference = "Stop"
@@ -60,7 +62,17 @@ try {
     if ($LASTEXITCODE -ne 0 -or -not $Commit) {
         throw "Unable to determine the release commit."
     }
+    if ($ExpectedCommit -and $Commit -ne $ExpectedCommit) {
+        throw "Release commit mismatch. Expected $ExpectedCommit but HEAD is $Commit."
+    }
+    if ($ReleaseTag) {
+        $TaggedCommit = (& git rev-parse "$ReleaseTag^{commit}").Trim()
+        if ($LASTEXITCODE -ne 0 -or $TaggedCommit -ne $Commit) {
+            throw "Release tag $ReleaseTag does not resolve to the current commit."
+        }
+    }
     $env:DRAGONFORGE_BUILD_COMMIT = $Commit
+    $ReleaseChannel = if ($Version -match '-') { "pre-release / external testing" } else { "stable" }
 
     if (-not $SkipBuild) {
         & (Join-Path $PSScriptRoot "build-all-apps-for-testing.ps1") -Profile release
@@ -98,17 +110,18 @@ try {
     $BuildInfo = @"
 DragonForge Security Suite
 Version: v$Version
-Release channel: alpha / external testing
+Release channel: $ReleaseChannel
 Git commit: $Commit
+Git tag: $(if ($ReleaseTag) { $ReleaseTag } else { "un-tagged" })
 Built (UTC): $([DateTime]::UtcNow.ToString("o"))
 Platform: Windows x64 portable
 "@
     Set-Content -LiteralPath (Join-Path $StageRoot "BUILD-INFO.txt") -Value $BuildInfo -Encoding UTF8
 
     $StartHere = @"
-DragonForge Security Suite v$Version - Windows x64 Portable Alpha
+DragonForge Security Suite v$Version - Windows x64 Portable
 
-THIS IS A PRE-RELEASE TEST BUILD.
+Release channel: $ReleaseChannel
 Do not treat it as production security software yet.
 
 No Rust, Cargo, Node.js, Git, or source checkout is required on the test machine.
@@ -119,13 +132,13 @@ FIRST RUN
 3. Run Verify-Package.cmd and confirm PORTABLE PACKAGE INTEGRITY: PASS.
 4. Run Check-Prerequisites.cmd.
 5. Start the suite with Launch-Security-Center.cmd.
-6. In Security Center, start DragonForge Agent when prompted.
+6. Security Center will automatically ensure DragonForge Agent is running when needed.
 7. Follow EXTERNAL-TEST-CHECKLIST.md for the structured smoke test.
 
 REQUIREMENTS
 - 64-bit Windows 10/11.
 - Microsoft Edge WebView2 Runtime for the Tauri desktop applications.
-- Normal-user execution is expected. Phase 11 Agent does not require elevation.
+- Normal-user execution is expected. Phase 12.2 Agent lifecycle does not require elevation.
 
 IMPORTANT TESTING NOTES
 - This alpha is unsigned. Windows SmartScreen may warn because the binaries do not yet have a code-signing certificate.

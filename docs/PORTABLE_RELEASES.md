@@ -1,66 +1,72 @@
-# Portable Windows Test Releases
+# Windows Release Workflow
 
-DragonForge Security Suite uses a portable ZIP for the initial external-test release channel.
+DragonForge Security Suite supports both a portable Windows ZIP and a suite-level per-user installer.
 
-## Why portable first
+Phase 12.3 makes releases **tag-bound and verified before publication**. Direct ad-hoc packaging scripts remain implementation building blocks, but publishable releases should use the workflow below.
 
-The suite contains multiple sibling desktop executables plus DragonForge Agent. Security Center intentionally launches suite components by exact sibling path. Keeping the verified binaries together in one extracted directory provides a small, auditable release surface while installer and updater design remain future work.
+## 1. Prepare the version
 
-## Create the package
-
-From a clean Windows checkout:
+Start from a clean working tree:
 
 ~~~powershell
-git checkout main
-git pull
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-release.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\prepare-release.ps1 -Version 0.1.0-alpha.3
 ~~~
 
-The script performs release-profile builds, verifies all ten expected executables, stages only runnable binaries and tester helpers, writes build commit/version information, generates SHA-256 hashes, creates a ZIP, and emits a SHA-256 sidecar.
+This stamps the workspace/Tauri/UI/installer versions, refreshes `Cargo.lock`, runs a workspace check, and verifies version consistency.
 
-Artifacts are written under dist/.
-
-## Publish the alpha
-
-Publishing uses GitHub CLI so the tag, release, and uploaded assets are created from the exact clean main commit:
+Review and commit the changes. Then create and push an annotated tag on that exact commit:
 
 ~~~powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1
+git tag -a v0.1.0-alpha.3 -m "DragonForge Security Suite v0.1.0-alpha.3"
+git push origin HEAD
+git push origin v0.1.0-alpha.3
 ~~~
 
-Requirements on the release-building machine:
+## 2. Build and verify the exact tag
 
-- normal project development prerequisites;
-- GitHub CLI (gh);
-- an authenticated GitHub CLI session with permission to publish releases to this repository.
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tagged-windows-release.ps1 -Tag v0.1.0-alpha.3
+~~~
 
-The published release is marked pre-release.
+The tagged builder requires:
+- Windows x64 build prerequisites;
+- Inno Setup 6 for installer builds;
+- a clean working tree;
+- `HEAD` exactly equal to the requested tag commit;
+- tracked and valid `Cargo.lock`;
+- all stamped versions matching the tag.
+
+It produces the portable ZIP, installer, SHA-256 sidecars, generated release notes, and a release manifest. The artifact verifier extracts the ZIP, checks all ten executables, validates internal checksums, and confirms BUILD-INFO tag/commit identity.
+
+Use `-NoInstaller` only for an intentionally portable-only release.
+
+## 3. Publish verified assets
+
+GitHub CLI must be installed and authenticated:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1 -Tag v0.1.0-alpha.3
+~~~
+
+The publisher reruns the tagged build/verifier, uses GitHub's existing tag verification, uploads only verified assets, and refuses to mutate an existing release.
+
+Tags with a prerelease suffix are published as prereleases; plain semantic versions are treated as stable-channel releases.
+
+## Artifact set
+
+A normal tagged Windows build produces:
+- `DragonForge-Security-Suite-v<version>-win-x64.zip`;
+- ZIP `.sha256`;
+- `DragonForge-Security-Suite-v<version>-win-x64-setup.exe`;
+- installer `.sha256`;
+- `release-notes-v<version>.md`;
+- `release-manifest-v<version>.json`;
+- release-manifest `.sha256`.
 
 ## Test machine requirements
 
-The extracted package needs no Rust, Cargo, Node.js, Git, or source checkout. Testers can run Check-Prerequisites.cmd and Launch-Security-Center.cmd directly from the extracted folder.
+The packaged applications need no Rust, Cargo, Node.js, Git, or source checkout. They require 64-bit Windows 10/11 and Microsoft Edge WebView2 Runtime.
 
-It requires 64-bit Windows 10/11 and Microsoft Edge WebView2 Runtime for the Tauri desktop applications.
+The Phase 12.3 pipeline is still unsigned. SmartScreen/unknown-publisher warnings remain expected until Phase 12.4 code signing is implemented.
 
-The release remains unsigned during this alpha stage, so SmartScreen warnings are expected.
-
-
-## Windows installer
-
-Phase 12.1 adds a suite-level Windows installer while retaining portable ZIP releases.
-
-Build the installer with:
-
-~~~powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-installer.ps1 -Version 0.1.0-alpha.2
-~~~
-
-The build machine requires Inno Setup 6. The script stages the same ten release executables plus appropriate support files, writes installer-specific BUILD-INFO.txt and SHA256SUMS.txt metadata, compiles a per-user installer, and emits an installer SHA-256 sidecar.
-
-To include the installer and its sidecar in a future GitHub pre-release:
-
-~~~powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-windows-release.ps1 -Version <version> -IncludeInstaller
-~~~
-
-The publish script resolves release notes from `docs/releases/v<version>.md`. Existing published releases remain immutable.
+Existing published releases such as `v0.1.0-alpha.1` remain immutable.
