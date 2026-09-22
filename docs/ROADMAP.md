@@ -428,7 +428,7 @@ See [PHASE_12_7_SECURITY_HARDENING.md](PHASE_12_7_SECURITY_HARDENING.md).
 
 
 ## Phase 13 — Beta Readiness & Release Qualification
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - formal six-scenario beta qualification matrix covering Windows 10/11, physical/VM, standard/admin-non-elevated, fresh/established profile, WebView2 present/missing, installer/portable, and reboot cases;
@@ -449,7 +449,7 @@ The Phase 13 implementation can be verified on one authoritative machine, but th
 See [PHASE_13_BETA_READINESS.md](PHASE_13_BETA_READINESS.md).
 
 ## Phase 14 — Secure Update System
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - ML-DSA-65 signed update manifests with a pinned release-key identity;
