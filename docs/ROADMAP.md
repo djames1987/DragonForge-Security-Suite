@@ -466,14 +466,21 @@ Delivered:
 See [PHASE_14_SECURE_UPDATE.md](PHASE_14_SECURE_UPDATE.md).
 
 ## Phase 15 — Password Manager Ecosystem Production Hardening
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- production sync-server deployment and operational hardening;
-- request/rate/size abuse resistance;
-- TLS/reverse-proxy validation and migration/backup procedures;
-- browser-extension/native-host origin and packaging review;
-- sync protocol/version compatibility matrix and server migration testing.
+Delivered:
+- fail-closed production sync-server mode requiring PostgreSQL persistence, a 256-bit hexadecimal admin token, explicit TLS reverse-proxy declaration, and an HTTPS public base URL;
+- bounded request-rate windows keyed by hashed credential/device identity, bounded limiter state, existing body-size limits, and request timeouts;
+- no-store, nosniff, and no-referrer HTTP response hardening;
+- explicit sync protocol compatibility range in the health endpoint;
+- corrected browser-extension packaging from the migrated extension tree with broad-permission rejection;
+- stricter Chrome/Edge native-host origin validation;
+- hardened Docker runtime defaults with a read-only filesystem, dropped Linux capabilities, no-new-privileges, and a restricted tmpfs;
+- PostgreSQL backup/restore tooling with SHA-256 evidence and explicit destructive-restore acknowledgement;
+- protocol/version compatibility and database migration guidance;
+- dedicated Phase 15 verification tooling and CI coverage.
+
+See [PHASE_15_PASSWORD_MANAGER_HARDENING.md](PHASE_15_PASSWORD_MANAGER_HARDENING.md).
 
 ## Phase 16 — Windows Security Boundary Foundation
 **Status: Planned**
