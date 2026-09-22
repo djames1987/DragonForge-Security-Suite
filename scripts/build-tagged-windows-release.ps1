@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)] [string]$Tag,
     [switch]$SkipBuild,
-    [switch]$NoInstaller
+    [switch]$NoInstaller,
+    [switch]$SignRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +12,10 @@ if ($Tag -notmatch '^v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$') {
     throw "Tag must be v<version>, for example v0.1.0-alpha.3"
 }
 $Version = $Matches[1]
+$IsPrerelease = $Version -match '-'
+if (-not $IsPrerelease -and -not $SignRelease) {
+    throw "Stable releases must be Authenticode-signed. Re-run with -SignRelease and configured signing credentials."
+}
 
 Push-Location $RepoRoot
 try {
@@ -37,16 +42,16 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Cargo.lock does not match the tagged manifests." }
 
     if ($NoInstaller) {
-        & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -ExpectedCommit $TaggedCommit -ReleaseTag $Tag
+        & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -ExpectedCommit $TaggedCommit -ReleaseTag $Tag -SignRelease:$SignRelease
     } else {
-        & (Join-Path $PSScriptRoot "package-windows-installer.ps1") -Version $Version -SkipBuild:$SkipBuild -ExpectedCommit $TaggedCommit -ReleaseTag $Tag
+        & (Join-Path $PSScriptRoot "package-windows-installer.ps1") -Version $Version -SkipBuild:$SkipBuild -ExpectedCommit $TaggedCommit -ReleaseTag $Tag -SignRelease:$SignRelease
     }
     if ($LASTEXITCODE -ne 0) { throw "Tagged Windows packaging failed." }
 
     & (Join-Path $PSScriptRoot "generate-release-notes.ps1") -Tag $Tag
     if ($LASTEXITCODE -ne 0) { throw "Release notes generation failed." }
 
-    & (Join-Path $PSScriptRoot "verify-release-artifacts.ps1") -Tag $Tag -RequireInstaller:(-not $NoInstaller)
+    & (Join-Path $PSScriptRoot "verify-release-artifacts.ps1") -Tag $Tag -RequireInstaller:(-not $NoInstaller) -RequireSigning:$SignRelease
     if ($LASTEXITCODE -ne 0) { throw "Release artifact verification failed." }
 
     Write-Host ""
