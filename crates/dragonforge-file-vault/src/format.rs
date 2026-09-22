@@ -101,4 +101,16 @@ mod tests {
         bytes[0] = b'X';
         assert!(Header::decode(&bytes).is_err());
     }
+
+    #[test]
+    fn header_rejects_unsupported_version_and_truncation() {
+        let mut bytes = Header {
+            salt: [7; SALT_LEN],
+            nonce: [9; NONCE_LEN],
+        }
+        .encode();
+        bytes[4..6].copy_from_slice(&u16::MAX.to_le_bytes());
+        assert!(Header::decode(&bytes).is_err());
+        assert!(Header::decode(&bytes[..bytes.len() - 1]).is_err());
+    }
 }

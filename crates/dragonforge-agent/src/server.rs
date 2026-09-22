@@ -386,6 +386,19 @@ mod tests {
     }
 
     #[test]
+    fn active_runtime_lock_refuses_second_owner() {
+        let dir = tempdir().expect("tempdir");
+        let paths = crate::AgentPaths::from_root(dir.path());
+        std::fs::create_dir_all(paths.root()).expect("runtime dir");
+        let first = acquire_runtime_lock_with_stale_after(&paths, Duration::from_secs(60))
+            .expect("first lock");
+        let second = acquire_runtime_lock_with_stale_after(&paths, Duration::from_secs(60));
+        assert!(second.is_err());
+        drop(first);
+        let _ = std::fs::remove_file(paths.lock_file());
+    }
+
+    #[test]
     fn stale_lock_recovery_removes_orphaned_runtime_files() {
         let dir = tempdir().expect("tempdir");
         let paths = crate::AgentPaths::from_root(dir.path());

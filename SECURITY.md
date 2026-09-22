@@ -29,8 +29,18 @@ A useful report includes:
 - Memory containing secrets should have an explicit lifecycle.
 - Unsafe Rust is forbidden at the workspace level unless a future component receives an explicit, documented exception.
 - Dependencies should be minimized and audited.
-- Updates and inter-process communication must eventually be authenticated.
+- Local Agent IPC is authenticated and fail-closed; future IPC/network/update channels must provide equivalent authenticated peer/artifact verification before carrying security-sensitive actions.
 
 ## Scope
 
 This policy applies to all applications, services, libraries, extensions, scripts, and build/release infrastructure in this repository.
+
+## Repeatable dependency auditing
+
+Rust dependencies are checked against the RustSec advisory database by the scheduled and dependency-change GitHub workflow in `.github/workflows/security-audit.yml`. Developers can run the same class of check locally with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-dependency-audit.ps1
+```
+
+If `cargo-audit` is not installed, use the script's `-InstallIfMissing` switch or install it explicitly with `cargo install cargo-audit --locked`. Advisory suppressions must be documented with applicability analysis rather than silently ignored.
