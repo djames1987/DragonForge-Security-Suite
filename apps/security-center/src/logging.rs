@@ -1,6 +1,10 @@
 use std::path::Path;
+#[cfg(test)]
+use std::path::PathBuf;
 
 use dragonforge_core::{Component, ComponentLogger, CoreResult, install_safe_panic_hook};
+#[cfg(test)]
+use dragonforge_core::LogPolicy;
 
 #[derive(Debug, Clone)]
 pub struct SafeLogger {
@@ -44,9 +48,6 @@ impl SafeLogger {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use std::path::PathBuf;
-
-    use dragonforge_core::LogPolicy;
     use tempfile::tempdir;
 
     use super::SafeLogger;
