@@ -9,7 +9,7 @@ use serde_json::json;
 use crate::logging::SafeLogger;
 use crate::state::DashboardSnapshot;
 
-const PHASE: &str = "12.5";
+const PHASE: &str = "13";
 const RELEASE_CHANNEL: &str = "alpha-external-test";
 
 #[derive(Debug, Serialize)]
