@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.2 Agent Lifecycle is implementation complete with local verification pending. The per-user Agent now has automatic start/recovery, authenticated graceful stop/restart, reconnect handling, and installed login startup while remaining non-elevated.
+> **Current status:** Phase 12.2 Agent Lifecycle is verified complete. The per-user Agent now has verified automatic start/recovery, authenticated graceful stop/restart, reconnect handling, and installed login startup while remaining non-elevated.
 
 ## Canonical repository
 
@@ -117,7 +117,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 11 — DragonForge Agent: **Verified Complete**
 - Phase 12.0 — External Test Baseline: **Verified Complete**
 - Phase 12.1 — Windows Installer: **Verified Complete**
-- Phase 12.2 — Agent Lifecycle: **Implementation Complete — Local Verification Pending**
+- Phase 12.2 — Agent Lifecycle: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -387,6 +387,10 @@ Current lifecycle behavior:
 - no Windows service or elevation is introduced.
 
 See [docs/PHASE_12_2_AGENT_LIFECYCLE.md](docs/PHASE_12_2_AGENT_LIFECYCLE.md).
+
+Phase 12.2 Windows verification: **PASS** on `DRACO` (Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12.2-agent-lifecycle-20260922-110040.log`  
+Verified log SHA-256: `D7D5EF5979C9AAA250D527192457D6DB476274A30F50A2C2253C81EC1D70B2E5`
 
 ## DragonForge Agent
 
