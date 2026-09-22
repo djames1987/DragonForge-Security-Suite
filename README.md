@@ -145,7 +145,7 @@ Build it with:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-installer.ps1
 ~~~
 
-Inno Setup 6 is required on the build machine. The installer preserves DragonForge user data on uninstall by design, creates Start Menu integration, offers an optional desktop shortcut, warns when WebView2 is not detected, and can be included in future pre-releases with `publish-windows-release.ps1 -IncludeInstaller`.
+Inno Setup 6 is required on the build machine. The installer preserves DragonForge user data on uninstall by design, creates Start Menu integration, offers an optional desktop shortcut, warns when WebView2 is not detected, and is included by default in the Phase 12.3 exact-tag release workflow.
 
 See [docs/PHASE_12_1_WINDOWS_INSTALLER.md](docs/PHASE_12_1_WINDOWS_INSTALLER.md) and [docs/INSTALLER_TEST_CHECKLIST.md](docs/INSTALLER_TEST_CHECKLIST.md).
 
