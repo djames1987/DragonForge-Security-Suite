@@ -99,6 +99,8 @@ try {
     $SigningState = if ($RequireSigning) { "authenticode-sha256-rfc3161" } else { "unsigned-development" }
     $SignerSubject = if ($RequireSigning -and $Signature.SignerCertificate) { $Signature.SignerCertificate.Subject } else { $null }
     $SignerThumbprint = if ($RequireSigning -and $Signature.SignerCertificate) { $Signature.SignerCertificate.Thumbprint } else { $null }
+    $TimestampProtocol = if ($RequireSigning) { "RFC3161" } else { $null }
+    $TimestampDigest = if ($RequireSigning) { "SHA256" } else { $null }
 
     $Artifacts = @(
         [ordered]@{
@@ -130,8 +132,8 @@ try {
             state = $SigningState
             required = [bool]$RequireSigning
             file_digest = "SHA256"
-            timestamp_protocol = if ($RequireSigning) { "RFC3161" } else { $null }
-            timestamp_digest = if ($RequireSigning) { "SHA256" } else { $null }
+            timestamp_protocol = $TimestampProtocol
+            timestamp_digest = $TimestampDigest
             signer_subject = $SignerSubject
             signer_thumbprint = $SignerThumbprint
         }
