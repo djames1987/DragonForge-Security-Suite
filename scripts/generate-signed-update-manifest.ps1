@@ -34,14 +34,40 @@ $ReleaseManifestPath = Join-Path $DistRoot "release-manifest-$Tag.json"
 if (-not (Test-Path -LiteralPath $ReleaseManifestPath -PathType Leaf)) {
     throw "Verified release manifest is missing: $ReleaseManifestPath"
 }
+$ReleaseManifestSidecar = "$ReleaseManifestPath.sha256"
+if (-not (Test-Path -LiteralPath $ReleaseManifestSidecar -PathType Leaf)) {
+    throw "Verified release manifest sidecar is missing."
+}
+$ExpectedManifestHash = ((Get-Content -Raw -LiteralPath $ReleaseManifestSidecar).Trim() -split '\s+')[0].ToUpperInvariant()
+$ActualManifestHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ReleaseManifestPath).Hash.ToUpperInvariant()
+if ($ExpectedManifestHash -ne $ActualManifestHash) {
+    throw "Verified release manifest checksum does not match its sidecar."
+}
+
 $ReleaseManifest = Get-Content -Raw -LiteralPath $ReleaseManifestPath | ConvertFrom-Json
 if ($ReleaseManifest.tag -ne $Tag -or $ReleaseManifest.version -ne $Version) {
     throw "Release manifest identity does not match $Tag."
+}
+if ($ReleaseManifest.signing.required -ne $true -or $ReleaseManifest.signing.state -ne "authenticode-sha256-rfc3161") {
+    throw "Secure update publication requires a signed release manifest."
 }
 $Installer = @($ReleaseManifest.artifacts | Where-Object { $_.kind -eq "windows-installer" })
 if ($Installer.Count -ne 1) {
     throw "Exactly one verified Windows installer is required for secure updates."
 }
+$InstallerPath = Join-Path $DistRoot $Installer[0].name
+if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) {
+    throw "Verified Windows installer is missing."
+}
+if ((Get-Item -LiteralPath $InstallerPath).Length -ne [uint64]$Installer[0].bytes) {
+    throw "Windows installer size no longer matches verified release metadata."
+}
+$InstallerHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $InstallerPath).Hash.ToUpperInvariant()
+if ($InstallerHash -ne ([string]$Installer[0].sha256).ToUpperInvariant()) {
+    throw "Windows installer SHA-256 no longer matches verified release metadata."
+}
+& (Join-Path $PSScriptRoot "verify-authenticode.ps1") -Path @($InstallerPath) -RequireTimestamp
+if ($LASTEXITCODE -ne 0) { throw "Windows installer Authenticode verification failed." }
 
 $PayloadPath = Join-Path $DistRoot "update-payload-$Tag.json"
 $OutputPath = Join-Path $DistRoot "DragonForge-Security-Suite-update-$Channel.json"
