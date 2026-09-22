@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.3 Release Engineering is verified complete. Release preparation, exact-tag builds, artifact manifests, release-note generation, Cargo.lock enforcement, and pre-publication verification are now validated on Windows.
+> **Current status:** Phase 12.4 Code Signing is implementation complete with local verification pending. The exact-tag release pipeline now supports SHA-256 Authenticode signing, RFC 3161 timestamping, signature verification, signer metadata, and signed-stable-release enforcement.
 
 ## Canonical repository
 
@@ -119,6 +119,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.1 — Windows Installer: **Verified Complete**
 - Phase 12.2 — Agent Lifecycle: **Verified Complete**
 - Phase 12.3 — Release Engineering: **Verified Complete**
+- Phase 12.4 — Code Signing: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -153,6 +154,12 @@ Phase 12.1 local verification result: **PASS** on `DRACO` (Windows NT 10.0.26200
 Verified log: `dragonforge-phase12.1-installer-20260922-103728.log`  
 Verified log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`  
 Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`
+
+## Code signing
+
+Phase 12.4 integrates Windows Authenticode into the verified exact-tag release workflow. Signed builds use SHA-256 file digests, RFC 3161 timestamping with SHA-256, post-sign verification, and release-manifest signer metadata. Certificate private keys remain external to the repository. Stable tags fail closed unless signing is enabled.
+
+See [docs/PHASE_12_4_CODE_SIGNING.md](docs/PHASE_12_4_CODE_SIGNING.md).
 
 ## Release engineering
 
