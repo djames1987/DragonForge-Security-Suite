@@ -403,22 +403,25 @@ See [PHASE_12_6_UX_CONSISTENCY.md](PHASE_12_6_UX_CONSISTENCY.md).
 
 
 ## Phase 12.7 — Security Hardening Review
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- threat-model DragonForge as one deployed product rather than as isolated applications;
-- review filesystem permissions and ownership expectations for installed binaries, runtime files, configuration, logs, and security-sensitive data;
-- review Agent and cross-component IPC authentication/authorization boundaries;
-- review all suite data directories and persistence locations;
-- audit logs and diagnostic surfaces for secret leakage;
-- perform dependency/security advisory review and establish repeatable dependency-audit tooling;
-- fuzz or property-test package/container parsers, including `.dfvault`, `.dfbackup`, `.dfshare`, and other versioned formats;
-- add corrupted, truncated, oversized, malformed, duplicate-entry, and unsupported-version tests;
-- expand malicious path, traversal, symlink/reparse-point, and destination-overwrite tests;
-- add concurrent-access/race-condition tests around vaults, stores, backups, Agent runtime files, and other shared state;
-- document residual risks and explicit non-claims before moving toward a broader beta/stable channel.
+Delivered:
+- deployment-wide threat/trust-boundary review across UI/native, Security Center/Agent, sync/network, browser-extension, serialized-input, OS/API, and shared/product crate boundaries;
+- Agent IPC review retaining loopback-only transport, HMAC-SHA256 authentication, freshness/nonces, replay rejection, caller/destination authorization, bounded wire messages/timeouts, and no arbitrary command execution;
+- active Agent runtime-lock contention regression test;
+- File Vault hostile parser tests for unsupported versions, truncation, duplicate entries, malformed traversal-like paths, and truncated internal payloads;
+- Backup & Recovery truncated-archive and unsupported-version tests;
+- Secure Share truncated-package and unsupported-version tests;
+- repeatable local RustSec dependency advisory audit wrapper plus scheduled/on-dependency-change GitHub audit workflow;
+- Windows DragonForge data/Agent ACL review tooling that reports ownership and flags broad write-capable ACEs;
+- root security policy updated for current authenticated Agent IPC and future authenticated-channel requirements;
+- architecture review updated for current Agent capabilities, filesystem expectations, concurrency expectations, and stale pre-Agent wording;
+- explicit residual-risk/non-claim register, including inherited Windows Agent runtime ACLs and the non-privileged Agent boundary;
+- dedicated Phase 12.7 Windows verification tooling and documentation.
 
-Phase 12.7 is a hardening/review phase, not a mandate to add antivirus, EDR, packet filtering, or privileged remediation features.
+Phase 12.7 intentionally does not add antivirus, EDR, packet filtering, or privileged remediation. Dedicated Windows ACL application and any privileged service boundary remain separately reviewed future work.
+
+See [PHASE_12_7_SECURITY_HARDENING.md](PHASE_12_7_SECURITY_HARDENING.md).
 
 
 ## Later research
