@@ -96,13 +96,11 @@ begin
 end;
 
 function WebView2Installed(): Boolean;
-const
-  EdgeClients = 'SOFTWARE\Microsoft\EdgeUpdate\Clients';
 begin
   Result :=
-    WebView2InRoot(HKLM64, EdgeClients) or
-    WebView2InRoot(HKLM32, EdgeClients) or
-    WebView2InRoot(HKCU, EdgeClients);
+    WebView2InRoot(HKLM64, 'SOFTWARE\Microsoft\EdgeUpdate\Clients') or
+    WebView2InRoot(HKLM32, 'SOFTWARE\Microsoft\EdgeUpdate\Clients') or
+    WebView2InRoot(HKCU, 'SOFTWARE\Microsoft\EdgeUpdate\Clients');
 end;
 
 function InitializeSetup(): Boolean;
