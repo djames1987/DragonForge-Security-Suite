@@ -5,6 +5,9 @@ on:
     branches: ["main"]
     paths:
       - "apps/security-center/**"
+      - "apps/password-manager/**"
+      - "services/password-manager-sync/**"
+      - "extensions/password-manager-browser/**"
       - "apps/file-vault/**"
       - "apps/authenticator/**"
       - "apps/security-scanner/**"
@@ -35,6 +38,10 @@ on:
       - "scripts/build-all-apps-for-testing.ps1"
       - "scripts/run-phase13-beta-readiness-tests.ps1"
       - "scripts/run-phase14-secure-update-tests.ps1"
+      - "scripts/run-phase15-password-manager-hardening-tests.ps1"
+      - "scripts/password-manager/backup-sync-server.ps1"
+      - "scripts/password-manager/restore-sync-server.ps1"
+      - "scripts/password-manager/package-browser-extension.ps1"
       - "scripts/generate-signed-update-manifest.ps1"
       - "scripts/publish-windows-release.ps1"
       - "scripts/build-tagged-windows-release.ps1"
@@ -43,6 +50,8 @@ on:
       - "scripts/evaluate-beta-qualification.ps1"
       - "docs/PHASE_13_BETA_READINESS.md"
       - "docs/PHASE_14_SECURE_UPDATE.md"
+      - "docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md"
+      - "docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
       - "docs/BETA_RELEASE_GATE.md"
       - "Cargo.toml"
@@ -51,6 +60,9 @@ on:
   pull_request:
     paths:
       - "apps/security-center/**"
+      - "apps/password-manager/**"
+      - "services/password-manager-sync/**"
+      - "extensions/password-manager-browser/**"
       - "apps/file-vault/**"
       - "apps/authenticator/**"
       - "apps/security-scanner/**"
@@ -81,6 +93,10 @@ on:
       - "scripts/build-all-apps-for-testing.ps1"
       - "scripts/run-phase13-beta-readiness-tests.ps1"
       - "scripts/run-phase14-secure-update-tests.ps1"
+      - "scripts/run-phase15-password-manager-hardening-tests.ps1"
+      - "scripts/password-manager/backup-sync-server.ps1"
+      - "scripts/password-manager/restore-sync-server.ps1"
+      - "scripts/password-manager/package-browser-extension.ps1"
       - "scripts/generate-signed-update-manifest.ps1"
       - "scripts/publish-windows-release.ps1"
       - "scripts/build-tagged-windows-release.ps1"
@@ -89,6 +105,8 @@ on:
       - "scripts/evaluate-beta-qualification.ps1"
       - "docs/PHASE_13_BETA_READINESS.md"
       - "docs/PHASE_14_SECURE_UPDATE.md"
+      - "docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md"
+      - "docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
       - "docs/BETA_RELEASE_GATE.md"
       - "Cargo.toml"
@@ -127,13 +145,13 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Check suite applications
-        run: cargo check -p dragonforge-core -p dragonforge-update -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
+        run: cargo check -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
 
       - name: Clippy suite applications
-        run: cargo clippy -p dragonforge-core -p dragonforge-update -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
+        run: cargo clippy -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
 
       - name: Test suite applications
-        run: cargo test -p dragonforge-core -p dragonforge-update -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
+        run: cargo test -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
 
       - name: Check application JavaScript
         shell: pwsh
@@ -146,6 +164,10 @@ jobs:
           node --check apps/network-guard/ui/app.js
           node --check apps/backup-recovery/ui/app.js
           node --check apps/secure-share/ui/app.js
+          node --check extensions/password-manager-browser/src/core.js
+          node --check extensions/password-manager-browser/src/background.js
+          node --check extensions/password-manager-browser/ui/popup.js
+          node --test extensions/password-manager-browser/tests/*.test.mjs
 
       - name: Phase 14 secure-update invariants
         shell: pwsh
@@ -156,7 +178,11 @@ jobs:
             'scripts/evaluate-beta-qualification.ps1',
             'scripts/run-phase14-secure-update-tests.ps1',
             'scripts/generate-signed-update-manifest.ps1',
-            'scripts/publish-windows-release.ps1'
+            'scripts/publish-windows-release.ps1',
+            'scripts/run-phase15-password-manager-hardening-tests.ps1',
+            'scripts/password-manager/backup-sync-server.ps1',
+            'scripts/password-manager/restore-sync-server.ps1',
+            'scripts/password-manager/package-browser-extension.ps1'
           )
           foreach ($file in $scripts) {
             $tokens = $null
@@ -169,7 +195,7 @@ jobs:
             $html = Get-Content -Raw "apps/$app/ui/index.html"
             if (-not $html.Contains('Suite Phase 14')) { throw "$app has stale suite phase metadata." }
           }
-          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','crates/dragonforge-update/src/lib.rs')) {
+          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs')) {
             if (-not (Test-Path $file)) { throw "Missing release/security artifact: $file" }
           }
           $update = Get-Content -Raw 'crates/dragonforge-update/src/lib.rs'
