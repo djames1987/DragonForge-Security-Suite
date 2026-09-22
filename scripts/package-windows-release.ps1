@@ -51,8 +51,15 @@ if ($env:OS -ne "Windows_NT") {
 }
 
 Push-Location $RepoRoot
+$PreviousBuildCommit = $env:DRAGONFORGE_BUILD_COMMIT
 try {
     New-Item -ItemType Directory -Force -Path $DistRoot | Out-Null
+
+    $Commit = (& git rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $Commit) {
+        throw "Unable to determine the release commit."
+    }
+    $env:DRAGONFORGE_BUILD_COMMIT = $Commit
 
     if (-not $SkipBuild) {
         & (Join-Path $PSScriptRoot "build-all-apps-for-testing.ps1") -Profile release
@@ -85,11 +92,7 @@ try {
     }
 
     Copy-Item -LiteralPath (Join-Path $RepoRoot "SECURITY.md") -Destination (Join-Path $StageRoot "SECURITY.md")
-
-    $Commit = (& git rev-parse HEAD).Trim()
-    if ($LASTEXITCODE -ne 0 -or -not $Commit) {
-        throw "Unable to determine the release commit."
-    }
+    Copy-Item -LiteralPath (Join-Path $RepoRoot "docs\EXTERNAL_TEST_CHECKLIST.md") -Destination (Join-Path $StageRoot "EXTERNAL-TEST-CHECKLIST.md")
 
     $BuildInfo = @"
 DragonForge Security Suite
@@ -112,9 +115,11 @@ No Rust, Cargo, Node.js, Git, or source checkout is required on the test machine
 FIRST RUN
 1. Extract this entire ZIP to a normal writable folder.
 2. Keep every EXE in the same folder. Security Center launches suite apps and the Agent by exact sibling path.
-3. Run Check-Prerequisites.cmd.
-4. Start the suite with Launch-Security-Center.cmd.
-5. In Security Center, start DragonForge Agent when prompted.
+3. Run Verify-Package.cmd and confirm PORTABLE PACKAGE INTEGRITY: PASS.
+4. Run Check-Prerequisites.cmd.
+5. Start the suite with Launch-Security-Center.cmd.
+6. In Security Center, start DragonForge Agent when prompted.
+7. Follow EXTERNAL-TEST-CHECKLIST.md for the structured smoke test.
 
 REQUIREMENTS
 - 64-bit Windows 10/11.
@@ -247,6 +252,50 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Stop-DragonForge-A
 '@
     Set-Content -LiteralPath (Join-Path $StageRoot "Stop-DragonForge-Agent.cmd") -Value $StopAgentCmd -Encoding ASCII
 
+    $VerifyPackagePs = @'
+$ErrorActionPreference = "Stop"
+$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Manifest = Join-Path $Root "SHA256SUMS.txt"
+if (-not (Test-Path -LiteralPath $Manifest -PathType Leaf)) {
+    Write-Host "FAIL: SHA256SUMS.txt is missing." -ForegroundColor Red
+    exit 1
+}
+$Failed = $false
+Get-Content -LiteralPath $Manifest | ForEach-Object {
+    if ($_ -notmatch '^([A-Fa-f0-9]{64})  (.+)$') {
+        Write-Host "FAIL: malformed checksum line: $_" -ForegroundColor Red
+        $Failed = $true
+        return
+    }
+    $Expected = $Matches[1].ToUpperInvariant()
+    $Name = $Matches[2]
+    $Path = Join-Path $Root $Name
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        Write-Host "FAIL  $Name (missing)" -ForegroundColor Red
+        $Failed = $true
+        return
+    }
+    $Actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToUpperInvariant()
+    if ($Actual -ne $Expected) {
+        Write-Host "FAIL  $Name (checksum mismatch)" -ForegroundColor Red
+        $Failed = $true
+    } else {
+        Write-Host "OK    $Name"
+    }
+}
+if ($Failed) { exit 1 }
+Write-Host ""
+Write-Host "PORTABLE PACKAGE INTEGRITY: PASS" -ForegroundColor Green
+'@
+    Set-Content -LiteralPath (Join-Path $StageRoot "Verify-Package.ps1") -Value $VerifyPackagePs -Encoding UTF8
+
+    $VerifyPackageCmd = @'
+@echo off
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Verify-Package.ps1"
+pause
+'@
+    Set-Content -LiteralPath (Join-Path $StageRoot "Verify-Package.cmd") -Value $VerifyPackageCmd -Encoding ASCII
+
     $HashLines = Get-ChildItem -LiteralPath $StageRoot -File |
         Where-Object { $_.Name -ne "SHA256SUMS.txt" } |
         Sort-Object Name |
@@ -268,5 +317,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Stop-DragonForge-A
     Write-Host "Commit: $Commit"
 }
 finally {
+    if ($null -eq $PreviousBuildCommit) {
+        Remove-Item Env:DRAGONFORGE_BUILD_COMMIT -ErrorAction SilentlyContinue
+    } else {
+        $env:DRAGONFORGE_BUILD_COMMIT = $PreviousBuildCommit
+    }
     Pop-Location
 }

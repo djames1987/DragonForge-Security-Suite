@@ -231,6 +231,25 @@ Phase 11 is intentionally per-user and non-elevated. Privileged enforcement rema
 
 See [PHASE_11_DRAGONFORGE_AGENT.md](PHASE_11_DRAGONFORGE_AGENT.md).
 
+
+## Phase 12.0 — External Test Baseline
+**Status: Implementation Complete — Local Verification Pending**
+
+Delivered:
+- redaction-safe Security Center diagnostic report with one-click copy action;
+- package version, exact build commit, Phase 12.0, release channel, platform, architecture, component states, and Agent capability metadata;
+- diagnostic-identifier gating for Agent PID;
+- explicit exclusion of vault paths, credentials, event/log contents, sync tokens, recovery material, OTP secrets, and user file contents from diagnostics;
+- external Windows test matrix and tester checklist;
+- structured external-test GitHub bug report template;
+- future portable-release package integrity verifier and bundled external tester checklist;
+- Phase 12.0 local verification script with log + SHA-256 sidecar.
+
+The existing v0.1.0-alpha.1 release remains frozen. Fixes discovered through external testing should ship in a new pre-release rather than replacing that release in place.
+
+See [PHASE_12_0_EXTERNAL_TEST_BASELINE.md](PHASE_12_0_EXTERNAL_TEST_BASELINE.md).
+
+
 ## Later research
 
 Potential areas after the suite is mature:

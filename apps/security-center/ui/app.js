@@ -359,6 +359,29 @@
     }
   }
   
+
+  async function copyDiagnostics() {
+    try {
+      const report = await invoke("diagnostic_report");
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(report);
+      } else {
+        const area = document.createElement("textarea");
+        area.value = report;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      toast("Redaction-safe diagnostics copied.");
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
   function wireNavigation() {
     document.querySelectorAll(".nav-item[data-view]").forEach((button) => {
       button.addEventListener("click", () => showView(button.dataset.view));
@@ -374,6 +397,7 @@
     document.getElementById("start-agent").addEventListener("click", startAgent);
     document.getElementById("clear-events").addEventListener("click", clearActivity);
     document.getElementById("settings-form").addEventListener("submit", saveSettings);
+    document.getElementById("copy-diagnostics")?.addEventListener("click", copyDiagnostics);
   
     try {
       await loadSnapshot();

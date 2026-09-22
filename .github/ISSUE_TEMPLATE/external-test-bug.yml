@@ -1,0 +1,102 @@
+name: External test bug
+description: Report a DragonForge Security Suite alpha/pre-release problem
+title: "[External Test] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing DragonForge. **Do not include real passwords, Account Secrets, recovery kits/codes, OTP seeds, sync/admin tokens, vault contents, private keys, or sensitive personal files.**
+        Security Center > About > Copy diagnostics produces the preferred metadata-only support report.
+  - type: input
+    id: release
+    attributes:
+      label: DragonForge release
+      description: Example: v0.1.0-alpha.1
+      placeholder: v0.1.0-alpha.1
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: BUILD-INFO Git commit
+      description: Copy the Git commit from BUILD-INFO.txt when using a portable package.
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version/build
+      placeholder: Windows 11, build ...
+    validations:
+      required: true
+  - type: dropdown
+    id: machine
+    attributes:
+      label: Machine type
+      options:
+        - Physical machine
+        - Virtual machine
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: account
+    attributes:
+      label: Windows account context
+      options:
+        - Standard user
+        - Administrator account (application not elevated)
+        - Administrator account (application elevated)
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - Security Center
+        - Password Manager
+        - File Vault
+        - Authenticator
+        - Security Scanner
+        - Integrity Monitor
+        - Network Guard
+        - Backup & Recovery
+        - Secure Share
+        - DragonForge Agent
+        - Packaging / prerequisite checker
+        - Multiple components
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use disposable/test data and redact sensitive values.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redaction-safe Security Center diagnostics
+      description: Paste the output of Security Center > About > Copy diagnostics. Review it before submitting.
+      render: json
+  - type: checkboxes
+    id: hygiene
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I reviewed this report and removed passwords, tokens, recovery material, OTP seeds, vault contents, private keys, and sensitive personal data.
+          required: true

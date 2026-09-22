@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 mod agent;
+mod diagnostics;
 mod events;
 mod logging;
 mod model;
@@ -100,6 +101,11 @@ fn launch_password_manager(state: State<'_, AppState>) -> Result<(), String> {
     state.launch_password_manager()
 }
 
+#[tauri::command]
+fn diagnostic_report(state: State<'_, AppState>) -> Result<String, String> {
+    state.diagnostic_report()
+}
+
 pub fn run() {
     let state = AppState::initialize().unwrap_or_else(|error| {
         panic!("failed to initialize DragonForge Security Center: {error}")
@@ -123,7 +129,8 @@ pub fn run() {
             launch_secure_share,
             launch_backup_recovery,
             launch_file_vault,
-            launch_password_manager
+            launch_password_manager,
+            diagnostic_report
         ])
         .run(tauri::generate_context!())
         .expect("error while running DragonForge Security Center");
