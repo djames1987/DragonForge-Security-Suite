@@ -93,7 +93,6 @@ async fn health_reports_protocol_version() {
 }
 
 
-
 #[tokio::test]
 async fn rate_limit_and_security_headers_are_enforced() {
     let router = build_router(AppState::with_rate_limit(
@@ -103,7 +102,11 @@ async fn rate_limit_and_security_headers_are_enforced() {
         std::time::Duration::from_secs(60),
     ));
 
-    for expected in [StatusCode::OK, StatusCode::OK, StatusCode::TOO_MANY_REQUESTS] {
+    for expected in [
+        StatusCode::OK,
+        StatusCode::OK,
+        StatusCode::TOO_MANY_REQUESTS,
+    ] {
         let response = router
             .clone()
             .oneshot(
