@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $true)] [string]$Tag,
-    [switch]$RequireInstaller
+    [switch]$RequireInstaller,
+    [switch]$RequireSigning
 )
 
 $ErrorActionPreference = "Stop"
@@ -66,6 +67,16 @@ try {
         }
     }
 
+    $PortableExecutables = @($ExpectedExecutables | ForEach-Object { Join-Path $PackageRoot $_ })
+    if ($RequireSigning) {
+        & (Join-Path $PSScriptRoot "verify-authenticode.ps1") -Path $PortableExecutables -RequireTimestamp
+        if ($LASTEXITCODE -ne 0) { throw "Portable Authenticode verification failed." }
+        if ($RequireInstaller) {
+            & (Join-Path $PSScriptRoot "verify-authenticode.ps1") -Path @($InstallerPath) -RequireTimestamp
+            if ($LASTEXITCODE -ne 0) { throw "Installer Authenticode verification failed." }
+        }
+    }
+
     $BuildInfoPath = Join-Path $PackageRoot "BUILD-INFO.txt"
     $BuildInfo = Get-Content -Raw -LiteralPath $BuildInfoPath
     foreach ($ExpectedText in @("Version: v$Version", "Git commit: $Commit", "Git tag: $Tag")) {
@@ -83,6 +94,11 @@ try {
         $ActualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $File).Hash.ToUpperInvariant()
         if ($ExpectedHash -ne $ActualHash) { throw "Internal package checksum mismatch: $Name" }
     }
+
+    $Signature = Get-AuthenticodeSignature -LiteralPath (Join-Path $PackageRoot $ExpectedExecutables[0])
+    $SigningState = if ($RequireSigning) { "authenticode-sha256-rfc3161" } else { "unsigned-development" }
+    $SignerSubject = if ($RequireSigning -and $Signature.SignerCertificate) { $Signature.SignerCertificate.Subject } else { $null }
+    $SignerThumbprint = if ($RequireSigning -and $Signature.SignerCertificate) { $Signature.SignerCertificate.Thumbprint } else { $null }
 
     $Artifacts = @(
         [ordered]@{
@@ -110,7 +126,15 @@ try {
         generated_utc = [DateTime]::UtcNow.ToString("o")
         expected_executables = $ExpectedExecutables
         artifacts = $Artifacts
-        code_signing = "unsigned-phase-12.3"
+        signing = [ordered]@{
+            state = $SigningState
+            required = [bool]$RequireSigning
+            file_digest = "SHA256"
+            timestamp_protocol = if ($RequireSigning) { "RFC3161" } else { $null }
+            timestamp_digest = if ($RequireSigning) { "SHA256" } else { $null }
+            signer_subject = $SignerSubject
+            signer_thumbprint = $SignerThumbprint
+        }
     }
     $Manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $ManifestPath -Encoding UTF8
     $ManifestHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ManifestPath).Hash
