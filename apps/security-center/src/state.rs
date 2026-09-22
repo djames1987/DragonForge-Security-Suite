@@ -2,7 +2,9 @@ use std::sync::{Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use dragonforge_core::{Component, ComponentLogger, CoreError, CoreResult, ErrorCode, EventKind, Platform, Severity};
+use dragonforge_core::{
+    Component, ComponentLogger, CoreError, CoreResult, ErrorCode, EventKind, Platform, Severity,
+};
 use serde::Serialize;
 
 use crate::agent::{AgentClient, AgentStatus};
