@@ -21,7 +21,8 @@ use uuid::Uuid;
 use crate::{
     AccountRecord, AccountResponse, ApiError, DeviceDecisionRequest, DeviceStatus, DeviceSummary,
     EnrollDeviceRequest, EnrollDeviceResponse, HealthResponse, MAX_SYNC_BLOB_BYTES,
-    SYNC_PROTOCOL_VERSION, SyncMetadata, SyncStore, hash_sync_token, new_sync_token,
+    MIN_SUPPORTED_SYNC_PROTOCOL_VERSION, SYNC_PROTOCOL_VERSION, SyncMetadata, SyncStore,
+    hash_sync_token, new_sync_token,
 };
 
 const HEADER_BASE_REVISION: &str = "x-dragonforge-base-revision";
@@ -188,6 +189,8 @@ async fn health() -> Json<HealthResponse> {
     Json(HealthResponse {
         ok: true,
         protocol_version: SYNC_PROTOCOL_VERSION,
+        min_supported_protocol_version: MIN_SUPPORTED_SYNC_PROTOCOL_VERSION,
+        max_supported_protocol_version: SYNC_PROTOCOL_VERSION,
     })
 }
 
