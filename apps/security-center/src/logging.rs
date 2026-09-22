@@ -2,9 +2,9 @@ use std::path::Path;
 #[cfg(test)]
 use std::path::PathBuf;
 
-use dragonforge_core::{Component, ComponentLogger, CoreResult, install_safe_panic_hook};
 #[cfg(test)]
 use dragonforge_core::LogPolicy;
+use dragonforge_core::{Component, ComponentLogger, CoreResult, install_safe_panic_hook};
 
 #[derive(Debug, Clone)]
 pub struct SafeLogger {
