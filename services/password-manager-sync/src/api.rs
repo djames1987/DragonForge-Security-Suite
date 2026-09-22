@@ -166,13 +166,10 @@ async fn security_headers(request: Request<Body>, next: Next) -> Response {
     let headers = response.headers_mut();
     headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
     headers.insert(
-        header::X_CONTENT_TYPE_OPTIONS,
+        "x-content-type-options",
         HeaderValue::from_static("nosniff"),
     );
-    headers.insert(
-        header::REFERRER_POLICY,
-        HeaderValue::from_static("no-referrer"),
-    );
+    headers.insert("referrer-policy", HeaderValue::from_static("no-referrer"));
     response
 }
 
