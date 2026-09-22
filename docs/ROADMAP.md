@@ -259,7 +259,7 @@ See [PHASE_12_0_EXTERNAL_TEST_BASELINE.md](PHASE_12_0_EXTERNAL_TEST_BASELINE.md)
 
 
 ## Phase 12.1 — Windows Installer
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - suite-level Inno Setup installer that keeps all ten DragonForge executables together;
@@ -273,7 +273,11 @@ Delivered:
 - SHA-256 sidecar for the compiled installer;
 - optional GitHub pre-release publication of installer + checksum assets;
 - manual installer acceptance checklist;
-- Phase 12.1 Windows verification harness with real installer compilation.
+- Phase 12.1 Windows verification harness with real installer compilation;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including formatting, targeted compile checks, strict Clippy, Agent/Security Center tests, JavaScript validation, all ten release builds, portable packaging, real Inno Setup installer compilation, installer checksum validation, and staging cleanup checks;
+- verified log: `dragonforge-phase12.1-installer-20260922-103728.log`;
+- verified log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`;
+- verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`.
 
 See [PHASE_12_1_WINDOWS_INSTALLER.md](PHASE_12_1_WINDOWS_INSTALLER.md).
 
