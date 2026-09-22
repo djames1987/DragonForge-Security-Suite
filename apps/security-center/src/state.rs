@@ -489,6 +489,19 @@ mod tests {
     }
 
     #[test]
+    fn manual_stop_suppresses_same_session_auto_restart() {
+        let dir = tempdir().expect("temporary directory");
+        let state = AppState::for_test(
+            SettingsStore::from_dir(dir.path().join("config")),
+            SafeLogger::from_path(dir.path().join("center.log"), LogPolicy::default()),
+        );
+        let stopped = state.stop_agent().expect("stop unavailable agent");
+        assert!(!stopped.available);
+        let after = state.ensure_agent_running();
+        assert!(!after.available);
+    }
+
+    #[test]
     fn updating_settings_persists_and_updates_state() {
         let dir = tempdir().expect("temporary directory");
         let config = dir.path().join("config");
