@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)] [string]$ScenarioId,
+    [Parameter(Mandatory = $true)] [ValidateSet("BQ-01","BQ-02","BQ-03","BQ-04","BQ-05","BQ-06")] [string]$ScenarioId,
     [Parameter(Mandatory = $true)] [ValidateSet("physical","vm")] [string]$MachineType,
     [Parameter(Mandatory = $true)] [ValidateSet("standard","administrator-not-elevated")] [string]$UserContext,
     [Parameter(Mandatory = $true)] [ValidateSet("fresh","established")] [string]$ProfileState,
@@ -30,6 +30,10 @@ if (-not (Test-Path -LiteralPath $Sidecar -PathType Leaf)) {
 $Expected = ((Get-Content -Raw -LiteralPath $Sidecar).Trim() -split "\s+")[0].ToUpperInvariant()
 $Actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $QualificationLog).Hash.ToUpperInvariant()
 if ($Expected -ne $Actual) { throw "Qualification log SHA-256 does not match its sidecar." }
+$LogText = Get-Content -Raw -LiteralPath $QualificationLog
+if (-not $LogText.Contains("PHASE 13 BETA READINESS & RELEASE QUALIFICATION VERIFICATION: PASS")) {
+    throw "Qualification log does not contain the Phase 13 PASS marker."
+}
 
 Push-Location $RepoRoot
 try {
