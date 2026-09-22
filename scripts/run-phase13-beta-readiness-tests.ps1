@@ -49,6 +49,11 @@ try {
     Write-Host "DragonForge Security Suite - Phase 13 Beta Readiness & Release Qualification verification"
     Write-Host "Repository: $RepoRoot"
 
+    Invoke-Checked git "ls-files" "--error-unmatch" "Cargo.lock"
+    $TrackedChanges = (& git status --porcelain --untracked-files=no)
+    if ($LASTEXITCODE -ne 0) { throw "Unable to inspect qualification working tree." }
+    if ($TrackedChanges) { throw "Phase 13 qualification requires a working tree with no tracked modifications." }
+
     Invoke-Checked cargo "fmt" "--all" "--check"
     Invoke-Checked cargo "check" "--workspace" "--all-targets" "--all-features"
     Invoke-Checked cargo "clippy" "--workspace" "--all-targets" "--all-features" "--" "-D" "warnings"
