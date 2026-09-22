@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)] [string]$Tag,
     [switch]$SkipBuild,
-    [switch]$PortableOnly
+    [switch]$PortableOnly,
+    [switch]$SignRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +12,10 @@ if ($Tag -notmatch '^v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$') {
     throw "Tag must be v<version>, for example v0.1.0-alpha.3"
 }
 $Version = $Matches[1]
+$IsPrerelease = $Version -match '-'
+if (-not $IsPrerelease -and -not $SignRelease) {
+    throw "Stable GitHub releases must be Authenticode-signed."
+}
 $PackageName = "DragonForge-Security-Suite-v$Version-win-x64"
 $DistRoot = Join-Path $RepoRoot "dist"
 $ZipPath = Join-Path $DistRoot "$PackageName.zip"
@@ -49,7 +54,7 @@ try {
     finally { $ErrorActionPreference = $Previous }
     if ($Exists) { throw "GitHub release $Tag already exists and will not be mutated." }
 
-    & (Join-Path $PSScriptRoot "build-tagged-windows-release.ps1") -Tag $Tag -SkipBuild:$SkipBuild -NoInstaller:$PortableOnly
+    & (Join-Path $PSScriptRoot "build-tagged-windows-release.ps1") -Tag $Tag -SkipBuild:$SkipBuild -NoInstaller:$PortableOnly -SignRelease:$SignRelease
     if ($LASTEXITCODE -ne 0) { throw "Tagged release build/verification failed." }
 
     $Assets = @($ZipPath, $ZipHashPath, $ManifestPath, $ManifestHashPath)
