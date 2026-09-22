@@ -29,7 +29,7 @@ try {
     Invoke-Checked cargo "fmt" "--all" "--check"
     Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-agent" "-p" "dragonforge-file-vault" "-p" "dragonforge-backup-recovery" "-p" "dragonforge-secure-share" "-p" "dragonforge-security-center" "--all-targets"
     Invoke-Checked cargo "clippy" "-p" "dragonforge-core" "-p" "dragonforge-agent" "-p" "dragonforge-file-vault" "-p" "dragonforge-backup-recovery" "-p" "dragonforge-secure-share" "-p" "dragonforge-security-center" "--all-targets" "--" "-D" "warnings"
-    Invoke-Checked cargo "test" "-p" "dragonforge-agent" "-p" "dragonforge-file-vault" "-p" "dragonforge-backup-recovery" "-p" "dragonforge-secure-share" "--all-targets"
+    Invoke-Checked cargo "test" "-p" "dragonforge-core" "-p" "dragonforge-agent" "-p" "dragonforge-file-vault" "-p" "dragonforge-backup-recovery" "-p" "dragonforge-secure-share" "-p" "dragonforge-security-center" "--all-targets"
     Invoke-Checked cargo "metadata" "--locked" "--format-version" "1" "--no-deps"
 
     Write-Host ""
@@ -44,6 +44,11 @@ try {
         [void][System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$Tokens, [ref]$Errors)
         if ($Errors.Count -ne 0) { throw "PowerShell syntax validation failed for $Script : $($Errors[0].Message)" }
         Write-Host "POWERSHELL SYNTAX PASS  $Script"
+    }
+
+    $CoreDiagnostics = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "crates\dragonforge-core\src\diagnostics.rs")
+    foreach ($Needle in @("diagnostic_sanitizer_redacts_secret_markers","failure_record_never_persists_sensitive_summary")) {
+        if (-not $CoreDiagnostics.Contains($Needle)) { throw "Diagnostics redaction regression test missing: $Needle" }
     }
 
     $Agent = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "crates\dragonforge-agent\src\server.rs")
