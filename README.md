@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.7 Security Hardening Review is verified complete. The suite now includes hostile-format and Agent lock-contention regression tests, recurring/local RustSec dependency auditing, Windows data-permission review tooling, updated deployment-wide trust documentation, and an explicit residual-risk register.
+> **Current status:** Phase 13 Beta Readiness & Release Qualification is implementation complete with local verification pending. DragonForge now has an explicit beta release gate, six-scenario Windows qualification matrix, machine-readable evidence records, and an authoritative qualification verifier that exercises the full workspace plus release-profile portable/installer packaging.
 
 ## Canonical repository
 
@@ -123,8 +123,27 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.5 — Crash Handling & Diagnostics: **Verified Complete**
 - Phase 12.6 — UX Consistency: **Verified Complete**
 - Phase 12.7 — Security Hardening Review: **Verified Complete**
+- Phase 13 — Beta Readiness & Release Qualification: **Implementation Complete — Local Verification Pending**
+- Phase 14 — Secure Update System: **Planned**
+- Phase 15 — Password Manager Ecosystem Production Hardening: **Planned**
+- Phase 16 — Windows Security Boundary Foundation: **Planned**
+- Phase 17 — DragonForge Privileged Service: **Planned**
+- Phase 18 — Continuous Integrity Monitoring: **Planned**
+- Phase 19 — Network Policy & Firewall Integration: **Planned**
+- Phase 20 — Security Center Policy & Event Hub: **Planned**
+- Phase 21 — Scheduled Protection & Automation: **Planned**
+- Phase 22 — Recovery, Migration & Disaster Readiness: **Planned**
+- Phase 23 — Privacy, Accessibility & Product Polish: **Planned**
+- Phase 24 — 1.0 Security & Release Audit: **Planned**
+- Phase 25 — DragonForge Security Suite 1.0: **Planned**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
+
+## Beta readiness & release qualification
+
+Phase 13 converts external testing into a formal beta gate with required Windows scenarios, retained evidence, release-blocking criteria, machine-readable qualification records, and a release-profile packaging verifier. A single Phase 13 PASS proves the qualification machinery on that machine; the suite is not labeled beta until every required matrix row has evidence.
+
+See [docs/PHASE_13_BETA_READINESS.md](docs/PHASE_13_BETA_READINESS.md), [docs/BETA_QUALIFICATION_MATRIX.md](docs/BETA_QUALIFICATION_MATRIX.md), and [docs/BETA_RELEASE_GATE.md](docs/BETA_RELEASE_GATE.md).
 
 ## External testing baseline
 
