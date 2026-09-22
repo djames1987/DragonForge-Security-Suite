@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.5 adds a shared, metadata-focused diagnostics foundation for DragonForge.
 
@@ -48,3 +48,15 @@ Run:
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12.5-crash-diagnostics-tests.ps1
 
 The verifier writes a timestamped log and .sha256 sidecar under test-logs\.
+
+## Verified Windows result
+
+Phase 12.5 completed authoritative Windows verification on `DRACO`.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12.5-crash-diagnostics-20260922-121347.log`
+- Log SHA-256: `6BAD86F67AC0DF2233A0101BB1AD9812D98418C9DF6C813376FAB60D9637B80C`
+
+The passing run covered rustfmt, targeted compile checks, strict Clippy with `-D warnings`, all 9 Agent tests, all 21 Core tests, all 24 Security Center tests, JavaScript syntax validation, and required Phase 12.5 diagnostics artifacts.

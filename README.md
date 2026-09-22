@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.5 Crash Handling & Diagnostics is implementation complete with local verification pending. DragonForge now has shared rotating diagnostics, secret-safe panic records, per-component failure visibility, expanded version/WebView2 metadata, and redaction-safe support bundles.
+> **Current status:** Phase 12.5 Crash Handling & Diagnostics is verified complete. DragonForge now has shared rotating diagnostics, secret-safe panic records, per-component failure visibility, expanded version/WebView2 metadata, and redaction-safe support bundles.
 
 ## Canonical repository
 
@@ -120,7 +120,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.2 — Agent Lifecycle: **Verified Complete**
 - Phase 12.3 — Release Engineering: **Verified Complete**
 - Phase 12.4 — Code Signing: **Verified Complete**
-- Phase 12.5 — Crash Handling & Diagnostics: **Implementation Complete — Local Verification Pending**
+- Phase 12.5 — Crash Handling & Diagnostics: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -161,6 +161,10 @@ Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9E
 Phase 12.5 adds a shared component-scoped diagnostics layer with bounded log rotation, secret-aware redaction, safe panic/failure records, per-component failure visibility, WebView2/per-component version metadata, and exportable support bundles from Security Center.
 
 See [docs/PHASE_12_5_CRASH_DIAGNOSTICS.md](docs/PHASE_12_5_CRASH_DIAGNOSTICS.md).
+
+Phase 12.5 Windows verification: **PASS** on `DRACO` (Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12.5-crash-diagnostics-20260922-121347.log`  
+Verified log SHA-256: `6BAD86F67AC0DF2233A0101BB1AD9812D98418C9DF6C813376FAB60D9637B80C`
 
 ## Code signing
 
