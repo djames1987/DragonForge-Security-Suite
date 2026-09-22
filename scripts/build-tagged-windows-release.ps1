@@ -13,6 +13,7 @@ if ($Tag -notmatch '^v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$') {
 }
 $Version = $Matches[1]
 $IsPrerelease = $Version -match '-'
+$UpdateChannel = if ($Version -match '-alpha(?:\.|$)') { "alpha" } elseif ($Version -match '-beta(?:\.|$)') { "beta" } elseif (-not $IsPrerelease) { "stable" } else { throw "Only alpha, beta, and stable release channels are supported." }
 if (-not $IsPrerelease -and -not $SignRelease) {
     throw "Stable releases must be Authenticode-signed. Re-run with -SignRelease and configured signing credentials."
 }
@@ -20,6 +21,12 @@ if (-not $IsPrerelease -and -not $SignRelease) {
 Push-Location $RepoRoot
 try {
     if ($env:OS -ne "Windows_NT") { throw "Tagged Windows releases must be built on Windows." }
+
+    if ($SignRelease) {
+        if (-not $env:DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX -or -not $env:DRAGONFORGE_UPDATE_KEY_ID) {
+            throw "Signed Phase 14 release builds require the pinned update public key and key ID."
+        }
+    }
 
     $Dirty = (& git status --porcelain)
     if ($Dirty) { throw "Refusing to build a tagged release from a dirty working tree." }

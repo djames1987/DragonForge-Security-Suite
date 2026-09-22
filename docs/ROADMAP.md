@@ -449,15 +449,21 @@ The Phase 13 implementation can be verified on one authoritative machine, but th
 See [PHASE_13_BETA_READINESS.md](PHASE_13_BETA_READINESS.md).
 
 ## Phase 14 — Secure Update System
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- signed update manifests and release-channel metadata;
-- Security Center update checks;
-- SHA-256 plus Authenticode verification before installation;
-- downgrade/rollback protection and failure recovery;
-- explicit alpha/beta/stable channels;
-- user-controlled installation with no silent unsigned execution.
+Delivered:
+- ML-DSA-65 signed update manifests with a pinned release-key identity;
+- explicit alpha, beta, and stable channel policy with cross-channel rejection;
+- SemVer downgrade protection and same-version current-state handling;
+- Security Center Check / Download & verify / Install verified update workflow;
+- bounded HTTPS manifest/artifact retrieval with signed byte length and SHA-256 enforcement;
+- mandatory Windows Authenticode verification after download and immediately before installer launch;
+- user-controlled installer execution with no silent or unsigned fallback;
+- release tooling that binds exact version/tag/commit and verified installer metadata into the signed update manifest;
+- update-capable publication requiring Authenticode signing plus out-of-repository ML-DSA signing credentials;
+- Phase 14 authoritative verification tooling, documentation, and trust-boundary ADR.
+
+See [PHASE_14_SECURE_UPDATE.md](PHASE_14_SECURE_UPDATE.md).
 
 ## Phase 15 — Password Manager Ecosystem Production Hardening
 **Status: Planned**

@@ -2,7 +2,9 @@ use std::sync::{Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use dragonforge_core::{Component, ComponentLogger, CoreResult, EventKind, Platform, Severity};
+use dragonforge_core::{
+    Component, ComponentLogger, CoreError, CoreResult, ErrorCode, EventKind, Platform, Severity,
+};
 use serde::Serialize;
 
 use crate::agent::{AgentClient, AgentStatus};
@@ -11,6 +13,7 @@ use crate::logging::SafeLogger;
 use crate::model::{ComponentRegistry, ComponentStatus, HealthSummary};
 use crate::orchestration;
 use crate::settings::{SecurityCenterSettings, SettingsStore};
+use crate::update::{PreparedUpdateStatus, UpdateManager, UpdateStatus};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ComponentFailureStatus {
@@ -39,6 +42,7 @@ pub struct AppState {
     logger: SafeLogger,
     agent: AgentClient,
     agent_auto_start_suppressed: Mutex<bool>,
+    updater: UpdateManager,
 }
 
 impl AppState {
@@ -67,6 +71,12 @@ impl AppState {
                 "Invalid local settings were ignored; safe defaults are active",
             );
         }
+        let updater = UpdateManager::new().map_err(|_| {
+            CoreError::new_safe(
+                ErrorCode::Internal,
+                "unable to initialize Security Center update subsystem",
+            )
+        })?;
         let state = Self {
             registry: ComponentRegistry::phase3_default(),
             events: Mutex::new(events),
@@ -75,6 +85,7 @@ impl AppState {
             logger,
             agent: AgentClient::discover(),
             agent_auto_start_suppressed: Mutex::new(false),
+            updater,
         };
         let _ = state
             .logger
@@ -93,6 +104,7 @@ impl AppState {
             logger,
             agent: AgentClient::unavailable(),
             agent_auto_start_suppressed: Mutex::new(false),
+            updater: UpdateManager::new().expect("test update manager"),
         }
     }
 
@@ -477,6 +489,98 @@ impl AppState {
             "Password Manager launch requested",
         );
         Ok(())
+    }
+
+    pub fn check_updates(&self) -> Result<UpdateStatus, String> {
+        let channel = self.lock_settings()?.update_channel;
+        let result = self.updater.check(channel);
+        match &result {
+            Ok(status) => {
+                let summary = if status.available {
+                    "Verified DragonForge update is available"
+                } else {
+                    "DragonForge update check completed"
+                };
+                self.lock_events()?.push(
+                    Component::SecurityCenter,
+                    EventKind::Health,
+                    Severity::Info,
+                    "security-center.update-checked",
+                    summary,
+                );
+                let _ = self.logger.write("info", "security-center.update-checked", summary);
+            }
+            Err(_) => {
+                self.lock_events()?.push(
+                    Component::SecurityCenter,
+                    EventKind::Health,
+                    Severity::Warning,
+                    "security-center.update-check-failed",
+                    "Secure update check failed closed",
+                );
+                let _ = self.logger.write(
+                    "warning",
+                    "security-center.update-check-failed",
+                    "Secure update check failed closed",
+                );
+            }
+        }
+        result
+    }
+
+    pub fn prepare_update(&self) -> Result<PreparedUpdateStatus, String> {
+        let channel = self.lock_settings()?.update_channel;
+        let result = self.updater.prepare(channel);
+        match &result {
+            Ok(_) => {
+                self.lock_events()?.push(
+                    Component::SecurityCenter,
+                    EventKind::Lifecycle,
+                    Severity::Info,
+                    "security-center.update-prepared",
+                    "Update installer passed signature, hash, and Authenticode verification",
+                );
+                let _ = self.logger.write(
+                    "info",
+                    "security-center.update-prepared",
+                    "Update installer passed signature, hash, and Authenticode verification",
+                );
+            }
+            Err(_) => {
+                self.lock_events()?.push(
+                    Component::SecurityCenter,
+                    EventKind::Lifecycle,
+                    Severity::Warning,
+                    "security-center.update-prepare-failed",
+                    "Update preparation failed closed; no installer was launched",
+                );
+                let _ = self.logger.write(
+                    "warning",
+                    "security-center.update-prepare-failed",
+                    "Update preparation failed closed; no installer was launched",
+                );
+            }
+        }
+        result
+    }
+
+    pub fn install_prepared_update(&self) -> Result<(), String> {
+        let result = self.updater.install_prepared();
+        if result.is_ok() {
+            self.lock_events()?.push(
+                Component::SecurityCenter,
+                EventKind::Lifecycle,
+                Severity::Info,
+                "security-center.update-installer-launched",
+                "User explicitly launched a re-verified DragonForge update installer",
+            );
+            let _ = self.logger.write(
+                "info",
+                "security-center.update-installer-launched",
+                "User explicitly launched a re-verified DragonForge update installer",
+            );
+        }
+        result
     }
 
     fn lock_events(&self) -> Result<MutexGuard<'_, EventStore>, String> {

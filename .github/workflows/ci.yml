@@ -14,6 +14,7 @@ on:
       - "apps/secure-share/**"
       - "services/dragonforge-agent/**"
       - "crates/dragonforge-core/**"
+      - "crates/dragonforge-update/**"
       - "crates/dragonforge-agent/**"
       - "crates/dragonforge-file-vault/**"
       - "crates/dragonforge-authenticator/**"
@@ -33,9 +34,15 @@ on:
       - "scripts/run-phase11-agent-tests.ps1"
       - "scripts/build-all-apps-for-testing.ps1"
       - "scripts/run-phase13-beta-readiness-tests.ps1"
+      - "scripts/run-phase14-secure-update-tests.ps1"
+      - "scripts/generate-signed-update-manifest.ps1"
+      - "scripts/publish-windows-release.ps1"
+      - "scripts/build-tagged-windows-release.ps1"
+      - "scripts/verify-release-artifacts.ps1"
       - "scripts/new-beta-qualification-record.ps1"
       - "scripts/evaluate-beta-qualification.ps1"
       - "docs/PHASE_13_BETA_READINESS.md"
+      - "docs/PHASE_14_SECURE_UPDATE.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
       - "docs/BETA_RELEASE_GATE.md"
       - "Cargo.toml"
@@ -53,6 +60,7 @@ on:
       - "apps/secure-share/**"
       - "services/dragonforge-agent/**"
       - "crates/dragonforge-core/**"
+      - "crates/dragonforge-update/**"
       - "crates/dragonforge-agent/**"
       - "crates/dragonforge-file-vault/**"
       - "crates/dragonforge-authenticator/**"
@@ -72,9 +80,15 @@ on:
       - "scripts/run-phase11-agent-tests.ps1"
       - "scripts/build-all-apps-for-testing.ps1"
       - "scripts/run-phase13-beta-readiness-tests.ps1"
+      - "scripts/run-phase14-secure-update-tests.ps1"
+      - "scripts/generate-signed-update-manifest.ps1"
+      - "scripts/publish-windows-release.ps1"
+      - "scripts/build-tagged-windows-release.ps1"
+      - "scripts/verify-release-artifacts.ps1"
       - "scripts/new-beta-qualification-record.ps1"
       - "scripts/evaluate-beta-qualification.ps1"
       - "docs/PHASE_13_BETA_READINESS.md"
+      - "docs/PHASE_14_SECURE_UPDATE.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
       - "docs/BETA_RELEASE_GATE.md"
       - "Cargo.toml"
@@ -113,13 +127,13 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Check suite applications
-        run: cargo check -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
+        run: cargo check -p dragonforge-core -p dragonforge-update -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
 
       - name: Clippy suite applications
-        run: cargo clippy -p dragonforge-core -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
+        run: cargo clippy -p dragonforge-core -p dragonforge-update -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
 
       - name: Test suite applications
-        run: cargo test -p dragonforge-core -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
+        run: cargo test -p dragonforge-core -p dragonforge-update -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
 
       - name: Check application JavaScript
         shell: pwsh
@@ -133,13 +147,16 @@ jobs:
           node --check apps/backup-recovery/ui/app.js
           node --check apps/secure-share/ui/app.js
 
-      - name: Phase 13 qualification invariants
+      - name: Phase 14 secure-update invariants
         shell: pwsh
         run: |
           $scripts = @(
             'scripts/run-phase13-beta-readiness-tests.ps1',
             'scripts/new-beta-qualification-record.ps1',
-            'scripts/evaluate-beta-qualification.ps1'
+            'scripts/evaluate-beta-qualification.ps1',
+            'scripts/run-phase14-secure-update-tests.ps1',
+            'scripts/generate-signed-update-manifest.ps1',
+            'scripts/publish-windows-release.ps1'
           )
           foreach ($file in $scripts) {
             $tokens = $null
@@ -150,10 +167,14 @@ jobs:
           $apps = @('security-center','password-manager','file-vault','authenticator','security-scanner','integrity-monitor','network-guard','backup-recovery','secure-share')
           foreach ($app in $apps) {
             $html = Get-Content -Raw "apps/$app/ui/index.html"
-            if (-not $html.Contains('Suite Phase 13')) { throw "$app has stale suite phase metadata." }
+            if (-not $html.Contains('Suite Phase 14')) { throw "$app has stale suite phase metadata." }
           }
-          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md')) {
-            if (-not (Test-Path $file)) { throw "Missing Phase 13 artifact: $file" }
+          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','crates/dragonforge-update/src/lib.rs')) {
+            if (-not (Test-Path $file)) { throw "Missing release/security artifact: $file" }
+          }
+          $update = Get-Content -Raw 'crates/dragonforge-update/src/lib.rs'
+          if (-not $update.Contains('ML-DSA-65') -or -not $update.Contains('update candidate would downgrade')) {
+            throw "Phase 14 update trust invariants are missing."
           }
 
       - name: Build all suite applications for testing

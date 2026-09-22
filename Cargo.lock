@@ -1225,11 +1225,27 @@ version = "0.1.0"
 dependencies = [
  "dragonforge-agent",
  "dragonforge-core",
+ "dragonforge-update",
+ "reqwest",
+ "semver",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tempfile",
+]
+
+[[package]]
+name = "dragonforge-update"
+version = "0.1.0"
+dependencies = [
+ "dragonforge-crypto",
+ "hex",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "zeroize",
 ]
 
 [[package]]
