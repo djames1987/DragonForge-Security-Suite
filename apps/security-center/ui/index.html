@@ -23,6 +23,7 @@
         <button class="nav-item active" data-view="overview"><span>⌂</span>Overview</button>
         <button class="nav-item" data-view="components"><span>▦</span>Components</button>
         <button class="nav-item" data-view="activity"><span>≋</span>Activity</button>
+        <button class="nav-item" data-view="updates"><span>↻</span>Updates</button>
         <button class="nav-item" data-view="settings"><span>⚙</span>Settings</button>
         <button class="nav-item" data-view="about"><span>◇</span>About</button>
       </nav>
@@ -35,7 +36,7 @@
           <span id="sidebar-agent-detail">Checking authenticated local agent.</span>
         </div>
       </div>
-      <div class="phase-badge">Suite Phase 13</div>
+      <div class="phase-badge">Suite Phase 14</div>
     </aside>
 
     <main class="content">
@@ -151,6 +152,30 @@
         </section>
       </section>
 
+      <section id="view-updates" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Release trust</div>
+            <h2>Secure updates</h2>
+            <p>Checks are user initiated. DragonForge will not silently download or execute an unsigned update.</p>
+          </div>
+        </div>
+        <section class="panel">
+          <div class="info-box">
+            <strong id="update-version">No update check has been performed.</strong>
+            <p id="update-status">Select Check for updates to query the configured signed release channel.</p>
+          </div>
+          <div class="button-row">
+            <button id="check-updates" class="primary-button">Check for updates</button>
+            <button id="prepare-update" class="secondary-button" disabled>Download & verify</button>
+            <button id="install-update" class="secondary-button" disabled>Install verified update</button>
+          </div>
+          <div class="info-box">
+            Update manifests must verify with the pinned ML-DSA-65 release key. Installers are bound by signed SHA-256 metadata and must pass Windows Authenticode validation. Downgrades and cross-channel manifests fail closed.
+          </div>
+        </section>
+      </section>
+
       <section id="view-settings" class="view">
         <div class="section-heading">
           <div>
@@ -185,6 +210,18 @@
 
           <label class="setting-row">
             <div>
+              <strong>Update channel</strong>
+              <span>Choose which signed release channel Security Center is allowed to accept.</span>
+            </div>
+            <select id="setting-update-channel">
+              <option value="stable">Stable</option>
+              <option value="beta">Beta</option>
+              <option value="alpha">Alpha</option>
+            </select>
+          </label>
+
+          <label class="setting-row">
+            <div>
               <strong>Include diagnostic identifiers</strong>
               <span>Disabled by default. Future diagnostics may include stable non-secret identifiers when enabled.</span>
             </div>
@@ -206,12 +243,12 @@
           <p>
             The unified visibility and orchestration surface for DragonForge security products.
             Security Center provides the dashboard, component registry, local event aggregation,
-            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, consistent suite UX conventions, and external-test diagnostics.
+            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, secure signed-update verification, consistent suite UX conventions, and external-test diagnostics.
           </p>
           <div class="about-meta">
             <span>Version 0.1.0</span>
             <span>•</span>
-            <span>Suite Phase 13</span>
+            <span>Suite Phase 14</span>
             <span>•</span>
             <span>Rust + Tauri</span>
             <span>•</span>
