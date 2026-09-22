@@ -303,7 +303,7 @@ Integrity Monitor is split into a product-owned baseline/change engine and a Tau
 - `apps/integrity-monitor/` exposes narrow commands for baseline status, baseline creation/replacement, and on-demand integrity comparison.
 - Security Center marks Integrity Monitor as Integrated and launches only the expected sibling executable.
 
-Phase 7 remains user-session scoped and on-demand. It does not claim continuous monitoring when the UI is closed; that requires the future DragonForge Agent.
+Integrity Monitor remains on-demand. The current DragonForge Agent provides authenticated lifecycle/background infrastructure but does not turn Integrity Monitor into continuous file monitoring.
 
 ### Integrity trust rules
 
@@ -325,7 +325,7 @@ Network Guard is split into a product-owned visibility engine and a Tauri deskto
 - `apps/network-guard/` exposes narrow commands for product metadata and refreshing an on-demand network snapshot.
 - Security Center marks Network Guard as Integrated and launches only the expected sibling executable.
 
-Phase 8 is intentionally visibility-only. Persistent application-level traffic enforcement requires a background service that can survive UI closure and a carefully reviewed privilege boundary; that responsibility remains with the future DragonForge Agent.
+Phase 8 is intentionally visibility-only. The current DragonForge Agent does not add traffic enforcement; any future blocking/firewall capability requires a separately reviewed privileged service boundary.
 
 ### Network Guard trust rules
 
@@ -402,5 +402,31 @@ Phase 11 establishes the real background-agent boundary:
 6. Wire messages and socket waits are bounded.
 7. Malformed clients cannot terminate the server loop.
 8. A single-instance lock prevents concurrent Agent runtimes from racing runtime state.
-9. The current command surface contains only health/status; there is no arbitrary command execution.
+9. The current command surface contains authenticated health/status and graceful shutdown; there is no arbitrary command execution.
 10. The Agent is normal-user/per-user in Phase 11. It is not a privileged Windows service and must not be represented as a tamper-resistant enforcement boundary.
+
+## 19. Phase 12.7 Security hardening review
+
+Phase 12.7 reviews DragonForge as one deployed product instead of a collection of isolated phases.
+
+### Deployment-wide trust conclusions
+
+1. Security Center remains an orchestration/visibility process, not a privileged security authority.
+2. DragonForge Agent remains per-user and non-elevated. Its loopback transport, HMAC authentication, freshness/nonces, replay rejection, bounded wire format, caller policy, and single-instance runtime lock are required invariants.
+3. Encrypted product files (`.dfvault`, `.dfbackup`, `.dfshare`) are untrusted input until magic/version/length/authentication/path validation succeeds.
+4. Stable release integrity depends on the Phase 12.3/12.4 exact-tag, checksum, Authenticode, and timestamp pipeline.
+5. Logs/support bundles are metadata surfaces and must remain under the shared redaction contract.
+6. Browser-extension and sync-service boundaries remain separate from native local trust; possession of local UI state does not imply remote authorization.
+
+### Filesystem expectations
+
+- Installed executables are per-user application files and must not be treated as tamper-resistant against the owning user or a local administrator.
+- Suite config/data roots live under the current user's conventional profile directories.
+- Agent runtime descriptor/session-key/lock files live under the Agent component data directory.
+- Unix Agent runtime files are explicitly restricted to mode 0600 by the runtime writer.
+- Windows currently relies on inherited per-user profile ACLs for Agent runtime files. The repository includes `scripts/review-windows-data-permissions.ps1` to surface broad write-capable ACEs. Explicit Windows ACL application remains future hardening before privileged-service claims.
+- Encrypted archives/vaults selected by the user may be stored outside DragonForge directories; their confidentiality depends on encryption/password strength, while availability and deletion policy remain the user's/storage-provider responsibility.
+
+### Concurrency expectations
+
+Single-writer/no-overwrite semantics are preferred for security-sensitive state. Phase 12.7 adds an explicit regression test that a live Agent runtime lock refuses a second owner. Product containers continue to create/restore/extract through create-new and randomized sibling staging patterns rather than merging into existing destinations.
