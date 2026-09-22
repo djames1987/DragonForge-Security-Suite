@@ -33,6 +33,8 @@ A release may be labeled **beta** only when all of the following are true.
 ## Matrix and defect gate
 - every required row in `BETA_QUALIFICATION_MATRIX.md` has retained evidence;
 - no release-blocking defect remains open;
+- reproducible data loss is release-blocking;
+- confirmed secret leakage is release-blocking;
 - known limitations are present in release notes.
 
 A Phase 13 implementation PASS is not itself permission to label a release beta unless the full matrix and defect gate are satisfied.
