@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.4 Code Signing is verified complete. The exact-tag release pipeline now has verified SHA-256 Authenticode signing integration, RFC 3161 timestamping requirements, signature verification, signer metadata, and signed-stable-release enforcement.
+> **Current status:** Phase 12.5 Crash Handling & Diagnostics is implementation complete with local verification pending. DragonForge now has shared rotating diagnostics, secret-safe panic records, per-component failure visibility, expanded version/WebView2 metadata, and redaction-safe support bundles.
 
 ## Canonical repository
 
@@ -120,6 +120,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.2 — Agent Lifecycle: **Verified Complete**
 - Phase 12.3 — Release Engineering: **Verified Complete**
 - Phase 12.4 — Code Signing: **Verified Complete**
+- Phase 12.5 — Crash Handling & Diagnostics: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -154,6 +155,12 @@ Phase 12.1 local verification result: **PASS** on `DRACO` (Windows NT 10.0.26200
 Verified log: `dragonforge-phase12.1-installer-20260922-103728.log`  
 Verified log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`  
 Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`
+
+## Crash handling & diagnostics
+
+Phase 12.5 adds a shared component-scoped diagnostics layer with bounded log rotation, secret-aware redaction, safe panic/failure records, per-component failure visibility, WebView2/per-component version metadata, and exportable support bundles from Security Center.
+
+See [docs/PHASE_12_5_CRASH_DIAGNOSTICS.md](docs/PHASE_12_5_CRASH_DIAGNOSTICS.md).
 
 ## Code signing
 
