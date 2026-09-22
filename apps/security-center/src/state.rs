@@ -1,4 +1,6 @@
 use std::sync::{Mutex, MutexGuard};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
@@ -176,6 +178,100 @@ impl AppState {
 
     pub fn agent_status(&self) -> AgentStatus {
         self.agent.status()
+    }
+
+    pub fn ensure_agent_running(&self) -> AgentStatus {
+        let current = self.agent.status();
+        if current.available {
+            return current;
+        }
+
+        let _ = self.record_agent_event(
+            "security-center.agent-autostart",
+            "DragonForge Agent automatic start requested",
+        );
+
+        if orchestration::launch_agent().is_ok() {
+            if let Some(status) = self.wait_for_agent(true, Duration::from_secs(2)) {
+                return status;
+            }
+        }
+
+        // A crashed process can leave its create_new lock file behind briefly.
+        // Phase 11 deliberately waits five seconds before reclaiming that lock.
+        thread::sleep(Duration::from_millis(3_500));
+        if orchestration::launch_agent().is_ok() {
+            if let Some(status) = self.wait_for_agent(true, Duration::from_secs(2)) {
+                let _ = self.record_agent_event(
+                    "security-center.agent-recovered",
+                    "DragonForge Agent recovered after stale/crashed runtime state",
+                );
+                return status;
+            }
+        }
+
+        self.agent.status()
+    }
+
+    pub fn stop_agent(&self) -> Result<AgentStatus, String> {
+        let current = self.agent.status();
+        if !current.available {
+            return Ok(current);
+        }
+        self.agent.shutdown()?;
+        let stopped = self
+            .wait_for_agent(false, Duration::from_secs(2))
+            .unwrap_or_else(|| self.agent.status());
+        self.record_agent_event(
+            "security-center.agent-stopped",
+            "DragonForge Agent graceful shutdown completed",
+        )?;
+        Ok(stopped)
+    }
+
+    pub fn restart_agent(&self) -> Result<AgentStatus, String> {
+        if self.agent.status().available {
+            self.agent.shutdown()?;
+            let _ = self.wait_for_agent(false, Duration::from_secs(2));
+        }
+        orchestration::launch_agent().map_err(|error| error.to_string())?;
+        let status = self
+            .wait_for_agent(true, Duration::from_secs(3))
+            .unwrap_or_else(|| self.agent.status());
+        if !status.available {
+            return Err("DragonForge Agent did not reconnect after restart.".to_owned());
+        }
+        self.record_agent_event(
+            "security-center.agent-restarted",
+            "DragonForge Agent restarted and reconnected",
+        )?;
+        Ok(status)
+    }
+
+    fn wait_for_agent(&self, available: bool, timeout: Duration) -> Option<AgentStatus> {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let status = self.agent.status();
+            if status.available == available {
+                return Some(status);
+            }
+            if Instant::now() >= deadline {
+                return None;
+            }
+            thread::sleep(Duration::from_millis(100));
+        }
+    }
+
+    fn record_agent_event(&self, code: &'static str, message: &'static str) -> Result<(), String> {
+        self.lock_events()?.push(
+            Component::Agent,
+            EventKind::Lifecycle,
+            Severity::Info,
+            code,
+            message,
+        );
+        let _ = self.logger.write("info", code, message);
+        Ok(())
     }
 
     pub fn launch_agent(&self) -> Result<(), String> {
