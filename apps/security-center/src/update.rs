@@ -56,6 +56,13 @@ impl UpdateManager {
         let client = Client::builder()
             .timeout(Duration::from_secs(20))
             .user_agent("DragonForge-Security-Center/0.1")
+            .redirect(reqwest::redirect::Policy::custom(|attempt| {
+                if attempt.url().scheme() == "https" && attempt.previous().len() < 5 {
+                    attempt.follow()
+                } else {
+                    attempt.stop()
+                }
+            }))
             .build()
             .map_err(|_| "unable to initialize secure update HTTP client".to_owned())?;
         Ok(Self {
@@ -111,8 +118,8 @@ impl UpdateManager {
             .get(&artifact.url)
             .send()
             .map_err(|_| "unable to download the verified update installer".to_owned())?;
-        if !response.status().is_success() {
-            return Err("update installer download returned an unsuccessful status".to_owned());
+        if !response.status().is_success() || response.url().scheme() != "https" {
+            return Err("update installer download did not remain on successful HTTPS".to_owned());
         }
         if let Some(length) = response.content_length() {
             if length != artifact.bytes {
@@ -159,7 +166,7 @@ impl UpdateManager {
         })?;
 
         let prepared = PreparedUpdate {
-            version: verified.payload.version,
+            version: verified.payload.version.clone(),
             artifact_name: artifact.name.clone(),
             path: final_path,
             sha256: artifact.sha256.clone(),
@@ -215,8 +222,8 @@ impl UpdateManager {
             .get(feed)
             .send()
             .map_err(|_| "unable to retrieve the secure update manifest".to_owned())?;
-        if !response.status().is_success() {
-            return Err("secure update manifest request returned an unsuccessful status".to_owned());
+        if !response.status().is_success() || response.url().scheme() != "https" {
+            return Err("secure update manifest request did not remain on successful HTTPS".to_owned());
         }
         if response
             .content_length()
