@@ -790,4 +790,20 @@ mod tests {
         let package = dir.path().join("secret.dfshare");
         assert!(create_share(&options, &package, PASSWORD).is_err());
     }
+    #[test]
+    fn truncated_and_unsupported_version_packages_are_rejected() {
+        let dir = tempdir().expect("tempdir");
+        let package = dir.path().join("secret.dfshare");
+        create_share(&basic_options(), &package, PASSWORD).expect("create");
+
+        let original = fs::read(&package).expect("read");
+        fs::write(&package, &original[..original.len() / 2]).expect("truncate");
+        assert!(verify_share(&package, PASSWORD).is_err());
+
+        let mut unsupported = original;
+        unsupported[8..10].copy_from_slice(&u16::MAX.to_le_bytes());
+        fs::write(&package, unsupported).expect("unsupported");
+        assert!(verify_share(&package, PASSWORD).is_err());
+    }
+
 }
