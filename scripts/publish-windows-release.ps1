@@ -58,13 +58,6 @@ try {
         }
     }
 
-    if ($IncludeInstaller) {
-        & (Join-Path $PSScriptRoot "package-windows-installer.ps1") -Version $Version -SkipBuild
-        if ($LASTEXITCODE -ne 0) {
-            throw "Windows installer packaging failed."
-        }
-    }
-
     if (-not (Test-Path -LiteralPath $NotesPath -PathType Leaf)) {
         throw "Release notes not found: $NotesPath"
     }
