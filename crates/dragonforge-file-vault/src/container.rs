@@ -617,7 +617,10 @@ mod tests {
 
     use tempfile::tempdir;
 
-    use super::{create_vault, extract_vault, list_vault, verify_vault};
+    use super::{
+        DecodedEntry, create_vault, decode_entries, encode_entries, extract_vault, list_vault,
+        verify_vault,
+    };
     use crate::FileVaultError;
 
     #[test]
@@ -741,4 +744,36 @@ mod tests {
             FileVaultError::SymlinkNotAllowed
         );
     }
+    #[test]
+    fn decoded_entries_reject_duplicate_and_malformed_paths() {
+        let duplicate = vec![
+            DecodedEntry {
+                path: "safe/file.txt".to_owned(),
+                is_directory: false,
+                data: vec![1],
+            },
+            DecodedEntry {
+                path: "safe/file.txt".to_owned(),
+                is_directory: false,
+                data: vec![2],
+            },
+        ];
+        let encoded = encode_entries(&duplicate).expect("encode duplicate test payload");
+        assert!(decode_entries(&encoded).is_err());
+
+        let mut malformed = Vec::new();
+        malformed.extend_from_slice(&1_u32.to_le_bytes());
+        malformed.push(0);
+        malformed.extend_from_slice(&8_u32.to_le_bytes());
+        malformed.extend_from_slice(&1_u64.to_le_bytes());
+        malformed.extend_from_slice(b"../x.txt");
+        malformed.push(7);
+        assert!(decode_entries(&malformed).is_err());
+    }
+
+    #[test]
+    fn decoded_entries_reject_truncated_payload() {
+        assert!(decode_entries(&[1, 0, 0]).is_err());
+    }
+
 }
