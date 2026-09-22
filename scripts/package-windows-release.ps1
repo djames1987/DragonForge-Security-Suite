@@ -1,6 +1,7 @@
 param(
     [string]$Version = "0.1.0-alpha.1",
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$KeepStage
 )
 
 $ErrorActionPreference = "Stop"
@@ -309,6 +310,11 @@ pause
 
     $ZipHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ZipPath).Hash
     "$ZipHash  $(Split-Path -Leaf $ZipPath)" | Set-Content -LiteralPath $ZipHashPath -Encoding ASCII
+
+    if (-not $KeepStage -and (Test-Path -LiteralPath $StageRoot)) {
+        Remove-Item -LiteralPath $StageRoot -Recurse -Force
+        Write-Host "Removed temporary portable staging directory: $StageRoot"
+    }
 
     Write-Host ""
     Write-Host "WINDOWS PORTABLE RELEASE PACKAGE: PASS"

@@ -91,6 +91,16 @@ try {
             throw "Installer SHA-256 sidecar does not match the installer."
         }
         Write-Host "INSTALLER SHA256 VERIFIED: $Actual"
+
+        foreach ($TemporaryPath in @(
+            (Join-Path $RepoRoot "dist\DragonForge-Security-Suite-v0.1.0-alpha.2-win-x64"),
+            (Join-Path $RepoRoot "dist\DragonForge-Security-Suite-v0.1.0-alpha.2-win-x64-installer-stage")
+        )) {
+            if (Test-Path -LiteralPath $TemporaryPath) {
+                throw "Temporary packaging directory was not cleaned: $TemporaryPath"
+            }
+            Write-Host "CLEAN  $TemporaryPath"
+        }
     }
 
     Write-Host ""

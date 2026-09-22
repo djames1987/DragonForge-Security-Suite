@@ -57,7 +57,7 @@ try {
     $Commit = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or -not $Commit) { throw "Unable to determine the installer source commit." }
 
-    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild
+    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -KeepStage
     if ($LASTEXITCODE -ne 0) { throw "Portable staging failed before installer compilation." }
     if (-not (Test-Path -LiteralPath $PortableStage -PathType Container)) { throw "Portable staging directory is missing: $PortableStage" }
 
@@ -113,4 +113,12 @@ Platform: Windows x64 installer
     Write-Host "SHA256: $InstallerHash"
     Write-Host "Commit: $Commit"
 }
-finally { Pop-Location }
+finally {
+    foreach ($TemporaryPath in @($InstallerStage, $PortableStage)) {
+        if ($TemporaryPath -and (Test-Path -LiteralPath $TemporaryPath)) {
+            Remove-Item -LiteralPath $TemporaryPath -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Removed temporary staging directory: $TemporaryPath"
+        }
+    }
+    Pop-Location
+}
