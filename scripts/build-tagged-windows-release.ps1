@@ -26,11 +26,6 @@ try {
         if (-not $env:DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX -or -not $env:DRAGONFORGE_UPDATE_KEY_ID) {
             throw "Signed Phase 14 release builds require the pinned update public key and key ID."
         }
-        foreach ($FeedVariable in @("DRAGONFORGE_UPDATE_FEED_ALPHA","DRAGONFORGE_UPDATE_FEED_BETA","DRAGONFORGE_UPDATE_FEED_STABLE")) {
-            if (-not [Environment]::GetEnvironmentVariable($FeedVariable)) {
-                throw "Signed Phase 14 release builds require $FeedVariable."
-            }
-        }
     }
 
     $Dirty = (& git status --porcelain)
