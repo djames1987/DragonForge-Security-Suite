@@ -172,6 +172,12 @@
     if (stopButton) stopButton.disabled = !agent.available;
   }
   
+  function renderLastFailure(snapshot) {
+    const target = document.getElementById("last-failure");
+    if (!target) return;
+    target.textContent = snapshot.last_failure || "No recorded crash/failure is currently available.";
+  }
+
   function renderHealth(snapshot) {
     const health = snapshot.health;
     document.getElementById("health-label").textContent = health.label;
@@ -200,6 +206,7 @@
     renderComponents(snapshot.components);
     renderEvents(snapshot.events);
     renderAgent(snapshot.agent);
+    renderLastFailure(snapshot);
     populateSettings(snapshot.settings);
   }
   
@@ -214,6 +221,7 @@
       renderComponents(snapshot.components);
       renderEvents(snapshot.events);
       renderAgent(snapshot.agent);
+      renderLastFailure(snapshot);
       toast("Suite health refreshed.");
     } catch (error) {
       toast(String(error), true);
@@ -412,6 +420,15 @@
     }
   }
 
+  async function createSupportBundle() {
+    try {
+      const path = await invoke("create_support_bundle");
+      toast(`Support bundle created: ${path}`);
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
   function wireNavigation() {
     document.querySelectorAll(".nav-item[data-view]").forEach((button) => {
       button.addEventListener("click", () => showView(button.dataset.view));
@@ -430,6 +447,7 @@
     document.getElementById("clear-events").addEventListener("click", clearActivity);
     document.getElementById("settings-form").addEventListener("submit", saveSettings);
     document.getElementById("copy-diagnostics")?.addEventListener("click", copyDiagnostics);
+    document.getElementById("create-support-bundle")?.addEventListener("click", createSupportBundle);
   
     try {
       await loadSnapshot();
