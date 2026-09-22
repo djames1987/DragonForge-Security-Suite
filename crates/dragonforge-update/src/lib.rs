@@ -321,6 +321,18 @@ mod tests {
         .expect("same version is a valid signed manifest");
         assert_eq!(current.payload.version, "0.1.0");
 
+        let older = sign_manifest(payload("0.1.0", UpdateChannel::Stable), "test-key", &key)
+            .expect("sign");
+        let older_json = serde_json::to_vec(&older).expect("json");
+        assert!(verify_manifest(
+            &older_json,
+            "test-key",
+            &hex::encode(key.verifying_key().as_bytes()),
+            "0.2.0",
+            UpdateChannel::Stable,
+        )
+        .is_err());
+
         let newer = sign_manifest(payload("0.2.0-beta.1", UpdateChannel::Beta), "test-key", &key)
             .expect("sign");
         let json = serde_json::to_vec(&newer).expect("json");
@@ -340,6 +352,23 @@ mod tests {
         let mut candidate = payload("0.2.0", UpdateChannel::Stable);
         candidate.artifacts[0].authenticode_required = false;
         assert!(sign_manifest(candidate, "test-key", &key).is_err());
+    }
+
+
+    #[test]
+    fn wrong_pinned_key_identity_is_rejected() {
+        let key = MlDsa65KeyPair::from_seed(&[11_u8; 32]).expect("test key");
+        let signed = sign_manifest(payload("0.2.0", UpdateChannel::Stable), "release-key-a", &key)
+            .expect("sign");
+        let json = serde_json::to_vec(&signed).expect("json");
+        assert!(verify_manifest(
+            &json,
+            "release-key-b",
+            &hex::encode(key.verifying_key().as_bytes()),
+            "0.1.0",
+            UpdateChannel::Stable,
+        )
+        .is_err());
     }
 
     #[test]
