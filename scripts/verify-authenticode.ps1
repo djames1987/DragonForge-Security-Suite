@@ -33,7 +33,7 @@ foreach ($Item in $Path) {
     & $SignTool @Arguments
     if ($LASTEXITCODE -ne 0) { throw "Authenticode verification failed for $FullPath with exit code $LASTEXITCODE." }
     $Signature = Get-AuthenticodeSignature -LiteralPath $FullPath
-    if ($Signature.Status -ne "Valid") { throw "PowerShell Authenticode validation is not Valid for $FullPath: $($Signature.Status)" }
+    if ($Signature.Status -ne "Valid") { throw "PowerShell Authenticode validation is not Valid for ${FullPath}: $($Signature.Status)" }
     Write-Host "VALID  $FullPath"
 }
 Write-Host "AUTHENTICODE VERIFICATION: PASS"
