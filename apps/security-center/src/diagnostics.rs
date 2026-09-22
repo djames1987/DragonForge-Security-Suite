@@ -38,7 +38,6 @@ struct RuntimeMetadata<'a> {
     platform: &'a str,
     os: &'static str,
     architecture: &'static str,
-    #[serde(skip_serializing_if = "Option::is_none")]
     webview2_version: Option<String>,
 }
 
@@ -137,11 +136,27 @@ pub fn write_support_bundle(snapshot: &DashboardSnapshot, logger: &SafeLogger) -
         })
         .unwrap_or_default();
 
+    let component_logs = Component::ALL
+        .into_iter()
+        .map(|component| {
+            let bytes = dragonforge_core::ComponentLogger::discover(component, false)
+                .ok()
+                .and_then(|item| fs::metadata(item.path()).ok())
+                .map(|meta| meta.len())
+                .unwrap_or(0);
+            json!({
+                "component": component.as_str(),
+                "bytes": bytes
+            })
+        })
+        .collect::<Vec<_>>();
+
     let bundle = json!({
         "schema_version": 1,
         "kind": "dragonforge-support-bundle",
         "generated_at_ms": now_ms(),
         "diagnostics": diagnostics,
+        "component_logs": component_logs,
         "log_summary": {
             "component": "security-center",
             "bytes": metadata.map(|item| item.len()).unwrap_or(0),
