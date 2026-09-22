@@ -173,6 +173,13 @@ pub fn sanitize_diagnostic_text(policy: LogPolicy, value: &str) -> String {
         "private_key",
         "private key",
         "credential",
+        "vault",
+        "sync",
+        "admin_token",
+        "admin token",
+        "file_content",
+        "file content",
+        "path=",
         "authorization:",
         "bearer ",
     ];
@@ -227,6 +234,18 @@ mod tests {
             sanitize_diagnostic_text(policy, "safe public status"),
             "safe public status"
         );
+        for sensitive in [
+            "vault=C:\\Users\\Example\\private.dfvault",
+            "sync_token=abc",
+            "admin token=abc",
+            "otp seed=ABCDEF",
+            "recovery code=1234",
+            "private key bytes",
+            "file_content=personal-data",
+            "path=C:\\Users\\Example\\Documents",
+        ] {
+            assert_eq!(sanitize_diagnostic_text(policy, sensitive), "[REDACTED]");
+        }
     }
 
     #[test]
