@@ -8,12 +8,14 @@ mod model;
 mod orchestration;
 mod settings;
 mod state;
+mod update;
 
 use agent::AgentStatus;
 use events::DashboardEvent;
 use settings::SecurityCenterSettings;
 use state::{AppState, DashboardSnapshot};
 use tauri::State;
+use update::{PreparedUpdateStatus, UpdateStatus};
 
 #[tauri::command]
 fn dashboard_snapshot(state: State<'_, AppState>) -> Result<DashboardSnapshot, String> {
@@ -114,6 +116,21 @@ fn launch_password_manager(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn check_updates(state: State<'_, AppState>) -> Result<UpdateStatus, String> {
+    state.check_updates()
+}
+
+#[tauri::command]
+fn prepare_update(state: State<'_, AppState>) -> Result<PreparedUpdateStatus, String> {
+    state.prepare_update()
+}
+
+#[tauri::command]
+fn install_prepared_update(state: State<'_, AppState>) -> Result<(), String> {
+    state.install_prepared_update()
+}
+
+#[tauri::command]
 fn diagnostic_report(state: State<'_, AppState>) -> Result<String, String> {
     state.diagnostic_report()
 }
@@ -149,6 +166,9 @@ pub fn run() {
             launch_backup_recovery,
             launch_file_vault,
             launch_password_manager,
+            check_updates,
+            prepare_update,
+            install_prepared_update,
             diagnostic_report,
             create_support_bundle
         ])
