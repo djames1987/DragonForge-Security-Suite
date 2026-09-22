@@ -283,19 +283,26 @@ See [PHASE_12_1_WINDOWS_INSTALLER.md](PHASE_12_1_WINDOWS_INSTALLER.md).
 
 
 ## Phase 12.2 — Agent Lifecycle
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- improve the current normal-user, per-user DragonForge Agent lifecycle;
-- start the Agent automatically when Security Center needs it rather than requiring unnecessary manual startup;
-- detect crashed, stale, or orphaned Agent instances and recover safely;
-- add graceful Agent shutdown;
-- add restart and reconnect behavior after Agent failure or Security Center restart;
-- define reboot/login behavior and validate recovery after Windows sign-in;
-- keep the Agent non-elevated and per-user during Phase 12.2;
-- preserve the existing authenticated, narrow IPC trust boundary and fail-closed behavior.
+Delivered:
+- automatic exact-sibling Agent startup when Security Center requests dashboard/health state;
+- authenticated graceful `shutdown` IPC action and `dragonforge-agent --stop` CLI;
+- Agent protocol minor version 1 for lifecycle-capability evolution;
+- graceful runtime cleanup through the existing descriptor/session-key/lock guard;
+- Security Center Start / Restart / Stop controls;
+- authenticated restart with health reconnection confirmation;
+- bounded stale/crashed runtime recovery retry using the existing Phase 11 stale-lock window;
+- explicit manual-stop suppression so Security Center does not immediately relaunch an Agent the user intentionally stopped;
+- current-user Windows Startup entry for installed builds, giving normal-user login/reboot recovery without a Windows service;
+- portable-build on-demand recovery with no persistence changes;
+- health capability reporting for `graceful-shutdown` and `restartable-session`;
+- tests for authenticated shutdown cleanup and manual-stop suppression;
+- dedicated Phase 12.2 Windows verification tooling and documentation.
 
-Phase 12.2 must not silently expand into a privileged Windows service. Privileged service work remains a separately reviewed future phase.
+Phase 12.2 remains normal-user and per-user. It does not introduce a privileged Windows service, elevation, firewall mutation, process termination, quarantine, or arbitrary command execution.
+
+See [PHASE_12_2_AGENT_LIFECYCLE.md](PHASE_12_2_AGENT_LIFECYCLE.md).
 
 
 ## Phase 12.3 — Release Engineering

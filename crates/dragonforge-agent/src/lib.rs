@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 
-//! Phase 11 authenticated local IPC and background runtime for DragonForge Agent.
+//! Authenticated local IPC, background runtime, and Phase 12.2 lifecycle controls for DragonForge Agent.
 //!
-//! The Phase 11 agent is intentionally per-user and non-elevated. It establishes
+//! The Agent remains intentionally per-user and non-elevated. It establishes
 //! a real authenticated local boundary without claiming a privileged Windows
 //! service or durable enforcement capability.
 

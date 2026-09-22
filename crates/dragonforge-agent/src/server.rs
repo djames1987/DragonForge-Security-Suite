@@ -69,9 +69,10 @@ impl AgentServer {
             let (mut stream, _) = listener
                 .accept()
                 .map_err(|_| AgentError::Io("agent client connection failed"))?;
-            let _ = handle_connection(&mut stream, &session_key, started, &mut replay);
+            let shutdown = handle_connection(&mut stream, &session_key, started, &mut replay)
+                .unwrap_or(false);
             handled += 1;
-            if max_connections.is_some_and(|limit| handled >= limit) {
+            if shutdown || max_connections.is_some_and(|limit| handled >= limit) {
                 break;
             }
         }
@@ -120,7 +121,7 @@ fn handle_connection(
     session_key: &[u8],
     started: Instant,
     replay: &mut ReplayCache,
-) -> Result<()> {
+) -> Result<bool> {
     stream
         .set_read_timeout(Some(READ_TIMEOUT))
         .map_err(|_| AgentError::Io("agent read timeout could not be configured"))?;
@@ -159,8 +160,17 @@ fn handle_connection(
                     "health".to_owned(),
                     "authenticated-ipc".to_owned(),
                     "background-lifetime".to_owned(),
+                    "graceful-shutdown".to_owned(),
+                    "restartable-session".to_owned(),
                 ],
             }),
+            error: None,
+            auth_tag_hex: String::new(),
+        },
+        Ok(()) if request.action == "shutdown" => ResponseWire {
+            request_id: request.request_id,
+            ok: true,
+            health: None,
             error: None,
             auth_tag_hex: String::new(),
         },
@@ -187,7 +197,8 @@ fn handle_connection(
     stream
         .write_all(&encoded)
         .and_then(|_| stream.write_all(b"\n"))
-        .map_err(|_| AgentError::Io("agent response could not be written"))
+        .map_err(|_| AgentError::Io("agent response could not be written"))?;
+    Ok(request.action == "shutdown" && signed.ok)
 }
 
 fn validate_request(
@@ -264,6 +275,13 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<()> {
 }
 
 fn acquire_runtime_lock(paths: &AgentPaths) -> Result<fs::File> {
+    acquire_runtime_lock_with_stale_after(paths, Duration::from_secs(5))
+}
+
+fn acquire_runtime_lock_with_stale_after(
+    paths: &AgentPaths,
+    stale_after: Duration,
+) -> Result<fs::File> {
     let open_new = || {
         OpenOptions::new()
             .write(true)
@@ -282,7 +300,7 @@ fn acquire_runtime_lock(paths: &AgentPaths) -> Result<fs::File> {
                 .ok()
                 .and_then(|metadata| metadata.modified().ok())
                 .and_then(|modified| modified.elapsed().ok())
-                .is_some_and(|age| age >= Duration::from_secs(5));
+                .is_some_and(|age| age >= stale_after);
             if !stale {
                 return Err(AgentError::InvalidState(
                     "DragonForge Agent is already starting",
@@ -311,7 +329,9 @@ mod tests {
     use base64::engine::general_purpose::STANDARD as BASE64;
     use tempfile::tempdir;
 
-    use super::{AgentServer, ReplayCache, validate_request};
+    use super::{
+        AgentServer, ReplayCache, acquire_runtime_lock_with_stale_after, validate_request,
+    };
     use crate::protocol::{
         AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, NONCE_BYTES, RequestWire, now_ms,
         request_message, sign_hex,
@@ -366,6 +386,23 @@ mod tests {
     }
 
     #[test]
+    fn stale_lock_recovery_removes_orphaned_runtime_files() {
+        let dir = tempdir().expect("tempdir");
+        let paths = crate::AgentPaths::from_root(dir.path());
+        std::fs::create_dir_all(paths.root()).expect("runtime dir");
+        std::fs::write(paths.lock_file(), b"stale").expect("stale lock");
+        std::fs::write(paths.runtime_file(), b"stale").expect("stale runtime");
+        std::fs::write(paths.credential_file(), b"stale").expect("stale credential");
+
+        let lock = acquire_runtime_lock_with_stale_after(&paths, Duration::ZERO)
+            .expect("reclaim stale lock");
+        assert!(!paths.runtime_file().exists());
+        assert!(!paths.credential_file().exists());
+        drop(lock);
+        let _ = std::fs::remove_file(paths.lock_file());
+    }
+
+    #[test]
     fn authenticated_health_round_trip_works() {
         let dir = tempdir().expect("tempdir");
         let paths = crate::AgentPaths::from_root(dir.path());
@@ -396,6 +433,45 @@ mod tests {
                 .iter()
                 .any(|item| item == "authenticated-ipc")
         );
+        assert!(
+            health
+                .capabilities
+                .iter()
+                .any(|item| item == "graceful-shutdown")
+        );
+        assert!(
+            health
+                .capabilities
+                .iter()
+                .any(|item| item == "restartable-session")
+        );
+
+        handle.join().expect("server thread");
+        assert!(!paths.runtime_file().exists());
+        assert!(!paths.credential_file().exists());
+        assert!(!paths.lock_file().exists());
+    }
+
+    #[test]
+    fn authenticated_shutdown_stops_server_and_cleans_runtime() {
+        let dir = tempdir().expect("tempdir");
+        let paths = crate::AgentPaths::from_root(dir.path());
+        let server_paths = paths.clone();
+        let handle = thread::spawn(move || {
+            AgentServer::from_paths(server_paths)
+                .run_internal(None)
+                .expect("server");
+        });
+
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while !paths.runtime_file().is_file() {
+            assert!(Instant::now() < deadline, "agent runtime file was not created");
+            thread::sleep(Duration::from_millis(10));
+        }
+
+        crate::AgentClient::from_paths(paths.clone())
+            .shutdown()
+            .expect("authenticated shutdown");
 
         handle.join().expect("server thread");
         assert!(!paths.runtime_file().exists());

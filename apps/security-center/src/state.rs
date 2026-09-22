@@ -1,4 +1,6 @@
 use std::sync::{Mutex, MutexGuard};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
@@ -27,6 +29,7 @@ pub struct AppState {
     settings_store: SettingsStore,
     logger: SafeLogger,
     agent: AgentClient,
+    agent_auto_start_suppressed: Mutex<bool>,
 }
 
 impl AppState {
@@ -61,6 +64,7 @@ impl AppState {
             settings_store,
             logger,
             agent: AgentClient::discover(),
+            agent_auto_start_suppressed: Mutex::new(false),
         };
         let _ = state
             .logger
@@ -78,6 +82,7 @@ impl AppState {
             settings_store,
             logger,
             agent: AgentClient::unavailable(),
+            agent_auto_start_suppressed: Mutex::new(false),
         }
     }
 
@@ -178,7 +183,120 @@ impl AppState {
         self.agent.status()
     }
 
+    pub fn ensure_agent_running(&self) -> AgentStatus {
+        if self
+            .agent_auto_start_suppressed
+            .lock()
+            .map(|suppressed| *suppressed)
+            .unwrap_or(false)
+        {
+            return self.agent.status();
+        }
+
+        let current = self.agent.status();
+        if current.available {
+            return current;
+        }
+
+        let _ = self.record_agent_event(
+            "security-center.agent-autostart",
+            "DragonForge Agent automatic start requested",
+        );
+
+        if orchestration::launch_agent().is_err() {
+            return self.agent.status();
+        }
+        if let Some(status) = self.wait_for_agent(true, Duration::from_secs(2)) {
+            return status;
+        }
+
+        // A crashed process can leave its create_new lock file behind briefly.
+        // Phase 11 deliberately waits five seconds before reclaiming that lock.
+        thread::sleep(Duration::from_millis(3_500));
+        if orchestration::launch_agent().is_ok() {
+            if let Some(status) = self.wait_for_agent(true, Duration::from_secs(2)) {
+                let _ = self.record_agent_event(
+                    "security-center.agent-recovered",
+                    "DragonForge Agent recovered after stale/crashed runtime state",
+                );
+                return status;
+            }
+        }
+
+        self.agent.status()
+    }
+
+    pub fn stop_agent(&self) -> Result<AgentStatus, String> {
+        *self
+            .agent_auto_start_suppressed
+            .lock()
+            .map_err(|_| "Agent lifecycle state is unavailable".to_owned())? = true;
+        let current = self.agent.status();
+        if !current.available {
+            return Ok(current);
+        }
+        self.agent.shutdown()?;
+        let stopped = self
+            .wait_for_agent(false, Duration::from_secs(2))
+            .unwrap_or_else(|| self.agent.status());
+        self.record_agent_event(
+            "security-center.agent-stopped",
+            "DragonForge Agent graceful shutdown completed",
+        )?;
+        Ok(stopped)
+    }
+
+    pub fn restart_agent(&self) -> Result<AgentStatus, String> {
+        *self
+            .agent_auto_start_suppressed
+            .lock()
+            .map_err(|_| "Agent lifecycle state is unavailable".to_owned())? = false;
+        if self.agent.status().available {
+            self.agent.shutdown()?;
+            let _ = self.wait_for_agent(false, Duration::from_secs(2));
+        }
+        let status = self.ensure_agent_running();
+        if !status.available {
+            return Err("DragonForge Agent did not reconnect after restart.".to_owned());
+        }
+        self.record_agent_event(
+            "security-center.agent-restarted",
+            "DragonForge Agent restarted and reconnected",
+        )?;
+        Ok(status)
+    }
+
+    fn wait_for_agent(&self, available: bool, timeout: Duration) -> Option<AgentStatus> {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let status = self.agent.status();
+            if status.available == available {
+                return Some(status);
+            }
+            if Instant::now() >= deadline {
+                return None;
+            }
+            thread::sleep(Duration::from_millis(100));
+        }
+    }
+
+    fn record_agent_event(&self, code: &'static str, message: &'static str) -> Result<(), String> {
+        self.lock_events()?.push(
+            Component::Agent,
+            EventKind::Lifecycle,
+            Severity::Info,
+            code,
+            message,
+        );
+        let _ = self.logger.write("info", code, message);
+        Ok(())
+    }
+
     pub fn launch_agent(&self) -> Result<(), String> {
+        *self
+            .agent_auto_start_suppressed
+            .lock()
+            .map_err(|_| "Agent lifecycle state is unavailable".to_owned())? = false;
         orchestration::launch_agent().map_err(|error| error.to_string())?;
         self.lock_events()?.push(
             Component::SecurityCenter,
@@ -366,6 +484,19 @@ mod tests {
         assert_eq!(snapshot.health.attention, 1);
         let encoded = serde_json::to_string(&snapshot).expect("serialize snapshot");
         assert!(encoded.contains("security-center"));
+    }
+
+    #[test]
+    fn manual_stop_suppresses_same_session_auto_restart() {
+        let dir = tempdir().expect("temporary directory");
+        let state = AppState::for_test(
+            SettingsStore::from_dir(dir.path().join("config")),
+            SafeLogger::from_path(dir.path().join("center.log"), LogPolicy::default()),
+        );
+        let stopped = state.stop_agent().expect("stop unavailable agent");
+        assert!(!stopped.available);
+        let after = state.ensure_agent_running();
+        assert!(!after.available);
     }
 
     #[test]

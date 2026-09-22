@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.1 Windows Installer is verified complete. DragonForge now has verified portable-release and per-user installer paths for external Windows testing.
+> **Current status:** Phase 12.2 Agent Lifecycle is implementation complete with local verification pending. The per-user Agent now has automatic start/recovery, authenticated graceful stop/restart, reconnect handling, and installed login startup while remaining non-elevated.
 
 ## Canonical repository
 
@@ -117,6 +117,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 11 — DragonForge Agent: **Verified Complete**
 - Phase 12.0 — External Test Baseline: **Verified Complete**
 - Phase 12.1 — Windows Installer: **Verified Complete**
+- Phase 12.2 — Agent Lifecycle: **Implementation Complete — Local Verification Pending**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -370,6 +371,22 @@ Verified log SHA-256: `71F0900206E214B464CBE82F912EC043FF668BDC9F5CBDCBD65B20A1D
 
 See [docs/PHASE_10_SECURE_SHARE.md](docs/PHASE_10_SECURE_SHARE.md).
 
+
+## Agent lifecycle
+
+Phase 12.2 extends the verified Phase 11 Agent with lifecycle management while keeping the same normal-user security boundary.
+
+Current lifecycle behavior:
+- Security Center starts the exact-sibling Agent automatically when health is needed;
+- authenticated graceful Stop and Restart operations;
+- restart waits for authenticated reconnection;
+- stale/crashed runtime state gets a bounded recovery retry after the existing lock-recovery window;
+- explicit Stop suppresses same-session auto-restart until Start/Restart is requested;
+- installed builds start the per-user Agent at Windows sign-in through the current user's Startup folder;
+- portable builds remain persistence-free and start the Agent on demand;
+- no Windows service or elevation is introduced.
+
+See [docs/PHASE_12_2_AGENT_LIFECYCLE.md](docs/PHASE_12_2_AGENT_LIFECYCLE.md).
 
 ## DragonForge Agent
 

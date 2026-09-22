@@ -32,6 +32,14 @@ impl AgentClient {
         Self { runtime: None }
     }
 
+    pub fn shutdown(&self) -> Result<(), String> {
+        self.runtime
+            .as_ref()
+            .ok_or_else(|| "DragonForge Agent runtime paths are unavailable.".to_owned())?
+            .shutdown()
+            .map_err(|error| error.to_string())
+    }
+
     #[must_use]
     pub fn status(&self) -> AgentStatus {
         let health = match &self.runtime {

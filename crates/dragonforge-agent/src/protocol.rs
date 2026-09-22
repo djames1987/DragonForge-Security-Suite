@@ -13,7 +13,7 @@ use sha2::Sha256;
 use crate::error::{AgentError, Result};
 
 pub const AGENT_PROTOCOL_MAJOR: u16 = 1;
-pub const AGENT_PROTOCOL_MINOR: u16 = 0;
+pub const AGENT_PROTOCOL_MINOR: u16 = 1;
 pub const MAX_CLOCK_SKEW_MS: u64 = 60_000;
 pub const MAX_WIRE_BYTES: usize = 16 * 1024;
 pub const SESSION_KEY_BYTES: usize = 32;

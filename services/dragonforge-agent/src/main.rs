@@ -8,9 +8,10 @@ use dragonforge_agent::{AgentClient, AgentServer};
 fn main() -> ExitCode {
     match env::args().nth(1).as_deref() {
         Some("--health") => health(),
+        Some("--stop") => stop(),
         Some("--serve") | None => serve(),
         Some(_) => {
-            eprintln!("Usage: dragonforge-agent [--serve|--health]");
+            eprintln!("Usage: dragonforge-agent [--serve|--health|--stop]");
             ExitCode::from(2)
         }
     }
@@ -52,6 +53,26 @@ fn health() -> ExitCode {
         },
         Err(error) => {
             eprintln!("DragonForge Agent is unavailable: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+fn stop() -> ExitCode {
+    let client = match AgentClient::discover() {
+        Ok(client) => client,
+        Err(error) => {
+            eprintln!("DragonForge Agent stop discovery failed: {error}");
+            return ExitCode::from(1);
+        }
+    };
+    match client.shutdown() {
+        Ok(()) => {
+            println!("DragonForge Agent graceful shutdown requested.");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("DragonForge Agent could not be stopped gracefully: {error}");
             ExitCode::from(1)
         }
     }
