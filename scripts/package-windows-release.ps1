@@ -1,7 +1,9 @@
 param(
     [string]$Version = "0.1.0-alpha.1",
     [switch]$SkipBuild,
-    [switch]$KeepStage
+    [switch]$KeepStage,
+    [string]$ExpectedCommit,
+    [string]$ReleaseTag
 )
 
 $ErrorActionPreference = "Stop"
@@ -60,6 +62,15 @@ try {
     if ($LASTEXITCODE -ne 0 -or -not $Commit) {
         throw "Unable to determine the release commit."
     }
+    if ($ExpectedCommit -and $Commit -ne $ExpectedCommit) {
+        throw "Release commit mismatch. Expected $ExpectedCommit but HEAD is $Commit."
+    }
+    if ($ReleaseTag) {
+        $TaggedCommit = (& git rev-parse "$ReleaseTag^{commit}").Trim()
+        if ($LASTEXITCODE -ne 0 -or $TaggedCommit -ne $Commit) {
+            throw "Release tag $ReleaseTag does not resolve to the current commit."
+        }
+    }
     $env:DRAGONFORGE_BUILD_COMMIT = $Commit
 
     if (-not $SkipBuild) {
@@ -100,6 +111,7 @@ DragonForge Security Suite
 Version: v$Version
 Release channel: alpha / external testing
 Git commit: $Commit
+Git tag: $(if ($ReleaseTag) { $ReleaseTag } else { "un-tagged" })
 Built (UTC): $([DateTime]::UtcNow.ToString("o"))
 Platform: Windows x64 portable
 "@
