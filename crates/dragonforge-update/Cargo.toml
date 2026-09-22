@@ -1,0 +1,26 @@
+[package]
+name = "dragonforge-update"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+description = "Signed update manifest and release policy engine for DragonForge Security Suite"
+
+[lib]
+name = "dragonforge_update"
+
+[[bin]]
+name = "dragonforge-sign-update-manifest"
+path = "src/bin/sign_update_manifest.rs"
+
+[dependencies]
+dragonforge-crypto = { path = "../dragonforge-crypto" }
+hex = "0.4"
+semver = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+
+[lints]
+workspace = true
