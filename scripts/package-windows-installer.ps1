@@ -93,6 +93,7 @@ Platform: Windows x64 installer
     if (Test-Path -LiteralPath $InstallerHashPath) { Remove-Item -LiteralPath $InstallerHashPath -Force }
 
     $Arguments = @(
+        "--messages-jsonl",
         "/DMyAppVersion=$Version",
         "/DStageDir=$InstallerStage",
         "/DOutputDir=$DistRoot",
