@@ -1,102 +1,80 @@
 param(
-    [string]$Version = "0.1.0-alpha.1",
+    [Parameter(Mandatory = $true)] [string]$Tag,
     [switch]$SkipBuild,
-    [switch]$IncludeInstaller
+    [switch]$PortableOnly
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
-$Tag = "v$Version"
+
+if ($Tag -notmatch '^v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$') {
+    throw "Tag must be v<version>, for example v0.1.0-alpha.3"
+}
+$Version = $Matches[1]
 $PackageName = "DragonForge-Security-Suite-v$Version-win-x64"
-$ZipPath = Join-Path $RepoRoot "dist\$PackageName.zip"
-$HashPath = "$ZipPath.sha256"
-$InstallerPath = Join-Path $RepoRoot "dist\$PackageName-setup.exe"
+$DistRoot = Join-Path $RepoRoot "dist"
+$ZipPath = Join-Path $DistRoot "$PackageName.zip"
+$ZipHashPath = "$ZipPath.sha256"
+$InstallerPath = Join-Path $DistRoot "$PackageName-setup.exe"
 $InstallerHashPath = "$InstallerPath.sha256"
-$NotesPath = Join-Path $RepoRoot "docs\releases\v$Version.md"
+$ManifestPath = Join-Path $DistRoot "release-manifest-$Tag.json"
+$ManifestHashPath = "$ManifestPath.sha256"
+$NotesPath = Join-Path $DistRoot "release-notes-$Tag.md"
 
 Push-Location $RepoRoot
 try {
     if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-        throw "GitHub CLI (gh) is required to publish the release. Install gh and authenticate with gh auth login."
+        throw "GitHub CLI (gh) is required to publish releases."
     }
-
     & gh auth status
-    if ($LASTEXITCODE -ne 0) {
-        throw "GitHub CLI is not authenticated."
-    }
+    if ($LASTEXITCODE -ne 0) { throw "GitHub CLI is not authenticated." }
 
     $Dirty = (& git status --porcelain)
-    if ($Dirty) {
-        throw "Refusing to publish from a dirty working tree. Commit or stash local changes first."
-    }
+    if ($Dirty) { throw "Refusing to publish from a dirty working tree." }
 
-    $Branch = (& git branch --show-current).Trim()
-    if ($Branch -ne "main") {
-        throw "Publish releases from main. Current branch: $Branch"
-    }
+    & git fetch origin --tags
+    if ($LASTEXITCODE -ne 0) { throw "Unable to refresh Git tags." }
 
-    & git fetch origin main --tags
-    if ($LASTEXITCODE -ne 0) {
-        throw "Unable to refresh origin/main and tags."
-    }
+    $Head = (& git rev-parse HEAD).Trim()
+    $TaggedCommit = (& git rev-parse "$Tag^{commit}").Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $TaggedCommit) { throw "Tag $Tag does not exist." }
+    if ($Head -ne $TaggedCommit) { throw "HEAD does not match $Tag." }
 
-    $Local = (& git rev-parse HEAD).Trim()
-    $Remote = (& git rev-parse origin/main).Trim()
-    if ($Local -ne $Remote) {
-        throw "Local main is not exactly origin/main. Pull before publishing."
-    }
-
-    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild
-    if ($LASTEXITCODE -ne 0) {
-        throw "Portable release packaging failed."
-    }
-
-    if ($IncludeInstaller) {
-        & (Join-Path $PSScriptRoot "package-windows-installer.ps1") -Version $Version -SkipBuild
-        if ($LASTEXITCODE -ne 0) {
-            throw "Windows installer packaging failed."
-        }
-    }
-
-    if (-not (Test-Path -LiteralPath $NotesPath -PathType Leaf)) {
-        throw "Release notes not found: $NotesPath"
-    }
-
-    $PreviousErrorActionPreference = $ErrorActionPreference
+    $Previous = $ErrorActionPreference
     try {
         $ErrorActionPreference = "Continue"
         & gh release view $Tag --repo "djames1987/DragonForge-Security-Suite" *> $null
-        $ReleaseExists = ($LASTEXITCODE -eq 0)
+        $Exists = ($LASTEXITCODE -eq 0)
     }
-    finally {
-        $ErrorActionPreference = $PreviousErrorActionPreference
-    }
-    if ($ReleaseExists) {
-        throw "GitHub release $Tag already exists."
-    }
+    finally { $ErrorActionPreference = $Previous }
+    if ($Exists) { throw "GitHub release $Tag already exists and will not be mutated." }
 
-    $Assets = @($ZipPath, $HashPath)
-    if ($IncludeInstaller) {
+    & (Join-Path $PSScriptRoot "build-tagged-windows-release.ps1") -Tag $Tag -SkipBuild:$SkipBuild -NoInstaller:$PortableOnly
+    if ($LASTEXITCODE -ne 0) { throw "Tagged release build/verification failed." }
+
+    $Assets = @($ZipPath, $ZipHashPath, $ManifestPath, $ManifestHashPath)
+    if (-not $PortableOnly) {
         $Assets += @($InstallerPath, $InstallerHashPath)
     }
+    foreach ($Asset in $Assets) {
+        if (-not (Test-Path -LiteralPath $Asset -PathType Leaf)) { throw "Verified release asset missing: $Asset" }
+    }
+    if (-not (Test-Path -LiteralPath $NotesPath -PathType Leaf)) { throw "Generated release notes are missing." }
 
     $Arguments = @("release", "create", $Tag) + $Assets + @(
         "--repo", "djames1987/DragonForge-Security-Suite",
-        "--target", $Local,
         "--title", "DragonForge Security Suite $Tag",
         "--notes-file", $NotesPath,
-        "--prerelease"
+        "--verify-tag"
     )
+    if ($Tag -match '-') { $Arguments += "--prerelease" }
+
     & gh @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "GitHub release creation failed."
-    }
+    if ($LASTEXITCODE -ne 0) { throw "GitHub release creation failed." }
 
     Write-Host ""
-    Write-Host "GITHUB PRE-RELEASE PUBLISHED: $Tag"
-    Write-Host "Commit: $Local"
-    & gh release view $Tag --repo "djames1987/DragonForge-Security-Suite"
+    Write-Host "GITHUB RELEASE PUBLISHED: $Tag"
+    Write-Host "Commit: $TaggedCommit"
+    Write-Host "Artifacts were verified before publication."
 }
-finally {
-    Pop-Location
-}
+finally { Pop-Location }
