@@ -151,7 +151,7 @@ try {
     }
 
     $RecordScript = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "scripts\new-beta-qualification-record.ps1")
-    foreach ($RequiredText in @("qualification_log_sha256","disposable_test_data_only","scenario_id","Get-FileHash")) {
+    foreach ($RequiredText in @("qualification_log_sha256","disposable_test_data_only","scenario_id","Get-FileHash","PHASE 13 BETA READINESS & RELEASE QUALIFICATION VERIFICATION: PASS","ValidateSet(\"BQ-01\"")) {
         if (-not $RecordScript.Contains($RequiredText)) { throw "Qualification record invariant missing: $RequiredText" }
     }
 
