@@ -30,3 +30,9 @@ test-results/
 # Tauri/generated application build support
 **/gen/
 apps/password-manager/icons/icon.ico
+
+# Code-signing private-key containers must never be committed
+*.pfx
+*.p12
+*.pvk
+*.snk
