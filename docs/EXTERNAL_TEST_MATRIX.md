@@ -29,3 +29,8 @@ Before moving to a stable beta/installable channel:
 - diagnostic reports remain redaction-safe;
 - critical package/container parsers retain regression coverage for malformed/tampered input;
 - known limitations are reflected in release notes.
+
+
+## Phase 13 qualification
+
+The Phase 12 matrix remains the broad testing baseline. Phase 13 makes the required beta subset explicit in [BETA_QUALIFICATION_MATRIX.md](BETA_QUALIFICATION_MATRIX.md) and requires retained automated logs, SHA-256 sidecars, and machine-readable qualification records for each required scenario before a beta label is used.
