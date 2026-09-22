@@ -3,6 +3,7 @@ use uuid::Uuid;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 pub const SYNC_PROTOCOL_VERSION: u16 = 2;
+pub const MIN_SUPPORTED_SYNC_PROTOCOL_VERSION: u16 = 2;
 pub const MAX_SYNC_BLOB_BYTES: usize = 64 * 1024 * 1024;
 pub const MAX_RECOVERY_ENVELOPE_BYTES: usize = 16 * 1024;
 
@@ -37,6 +38,8 @@ pub struct RecoveryRecord {
 pub struct HealthResponse {
     pub ok: bool,
     pub protocol_version: u16,
+    pub min_supported_protocol_version: u16,
+    pub max_supported_protocol_version: u16,
 }
 
 #[derive(Serialize, Zeroize, ZeroizeOnDrop)]
