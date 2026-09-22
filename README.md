@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.6 UX Consistency is implementation complete with local verification pending. All nine DragonForge desktop applications now share current suite/version terminology, a common keyboard-focus and disabled-control baseline, consistent Security Center entry guidance, and aligned confirmations for sensitive replacement/restore/extract actions.
+> **Current status:** Phase 12.6 UX Consistency is verified complete. All nine DragonForge desktop applications now share current suite/version terminology, a common keyboard-focus and disabled-control baseline, consistent Security Center entry guidance, and aligned confirmations for sensitive replacement/restore/extract actions.
 
 ## Canonical repository
 
@@ -121,7 +121,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.3 — Release Engineering: **Verified Complete**
 - Phase 12.4 — Code Signing: **Verified Complete**
 - Phase 12.5 — Crash Handling & Diagnostics: **Verified Complete**
-- Phase 12.6 — UX Consistency: **Implementation Complete — Local Verification Pending**
+- Phase 12.6 — UX Consistency: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -162,6 +162,10 @@ Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9E
 Phase 12.6 aligns all nine DragonForge desktop applications around one visible and behavioral suite contract: current package/suite metadata, Security Center as the recommended entry point, visible keyboard focus, consistent disabled controls, and explicit confirmations for sensitive replacement/restore/extract actions.
 
 See [docs/PHASE_12_6_UX_CONSISTENCY.md](docs/PHASE_12_6_UX_CONSISTENCY.md).
+
+Phase 12.6 Windows verification: **PASS** on `DRACO` (Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12.6-ux-consistency-20260922-142449.log`  
+Verified log SHA-256: `C5AB4E9062CF311920241640525BA0B4EE0570BE9329C7271FBA69A02AE227EE`
 
 ## Crash handling & diagnostics
 
