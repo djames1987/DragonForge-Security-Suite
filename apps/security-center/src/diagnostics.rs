@@ -111,11 +111,7 @@ mod tests {
     use dragonforge_core::LogPolicy;
     use tempfile::tempdir;
 
-    use crate::{
-        logging::SafeLogger,
-        settings::SettingsStore,
-        state::AppState,
-    };
+    use crate::{logging::SafeLogger, settings::SettingsStore, state::AppState};
 
     #[test]
     fn report_contains_build_and_component_metadata_without_event_content() {
