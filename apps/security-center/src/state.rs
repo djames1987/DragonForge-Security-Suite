@@ -29,6 +29,7 @@ pub struct AppState {
     settings_store: SettingsStore,
     logger: SafeLogger,
     agent: AgentClient,
+    agent_auto_start_suppressed: Mutex<bool>,
 }
 
 impl AppState {
@@ -63,6 +64,7 @@ impl AppState {
             settings_store,
             logger,
             agent: AgentClient::discover(),
+            agent_auto_start_suppressed: Mutex::new(false),
         };
         let _ = state
             .logger
@@ -80,6 +82,7 @@ impl AppState {
             settings_store,
             logger,
             agent: AgentClient::unavailable(),
+            agent_auto_start_suppressed: Mutex::new(false),
         }
     }
 
@@ -181,6 +184,15 @@ impl AppState {
     }
 
     pub fn ensure_agent_running(&self) -> AgentStatus {
+        if self
+            .agent_auto_start_suppressed
+            .lock()
+            .map(|suppressed| *suppressed)
+            .unwrap_or(false)
+        {
+            return self.agent.status();
+        }
+
         let current = self.agent.status();
         if current.available {
             return current;
@@ -214,6 +226,10 @@ impl AppState {
     }
 
     pub fn stop_agent(&self) -> Result<AgentStatus, String> {
+        *self
+            .agent_auto_start_suppressed
+            .lock()
+            .map_err(|_| "Agent lifecycle state is unavailable".to_owned())? = true;
         let current = self.agent.status();
         if !current.available {
             return Ok(current);
@@ -230,6 +246,10 @@ impl AppState {
     }
 
     pub fn restart_agent(&self) -> Result<AgentStatus, String> {
+        *self
+            .agent_auto_start_suppressed
+            .lock()
+            .map_err(|_| "Agent lifecycle state is unavailable".to_owned())? = false;
         if self.agent.status().available {
             self.agent.shutdown()?;
             let _ = self.wait_for_agent(false, Duration::from_secs(2));
@@ -275,6 +295,10 @@ impl AppState {
     }
 
     pub fn launch_agent(&self) -> Result<(), String> {
+        *self
+            .agent_auto_start_suppressed
+            .lock()
+            .map_err(|_| "Agent lifecycle state is unavailable".to_owned())? = false;
         orchestration::launch_agent().map_err(|error| error.to_string())?;
         self.lock_events()?.push(
             Component::SecurityCenter,
