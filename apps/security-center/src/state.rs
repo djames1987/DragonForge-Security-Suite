@@ -114,6 +114,10 @@ impl AppState {
         Ok(self.lock_events()?.recent(limit.min(2_000)))
     }
 
+    pub fn diagnostic_report(&self) -> Result<String, String> {
+        crate::diagnostics::render(&self.snapshot()?)
+    }
+
     pub fn refresh_health(&self) -> Result<DashboardSnapshot, String> {
         self.lock_events()?.push(
             Component::SecurityCenter,
