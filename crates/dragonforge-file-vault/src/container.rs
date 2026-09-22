@@ -744,6 +744,7 @@ mod tests {
             FileVaultError::SymlinkNotAllowed
         );
     }
+
     #[test]
     fn decoded_entries_reject_duplicate_and_malformed_paths() {
         let duplicate = vec![
@@ -775,5 +776,4 @@ mod tests {
     fn decoded_entries_reject_truncated_payload() {
         assert!(decode_entries(&[1, 0, 0]).is_err());
     }
-
 }
