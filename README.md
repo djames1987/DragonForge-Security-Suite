@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.7 Security Hardening Review is implementation complete with local verification pending. The suite now includes hostile-format and Agent lock-contention regression tests, recurring/local RustSec dependency auditing, Windows data-permission review tooling, updated deployment-wide trust documentation, and an explicit residual-risk register.
+> **Current status:** Phase 12.7 Security Hardening Review is verified complete. The suite now includes hostile-format and Agent lock-contention regression tests, recurring/local RustSec dependency auditing, Windows data-permission review tooling, updated deployment-wide trust documentation, and an explicit residual-risk register.
 
 ## Canonical repository
 
@@ -122,7 +122,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.4 — Code Signing: **Verified Complete**
 - Phase 12.5 — Crash Handling & Diagnostics: **Verified Complete**
 - Phase 12.6 — UX Consistency: **Verified Complete**
-- Phase 12.7 — Security Hardening Review: **Implementation Complete — Local Verification Pending**
+- Phase 12.7 — Security Hardening Review: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -163,6 +163,10 @@ Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9E
 Phase 12.7 reviews DragonForge as one deployed security product. It adds hostile-format and concurrency regression coverage, scheduled/local RustSec advisory auditing, Windows data-permission review tooling, and explicit filesystem/trust/residual-risk documentation.
 
 See [docs/PHASE_12_7_SECURITY_HARDENING.md](docs/PHASE_12_7_SECURITY_HARDENING.md).
+
+Phase 12.7 Windows verification: **PASS** on `DRACO` (Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12.7-security-hardening-20260922-144042.log`  
+Verified log SHA-256: `D70D7A61DAC9976F67303D428A2F1AFC5E06216074D67DEDD828AA0AE964532C`
 
 ## UX consistency
 
