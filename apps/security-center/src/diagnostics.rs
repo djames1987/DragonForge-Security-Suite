@@ -242,7 +242,7 @@ mod tests {
         );
         let report = super::render(&state.snapshot().expect("snapshot")).expect("report");
 
-        assert!(report.contains("\"phase\": \"12.5\""));
+        assert!(report.contains("\"phase\": \"13\""));
         assert!(report.contains("\"package_version\": \"0.1.0\""));
         assert!(report.contains("\"version\": \"0.1.0\""));
         assert!(!report.contains("Security Center started"));
