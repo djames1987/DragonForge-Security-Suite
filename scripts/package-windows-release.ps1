@@ -262,34 +262,7 @@ if (-not (Test-Path -LiteralPath $Manifest -PathType Leaf)) {
 }
 $Failed = $false
 Get-Content -LiteralPath $Manifest | ForEach-Object {
-    if ($_ -notmatch '^([A-Fa-f0-9]{64})  (.+)        Where-Object { $_.Name -ne "SHA256SUMS.txt" } |
-        Sort-Object Name |
-        ForEach-Object {
-            $Hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash
-            "$Hash  $($_.Name)"
-        }
-    Set-Content -LiteralPath (Join-Path $StageRoot "SHA256SUMS.txt") -Value $HashLines -Encoding ASCII
-
-    Compress-Archive -Path $StageRoot -DestinationPath $ZipPath -CompressionLevel Optimal
-
-    $ZipHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ZipPath).Hash
-    "$ZipHash  $(Split-Path -Leaf $ZipPath)" | Set-Content -LiteralPath $ZipHashPath -Encoding ASCII
-
-    Write-Host ""
-    Write-Host "WINDOWS PORTABLE RELEASE PACKAGE: PASS"
-    Write-Host "Package: $ZipPath"
-    Write-Host "SHA256: $ZipHash"
-    Write-Host "Commit: $Commit"
-}
-finally {
-    if ($null -eq $PreviousBuildCommit) {
-        Remove-Item Env:DRAGONFORGE_BUILD_COMMIT -ErrorAction SilentlyContinue
-    } else {
-        $env:DRAGONFORGE_BUILD_COMMIT = $PreviousBuildCommit
-    }
-    Pop-Location
-}
-) {
+    if ($_ -notmatch '^([A-Fa-f0-9]{64})  (.+)$') {
         Write-Host "FAIL: malformed checksum line: $_" -ForegroundColor Red
         $Failed = $true
         return
@@ -344,5 +317,10 @@ pause
     Write-Host "Commit: $Commit"
 }
 finally {
+    if ($null -eq $PreviousBuildCommit) {
+        Remove-Item Env:DRAGONFORGE_BUILD_COMMIT -ErrorAction SilentlyContinue
+    } else {
+        $env:DRAGONFORGE_BUILD_COMMIT = $PreviousBuildCommit
+    }
     Pop-Location
 }
