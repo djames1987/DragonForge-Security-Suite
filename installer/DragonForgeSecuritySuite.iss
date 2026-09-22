@@ -61,6 +61,7 @@ Name: "{userprograms}\DragonForge Security Suite\Check prerequisites"; Filename:
 Name: "{userprograms}\DragonForge Security Suite\External test checklist"; Filename: "{app}\EXTERNAL-TEST-CHECKLIST.md"; WorkingDir: "{app}"
 Name: "{userprograms}\DragonForge Security Suite\Uninstall DragonForge Security Suite"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\DragonForge Security Center"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{userstartup}\DragonForge Agent"; Filename: "{app}\dragonforge-agent.exe"; Parameters: "--serve"; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\{#MyExeName}"; Description: "Launch DragonForge Security Center"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
