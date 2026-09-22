@@ -3,6 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use dragonforge_core::{Component, CoreError, CoreResult, ErrorCode, SuitePaths};
+use dragonforge_update::UpdateChannel;
 use serde::{Deserialize, Serialize};
 
 const SETTINGS_FILE: &str = "settings.json";
@@ -14,6 +15,8 @@ pub struct SecurityCenterSettings {
     pub start_on_overview: bool,
     pub retain_event_count: usize,
     pub include_diagnostic_identifiers: bool,
+    #[serde(default)]
+    pub update_channel: UpdateChannel,
 }
 
 impl Default for SecurityCenterSettings {
@@ -23,6 +26,7 @@ impl Default for SecurityCenterSettings {
             start_on_overview: true,
             retain_event_count: 250,
             include_diagnostic_identifiers: false,
+            update_channel: UpdateChannel::Stable,
         }
     }
 }
