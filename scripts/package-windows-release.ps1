@@ -3,7 +3,8 @@ param(
     [switch]$SkipBuild,
     [switch]$KeepStage,
     [string]$ExpectedCommit,
-    [string]$ReleaseTag
+    [string]$ReleaseTag,
+    [switch]$SignRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -73,6 +74,12 @@ try {
     }
     $env:DRAGONFORGE_BUILD_COMMIT = $Commit
     $ReleaseChannel = if ($Version -match '-') { "pre-release / external testing" } else { "stable" }
+    $SigningLabel = if ($SignRelease) { "Authenticode SHA-256 + RFC 3161 timestamp" } else { "unsigned development/test build" }
+    $SigningNotice = if ($SignRelease) {
+        "This package is Authenticode-signed. Verify signatures before trusting the binaries."
+    } else {
+        "This package is unsigned. Windows SmartScreen may show an unknown-publisher warning."
+    }
 
     if (-not $SkipBuild) {
         & (Join-Path $PSScriptRoot "build-all-apps-for-testing.ps1") -Profile release
@@ -115,6 +122,7 @@ Git commit: $Commit
 Git tag: $(if ($ReleaseTag) { $ReleaseTag } else { "un-tagged" })
 Built (UTC): $([DateTime]::UtcNow.ToString("o"))
 Platform: Windows x64 portable
+Code signing: $SigningLabel
 "@
     Set-Content -LiteralPath (Join-Path $StageRoot "BUILD-INFO.txt") -Value $BuildInfo -Encoding UTF8
 
@@ -141,7 +149,7 @@ REQUIREMENTS
 - Normal-user execution is expected. Phase 12.2 Agent lifecycle does not require elevation.
 
 IMPORTANT TESTING NOTES
-- This alpha is unsigned. Windows SmartScreen may warn because the binaries do not yet have a code-signing certificate.
+- $SigningNotice
 - Do not enter irreplaceable production passwords, recovery codes, or secrets during early external testing.
 - Keep all packaged executables together.
 - Use Stop-DragonForge-Agent.cmd before deleting or moving the test folder.
@@ -309,6 +317,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Verify-Package.ps1
 pause
 '@
     Set-Content -LiteralPath (Join-Path $StageRoot "Verify-Package.cmd") -Value $VerifyPackageCmd -Encoding ASCII
+
+    if ($SignRelease) {
+        $SigningTargets = @($Executables | ForEach-Object { Join-Path $StageRoot $_ })
+        & (Join-Path $PSScriptRoot "sign-windows-files.ps1") -Path $SigningTargets -Description "DragonForge Security Suite $Version"
+        if ($LASTEXITCODE -ne 0) { throw "Portable executable signing failed." }
+    }
 
     $HashLines = Get-ChildItem -LiteralPath $StageRoot -File |
         Where-Object { $_.Name -ne "SHA256SUMS.txt" } |
