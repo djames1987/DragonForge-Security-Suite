@@ -17,11 +17,13 @@ use tauri::State;
 
 #[tauri::command]
 fn dashboard_snapshot(state: State<'_, AppState>) -> Result<DashboardSnapshot, String> {
+    let _ = state.ensure_agent_running();
     state.snapshot()
 }
 
 #[tauri::command]
 fn refresh_health(state: State<'_, AppState>) -> Result<DashboardSnapshot, String> {
+    let _ = state.ensure_agent_running();
     state.refresh_health()
 }
 
@@ -59,6 +61,16 @@ fn agent_status(state: State<'_, AppState>) -> AgentStatus {
 #[tauri::command]
 fn launch_agent(state: State<'_, AppState>) -> Result<(), String> {
     state.launch_agent()
+}
+
+#[tauri::command]
+fn stop_agent(state: State<'_, AppState>) -> Result<AgentStatus, String> {
+    state.stop_agent()
+}
+
+#[tauri::command]
+fn restart_agent(state: State<'_, AppState>) -> Result<AgentStatus, String> {
+    state.restart_agent()
 }
 
 #[tauri::command]
@@ -122,6 +134,8 @@ pub fn run() {
             save_settings,
             agent_status,
             launch_agent,
+            stop_agent,
+            restart_agent,
             launch_authenticator,
             launch_security_scanner,
             launch_integrity_monitor,
