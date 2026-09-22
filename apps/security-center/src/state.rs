@@ -2,7 +2,7 @@ use std::sync::{Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use dragonforge_core::{Component, CoreResult, EventKind, Platform, Severity};
+use dragonforge_core::{Component, ComponentLogger, CoreResult, EventKind, Platform, Severity};
 use serde::Serialize;
 
 use crate::agent::{AgentClient, AgentStatus};
@@ -13,6 +13,13 @@ use crate::orchestration;
 use crate::settings::{SecurityCenterSettings, SettingsStore};
 
 #[derive(Debug, Clone, Serialize)]
+pub struct ComponentFailureStatus {
+    pub component: &'static str,
+    pub has_failure: bool,
+    pub last_failure: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct DashboardSnapshot {
     pub health: HealthSummary,
     pub components: Vec<ComponentStatus>,
@@ -21,6 +28,7 @@ pub struct DashboardSnapshot {
     pub platform: &'static str,
     pub settings: SecurityCenterSettings,
     pub last_failure: Option<String>,
+    pub component_failures: Vec<ComponentFailureStatus>,
 }
 
 pub struct AppState {
@@ -115,6 +123,7 @@ impl AppState {
             platform: Platform::current().as_str(),
             settings: self.lock_settings()?.clone(),
             last_failure: self.logger.read_last_failure(),
+            component_failures: component_failure_statuses(),
         })
     }
 
@@ -545,4 +554,20 @@ mod tests {
             updated
         );
     }
+}
+
+fn component_failure_statuses() -> Vec<ComponentFailureStatus> {
+    Component::ALL
+        .into_iter()
+        .map(|component| {
+            let last_failure = ComponentLogger::discover(component, false)
+                .ok()
+                .and_then(|logger| logger.read_last_failure());
+            ComponentFailureStatus {
+                component: component.as_str(),
+                has_failure: last_failure.is_some(),
+                last_failure,
+            }
+        })
+        .collect()
 }
