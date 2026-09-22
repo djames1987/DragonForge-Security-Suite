@@ -2,7 +2,7 @@
 
 ## Status
 
-**Complete — external-machine execution pending**
+**Implementation Complete — Local Verification Pending**
 
 Phase 12.0 shifts DragonForge from feature expansion to repeatable external testing. It establishes the support, diagnostics, test-matrix, and portable-package verification baseline needed before installer work.
 
