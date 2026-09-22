@@ -6,6 +6,7 @@ use std::path::PathBuf;
 
 use dragonforge_crypto::MlDsa65KeyPair;
 use dragonforge_update::{UpdateManifestPayload, sign_manifest};
+use zeroize::Zeroizing;
 
 fn main() {
     if let Err(error) = run() {
@@ -31,8 +32,10 @@ fn run() -> Result<(), String> {
         return Err("unexpected extra arguments".to_owned());
     }
 
-    let seed_hex = env::var("DRAGONFORGE_UPDATE_SIGNING_KEY_HEX")
-        .map_err(|_| "DRAGONFORGE_UPDATE_SIGNING_KEY_HEX is required".to_owned())?;
+    let seed_hex = Zeroizing::new(
+        env::var("DRAGONFORGE_UPDATE_SIGNING_KEY_HEX")
+            .map_err(|_| "DRAGONFORGE_UPDATE_SIGNING_KEY_HEX is required".to_owned())?,
+    );
     let key_id = env::var("DRAGONFORGE_UPDATE_KEY_ID")
         .map_err(|_| "DRAGONFORGE_UPDATE_KEY_ID is required".to_owned())?;
     let expected_public_key = env::var("DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX")
@@ -41,8 +44,10 @@ fn run() -> Result<(), String> {
         return Err("DRAGONFORGE_UPDATE_KEY_ID must be 1-128 characters".to_owned());
     }
 
-    let seed = hex::decode(seed_hex)
-        .map_err(|_| "update signing key seed is not valid hexadecimal".to_owned())?;
+    let seed = Zeroizing::new(
+        hex::decode(seed_hex.as_bytes())
+            .map_err(|_| "update signing key seed is not valid hexadecimal".to_owned())?,
+    );
     let key_pair = MlDsa65KeyPair::from_seed(&seed)
         .map_err(|_| "update signing key seed is invalid".to_owned())?;
     let derived_public_key = hex::encode_upper(key_pair.verifying_key().as_bytes());
@@ -65,9 +70,6 @@ fn run() -> Result<(), String> {
 
     println!("UPDATE MANIFEST SIGNING: PASS");
     println!("Manifest: {}", output.display());
-    println!(
-        "Pinned public key (ML-DSA-65 hex): {}",
-        derived_public_key
-    );
+    println!("Pinned public key (ML-DSA-65 hex): {derived_public_key}");
     Ok(())
 }
