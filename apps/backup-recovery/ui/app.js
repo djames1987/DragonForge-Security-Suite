@@ -129,6 +129,7 @@
   }
 
   async function restore() {
+    if (!window.confirm("Verify and restore this backup to the selected new destination? DragonForge will not overwrite an existing destination.")) return;
     const button = document.getElementById("restore-backup");
     button.disabled = true;
     button.textContent = "Restoring…";
