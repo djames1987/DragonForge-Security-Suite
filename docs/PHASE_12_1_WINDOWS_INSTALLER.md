@@ -60,7 +60,7 @@ Then:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-windows-installer.ps1
 ~~~
 
-The script stages the same release payload used by the portable ZIP, compiles the suite installer, writes it under `dist\`, and emits a SHA-256 sidecar.
+The script stages the same release payload used by the portable ZIP, compiles the suite installer, writes it under `dist\`, and emits a SHA-256 sidecar. Temporary expanded portable/installer staging directories are removed automatically after packaging (including failure paths) so repeated verification runs do not accumulate redundant copies. Final ZIP/installer/hash artifacts and Cargo's reusable build cache are retained.
 
 The default development target is `v0.1.0-alpha.2`. Pass `-Version` to select another version.
 
