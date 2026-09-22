@@ -34,6 +34,7 @@ on:
       - "scripts/build-all-apps-for-testing.ps1"
       - "scripts/run-phase13-beta-readiness-tests.ps1"
       - "scripts/new-beta-qualification-record.ps1"
+      - "scripts/evaluate-beta-qualification.ps1"
       - "docs/PHASE_13_BETA_READINESS.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
       - "docs/BETA_RELEASE_GATE.md"
@@ -72,6 +73,7 @@ on:
       - "scripts/build-all-apps-for-testing.ps1"
       - "scripts/run-phase13-beta-readiness-tests.ps1"
       - "scripts/new-beta-qualification-record.ps1"
+      - "scripts/evaluate-beta-qualification.ps1"
       - "docs/PHASE_13_BETA_READINESS.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
       - "docs/BETA_RELEASE_GATE.md"
@@ -136,7 +138,8 @@ jobs:
         run: |
           $scripts = @(
             'scripts/run-phase13-beta-readiness-tests.ps1',
-            'scripts/new-beta-qualification-record.ps1'
+            'scripts/new-beta-qualification-record.ps1',
+            'scripts/evaluate-beta-qualification.ps1'
           )
           foreach ($file in $scripts) {
             $tokens = $null
