@@ -48,6 +48,8 @@ impl SafeLogger {
 #[cfg(test)]
 mod tests {
     use std::fs;
+
+    use dragonforge_core::LogPolicy;
     use tempfile::tempdir;
 
     use super::SafeLogger;
