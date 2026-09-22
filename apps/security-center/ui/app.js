@@ -174,8 +174,17 @@
   
   function renderLastFailure(snapshot) {
     const target = document.getElementById("last-failure");
-    if (!target) return;
-    target.textContent = snapshot.last_failure || "No recorded crash/failure is currently available.";
+    if (target) {
+      target.textContent = snapshot.last_failure || "No recorded crash/failure is currently available.";
+    }
+
+    const componentTarget = document.getElementById("component-failures");
+    if (!componentTarget) return;
+    const items = snapshot.component_failures ?? [];
+    componentTarget.innerHTML = items.map((item) => {
+      const state = item.has_failure ? "Recorded failure" : "No recorded failure";
+      return `<div><strong>${escapeHtml(item.component)}</strong>: ${escapeHtml(state)}</div>`;
+    }).join("");
   }
 
   function renderHealth(snapshot) {
