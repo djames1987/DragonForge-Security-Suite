@@ -101,6 +101,7 @@ mod tests {
         bytes[0] = b'X';
         assert!(Header::decode(&bytes).is_err());
     }
+
     #[test]
     fn header_rejects_unsupported_version_and_truncation() {
         let mut bytes = Header {
@@ -112,5 +113,4 @@ mod tests {
         assert!(Header::decode(&bytes).is_err());
         assert!(Header::decode(&bytes[..bytes.len() - 1]).is_err());
     }
-
 }
