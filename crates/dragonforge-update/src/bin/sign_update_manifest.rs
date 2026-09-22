@@ -33,6 +33,8 @@ fn run() -> Result<(), String> {
         .map_err(|_| "DRAGONFORGE_UPDATE_SIGNING_KEY_HEX is required".to_owned())?;
     let key_id = env::var("DRAGONFORGE_UPDATE_KEY_ID")
         .map_err(|_| "DRAGONFORGE_UPDATE_KEY_ID is required".to_owned())?;
+    let expected_public_key = env::var("DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX")
+        .map_err(|_| "DRAGONFORGE_UPDATE_PUBLIC_KEY_HEX is required".to_owned())?;
     if key_id.trim().is_empty() || key_id.len() > 128 {
         return Err("DRAGONFORGE_UPDATE_KEY_ID must be 1-128 characters".to_owned());
     }
@@ -41,6 +43,10 @@ fn run() -> Result<(), String> {
         .map_err(|_| "update signing key seed is not valid hexadecimal".to_owned())?;
     let key_pair = MlDsa65KeyPair::from_seed(&seed)
         .map_err(|_| "update signing key seed is invalid".to_owned())?;
+    let derived_public_key = hex::encode_upper(key_pair.verifying_key().as_bytes());
+    if !derived_public_key.eq_ignore_ascii_case(expected_public_key.trim()) {
+        return Err("update signing key does not match the pinned release public key".to_owned());
+    }
 
     let payload_bytes = fs::read(&input).map_err(|_| "unable to read update payload".to_owned())?;
     let payload: UpdateManifestPayload = serde_json::from_slice(&payload_bytes)
@@ -59,7 +65,7 @@ fn run() -> Result<(), String> {
     println!("Manifest: {}", output.display());
     println!(
         "Pinned public key (ML-DSA-65 hex): {}",
-        hex::encode_upper(key_pair.verifying_key().as_bytes())
+        derived_public_key
     );
     Ok(())
 }
