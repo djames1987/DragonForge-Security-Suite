@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.2 hardens the existing normal-user DragonForge Agent lifecycle without changing its privilege boundary.
 
@@ -68,3 +68,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12.2-
 ~~~
 
 The verifier writes a timestamped log and SHA-256 sidecar under `test-logs\`.
+
+## Verified Windows result
+
+Phase 12.2 completed authoritative Windows verification on `DRACO`.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12.2-agent-lifecycle-20260922-110040.log`
+- Log SHA-256: `D7D5EF5979C9AAA250D527192457D6DB476274A30F50A2C2253C81EC1D70B2E5`
+
+The passing run covered rustfmt, targeted compile checks, strict Clippy with warnings denied, all 9 Agent tests, all 22 Security Center tests, JavaScript syntax validation, and required Phase 12.2 artifact checks. It specifically passed the stale-lock recovery test, authenticated health round trip, authenticated graceful-shutdown cleanup test, and same-session manual-stop suppression test.
