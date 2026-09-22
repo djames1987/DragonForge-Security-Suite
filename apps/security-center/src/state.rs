@@ -492,6 +492,23 @@ impl AppState {
     }
 }
 
+
+fn component_failure_statuses() -> Vec<ComponentFailureStatus> {
+    Component::ALL
+        .into_iter()
+        .map(|component| {
+            let last_failure = ComponentLogger::discover(component, false)
+                .ok()
+                .and_then(|logger| logger.read_last_failure());
+            ComponentFailureStatus {
+                component: component.as_str(),
+                has_failure: last_failure.is_some(),
+                last_failure,
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use dragonforge_core::LogPolicy;
@@ -548,20 +565,4 @@ mod tests {
             updated
         );
     }
-}
-
-fn component_failure_statuses() -> Vec<ComponentFailureStatus> {
-    Component::ALL
-        .into_iter()
-        .map(|component| {
-            let last_failure = ComponentLogger::discover(component, false)
-                .ok()
-                .and_then(|logger| logger.read_last_failure());
-            ComponentFailureStatus {
-                component: component.as_str(),
-                has_failure: last_failure.is_some(),
-                last_failure,
-            }
-        })
-        .collect()
 }
