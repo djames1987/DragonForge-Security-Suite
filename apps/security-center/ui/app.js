@@ -63,7 +63,7 @@
     const stateClass = `state-${escapeHtml(component.state)}`;
     const action =
       component.id === "agent"
-        ? '<button class="component-action" data-launch="agent">Start DragonForge Agent</button>'
+        ? `<button class="component-action" data-launch="agent">${component.state === "active" ? "Restart DragonForge Agent" : "Start DragonForge Agent"}</button>`
         : component.id === "password-manager"
           ? '<button class="component-action" data-launch="password-manager">Open Password Manager</button>'
         : component.id === "file-vault"
@@ -161,11 +161,15 @@
     document.getElementById("agent-detail").textContent = agent.detail;
     document.getElementById("sidebar-agent-label").textContent = agent.label;
     document.getElementById("sidebar-agent-detail").textContent = agent.detail;
-    const button = document.getElementById("start-agent");
-    if (button) {
-      button.disabled = agent.available;
-      button.textContent = agent.available ? "Agent running" : "Start Agent";
+    const startButton = document.getElementById("start-agent");
+    const restartButton = document.getElementById("restart-agent");
+    const stopButton = document.getElementById("stop-agent");
+    if (startButton) {
+      startButton.disabled = agent.available;
+      startButton.textContent = agent.available ? "Agent running" : "Start Agent";
     }
+    if (restartButton) restartButton.disabled = !agent.available;
+    if (stopButton) stopButton.disabled = !agent.available;
   }
   
   function renderHealth(snapshot) {
@@ -221,9 +225,35 @@
   
   async function startAgent() {
     try {
-      await invoke("launch_agent");
-      toast("DragonForge Agent start requested.");
+      const active = state.snapshot?.agent?.available;
+      if (active) {
+        await invoke("restart_agent");
+        toast("DragonForge Agent restarted and reconnected.");
+      } else {
+        await invoke("launch_agent");
+        toast("DragonForge Agent start requested.");
+      }
       await new Promise((resolve) => window.setTimeout(resolve, 350));
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function restartAgent() {
+    try {
+      await invoke("restart_agent");
+      toast("DragonForge Agent restarted and reconnected.");
+      await loadSnapshot();
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function stopAgent() {
+    try {
+      const status = await invoke("stop_agent");
+      toast(status.available ? "Agent shutdown is still in progress." : "DragonForge Agent stopped gracefully.");
       await loadSnapshot();
     } catch (error) {
       toast(String(error), true);
@@ -395,6 +425,8 @@
     wireNavigation();
     document.getElementById("refresh-button").addEventListener("click", refreshHealth);
     document.getElementById("start-agent").addEventListener("click", startAgent);
+    document.getElementById("restart-agent").addEventListener("click", restartAgent);
+    document.getElementById("stop-agent").addEventListener("click", stopAgent);
     document.getElementById("clear-events").addEventListener("click", clearActivity);
     document.getElementById("settings-form").addEventListener("submit", saveSettings);
     document.getElementById("copy-diagnostics")?.addEventListener("click", copyDiagnostics);
