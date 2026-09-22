@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implementation Complete — Local Verification Pending**
+**Verified Complete**
 
 Phase 12.7 reviews DragonForge as one deployed security product and converts review findings into regression tests, repeatable audit tooling, and explicit residual-risk documentation.
 
@@ -70,3 +70,15 @@ Run:
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase12.7-security-hardening-tests.ps1
 
 The first run may install cargo-audit if it is missing. The verifier creates a timestamped log and SHA-256 sidecar under test-logs\.
+
+## Verified Windows result
+
+Phase 12.7 completed authoritative Windows verification on `DRACO`.
+
+- Machine: `DRACO`
+- Windows: `Microsoft Windows NT 10.0.26200.0`
+- Result: **PASS**
+- Verified log: `dragonforge-phase12.7-security-hardening-20260922-144042.log`
+- Log SHA-256: `D70D7A61DAC9976F67303D428A2F1AFC5E06216074D67DEDD828AA0AE964532C`
+
+The passing run covered rustfmt, targeted compile checks, strict Clippy with `-D warnings`, all 10 Agent tests, all 6 Backup & Recovery tests, all 21 Core tests, all 11 File Vault tests, all 7 Secure Share tests, all 24 Security Center tests, locked Cargo metadata, a live RustSec dependency advisory audit, PowerShell 5.1 syntax validation for the Phase 12.7 security scripts, and required hardening-invariant checks.
