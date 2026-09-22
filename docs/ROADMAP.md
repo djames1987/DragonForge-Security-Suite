@@ -333,7 +333,7 @@ See [PHASE_12_3_RELEASE_ENGINEERING.md](PHASE_12_3_RELEASE_ENGINEERING.md).
 
 
 ## Phase 12.4 — Code Signing
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - Windows Authenticode signing helper using Microsoft SignTool;
@@ -348,7 +348,10 @@ Delivered:
 - stable release tags fail closed unless signing is enabled;
 - prerelease/development builds may remain explicitly unsigned;
 - documented certificate rotation, revocation, timestamp outage, and compromised-key response procedures;
-- dedicated Phase 12.4 Windows verification tooling and documentation.
+- dedicated Phase 12.4 Windows verification tooling and documentation;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including formatting, targeted compile checks, strict Clippy, all 9 Agent tests, all 22 Security Center tests, JavaScript validation, PowerShell syntax validation across signing/release scripts, signing-order checks, stable-release enforcement checks, signing metadata checks, and private-key ignore-policy checks;
+- verified log: `dragonforge-phase12.4-code-signing-20260922-113515.log`;
+- verified log SHA-256: `EE98BCF2D6E0AD1780197698E43AE655BAEE7FDED078C1621B2C100E2B903DA4`.
 
 Authenticode improves publisher identity and integrity but does not guarantee immediate SmartScreen reputation.
 
