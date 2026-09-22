@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 12.1 Windows Installer is implementation complete with local verification pending. Phase 12.0 remains verified complete, and DragonForge now has both portable-release and per-user installer paths for external Windows testing.
+> **Current status:** Phase 12.1 Windows Installer is verified complete. DragonForge now has verified portable-release and per-user installer paths for external Windows testing.
 
 ## Canonical repository
 
@@ -116,7 +116,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 10 — Secure Share: **Verified Complete**
 - Phase 11 — DragonForge Agent: **Verified Complete**
 - Phase 12.0 — External Test Baseline: **Verified Complete**
-- Phase 12.1 — Windows Installer: **Implementation Complete — Local Verification Pending**
+- Phase 12.1 — Windows Installer: **Verified Complete**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
@@ -146,6 +146,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-window
 Inno Setup 6 is required on the build machine. The installer preserves DragonForge user data on uninstall by design, creates Start Menu integration, offers an optional desktop shortcut, warns when WebView2 is not detected, and can be included in future pre-releases with `publish-windows-release.ps1 -IncludeInstaller`.
 
 See [docs/PHASE_12_1_WINDOWS_INSTALLER.md](docs/PHASE_12_1_WINDOWS_INSTALLER.md) and [docs/INSTALLER_TEST_CHECKLIST.md](docs/INSTALLER_TEST_CHECKLIST.md).
+
+Phase 12.1 local verification result: **PASS** on `DRACO` (Windows NT 10.0.26200.0).  
+Verified log: `dragonforge-phase12.1-installer-20260922-103728.log`  
+Verified log SHA-256: `655086683B19789C3B7CAC44BC0E9E80A3E0F3EE79A2CA38A744A36F9753F898`  
+Verified installer SHA-256: `2C8FA84D044BF53562EBD494DAC526F8F94462EAF67C6371E9EA96A6498D23B2`
 
 ## Portable test release
 
