@@ -699,6 +699,7 @@ mod tests {
         let backup = dir.path().join("sample.dfbackup");
         assert!(create_backup(&[link], &backup, PASSWORD).is_err());
     }
+
     #[test]
     fn truncated_and_unsupported_version_backups_are_rejected() {
         let dir = tempdir().expect("tempdir");
@@ -716,5 +717,4 @@ mod tests {
         fs::write(&backup, unsupported).expect("unsupported");
         assert!(verify_backup(&backup, PASSWORD).is_err());
     }
-
 }
