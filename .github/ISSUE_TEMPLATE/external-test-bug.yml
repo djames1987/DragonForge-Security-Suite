@@ -1,8 +1,6 @@
 name: External test bug
 description: Report a DragonForge Security Suite alpha/pre-release problem
 title: "[External Test] "
-labels:
-  - bug
 body:
   - type: markdown
     attributes:
