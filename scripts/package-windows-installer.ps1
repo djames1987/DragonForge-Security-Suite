@@ -1,6 +1,8 @@
 param(
     [string]$Version = "0.1.0-alpha.2",
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [string]$ExpectedCommit,
+    [string]$ReleaseTag
 )
 
 $ErrorActionPreference = "Stop"
@@ -56,8 +58,13 @@ try {
     if (-not (Test-Path -LiteralPath $IssPath -PathType Leaf)) { throw "Installer definition not found: $IssPath" }
     $Commit = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or -not $Commit) { throw "Unable to determine the installer source commit." }
+    if ($ExpectedCommit -and $Commit -ne $ExpectedCommit) { throw "Installer source commit mismatch." }
+    if ($ReleaseTag) {
+        $TaggedCommit = (& git rev-parse "$ReleaseTag^{commit}").Trim()
+        if ($LASTEXITCODE -ne 0 -or $TaggedCommit -ne $Commit) { throw "Release tag $ReleaseTag does not resolve to the current commit." }
+    }
 
-    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -KeepStage
+    & (Join-Path $PSScriptRoot "package-windows-release.ps1") -Version $Version -SkipBuild:$SkipBuild -KeepStage -ExpectedCommit $Commit -ReleaseTag $ReleaseTag
     if ($LASTEXITCODE -ne 0) { throw "Portable staging failed before installer compilation." }
     if (-not (Test-Path -LiteralPath $PortableStage -PathType Container)) { throw "Portable staging directory is missing: $PortableStage" }
 
@@ -74,6 +81,7 @@ DragonForge Security Suite
 Version: v$Version
 Release channel: alpha / external testing
 Git commit: $Commit
+Git tag: $(if ($ReleaseTag) { $ReleaseTag } else { "un-tagged" })
 Built (UTC): $([DateTime]::UtcNow.ToString("o"))
 Platform: Windows x64 installer
 "@
