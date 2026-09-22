@@ -113,6 +113,7 @@ try {
         "docs/EXTERNAL_TEST_MATRIX.md",
         "docs/INSTALLER_TEST_CHECKLIST.md",
         "scripts/new-beta-qualification-record.ps1",
+        "scripts/evaluate-beta-qualification.ps1",
         "scripts/run-phase13-beta-readiness-tests.ps1",
         "scripts/package-windows-release.ps1",
         "scripts/package-windows-installer.ps1",
@@ -144,6 +145,11 @@ try {
         if (-not $Gate.Contains($RequiredText)) { throw "Beta release gate missing requirement: $RequiredText" }
     }
 
+    $Evaluator = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "scripts\evaluate-beta-qualification.ps1")
+    foreach ($RequiredText in @("BQ-01","BQ-06","CandidateCommit","BETA QUALIFICATION EVALUATION: PASS")) {
+        if (-not $Evaluator.Contains($RequiredText)) { throw "Qualification evaluator invariant missing: $RequiredText" }
+    }
+
     $RecordScript = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "scripts\new-beta-qualification-record.ps1")
     foreach ($RequiredText in @("qualification_log_sha256","disposable_test_data_only","scenario_id","Get-FileHash")) {
         if (-not $RecordScript.Contains($RequiredText)) { throw "Qualification record invariant missing: $RequiredText" }
@@ -151,6 +157,7 @@ try {
 
     foreach ($Script in @(
         "new-beta-qualification-record.ps1",
+        "evaluate-beta-qualification.ps1",
         "run-phase13-beta-readiness-tests.ps1",
         "run-dependency-audit.ps1",
         "review-windows-data-permissions.ps1",
