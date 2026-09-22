@@ -403,7 +403,7 @@ See [PHASE_12_6_UX_CONSISTENCY.md](PHASE_12_6_UX_CONSISTENCY.md).
 
 
 ## Phase 12.7 — Security Hardening Review
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - deployment-wide threat/trust-boundary review across UI/native, Security Center/Agent, sync/network, browser-extension, serialized-input, OS/API, and shared/product crate boundaries;
@@ -417,7 +417,10 @@ Delivered:
 - root security policy updated for current authenticated Agent IPC and future authenticated-channel requirements;
 - architecture review updated for current Agent capabilities, filesystem expectations, concurrency expectations, and stale pre-Agent wording;
 - explicit residual-risk/non-claim register, including inherited Windows Agent runtime ACLs and the non-privileged Agent boundary;
-- dedicated Phase 12.7 Windows verification tooling and documentation.
+- dedicated Phase 12.7 Windows verification tooling and documentation;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including rustfmt, targeted compile checks, strict Clippy with `-D warnings`, all 10 Agent tests, all 6 Backup & Recovery tests, all 21 Core tests, all 11 File Vault tests, all 7 Secure Share tests, all 24 Security Center tests, locked Cargo metadata, live RustSec advisory audit, PowerShell 5.1 syntax validation, and hardening-invariant source checks;
+- verified log: `dragonforge-phase12.7-security-hardening-20260922-144042.log`;
+- verified log SHA-256: `D70D7A61DAC9976F67303D428A2F1AFC5E06216074D67DEDD828AA0AE964532C`.
 
 Phase 12.7 intentionally does not add antivirus, EDR, packet filtering, or privileged remediation. Dedicated Windows ACL application and any privileged service boundary remain separately reviewed future work.
 
