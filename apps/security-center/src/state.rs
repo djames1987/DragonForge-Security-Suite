@@ -203,10 +203,11 @@ impl AppState {
             "DragonForge Agent automatic start requested",
         );
 
-        if orchestration::launch_agent().is_ok() {
-            if let Some(status) = self.wait_for_agent(true, Duration::from_secs(2)) {
-                return status;
-            }
+        if orchestration::launch_agent().is_err() {
+            return self.agent.status();
+        }
+        if let Some(status) = self.wait_for_agent(true, Duration::from_secs(2)) {
+            return status;
         }
 
         // A crashed process can leave its create_new lock file behind briefly.
@@ -254,10 +255,7 @@ impl AppState {
             self.agent.shutdown()?;
             let _ = self.wait_for_agent(false, Duration::from_secs(2));
         }
-        orchestration::launch_agent().map_err(|error| error.to_string())?;
-        let status = self
-            .wait_for_agent(true, Duration::from_secs(3))
-            .unwrap_or_else(|| self.agent.status());
+        let status = self.ensure_agent_running();
         if !status.available {
             return Err("DragonForge Agent did not reconnect after restart.".to_owned());
         }
