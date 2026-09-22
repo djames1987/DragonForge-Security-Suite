@@ -118,6 +118,11 @@ fn diagnostic_report(state: State<'_, AppState>) -> Result<String, String> {
     state.diagnostic_report()
 }
 
+#[tauri::command]
+fn create_support_bundle(state: State<'_, AppState>) -> Result<String, String> {
+    state.create_support_bundle()
+}
+
 pub fn run() {
     let state = AppState::initialize().unwrap_or_else(|error| {
         panic!("failed to initialize DragonForge Security Center: {error}")
@@ -144,7 +149,8 @@ pub fn run() {
             launch_backup_recovery,
             launch_file_vault,
             launch_password_manager,
-            diagnostic_report
+            diagnostic_report,
+            create_support_bundle
         ])
         .run(tauri::generate_context!())
         .expect("error while running DragonForge Security Center");
