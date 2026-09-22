@@ -151,8 +151,8 @@ pub fn verify_manifest(
         .map_err(|_| "installed DragonForge version is not valid SemVer".to_owned())?;
     let candidate = Version::parse(&manifest.payload.version)
         .map_err(|_| "update manifest version is not valid SemVer".to_owned())?;
-    if candidate <= current {
-        return Err("update candidate is not newer than the installed version".to_owned());
+    if candidate < current {
+        return Err("update candidate would downgrade the installed version".to_owned());
     }
     if !version_matches_channel(&candidate, selected_channel) {
         return Err("update version prerelease label does not match the selected channel".to_owned());
@@ -311,14 +311,15 @@ mod tests {
         let signed = sign_manifest(payload("0.1.0", UpdateChannel::Stable), "test-key", &key)
             .expect("sign");
         let json = serde_json::to_vec(&signed).expect("json");
-        assert!(verify_manifest(
+        let current = verify_manifest(
             &json,
             "test-key",
             &hex::encode(key.verifying_key().as_bytes()),
             "0.1.0",
             UpdateChannel::Stable,
         )
-        .is_err());
+        .expect("same version is a valid signed manifest");
+        assert_eq!(current.payload.version, "0.1.0");
 
         let newer = sign_manifest(payload("0.2.0-beta.1", UpdateChannel::Beta), "test-key", &key)
             .expect("sign");
