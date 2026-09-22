@@ -25,11 +25,11 @@ try {
     Write-Host "DragonForge Security Suite - Phase 12.0 External Test Baseline verification"
     Write-Host "Repository: $RepoRoot"
 
-    Invoke-Checked cargo @("fmt", "--all", "--check")
-    Invoke-Checked cargo @("check", "-p", "dragonforge-core", "-p", "dragonforge-agent", "-p", "dragonforge-agent-service", "-p", "dragonforge-security-center", "--all-targets")
-    Invoke-Checked cargo @("clippy", "-p", "dragonforge-core", "-p", "dragonforge-agent", "-p", "dragonforge-agent-service", "-p", "dragonforge-security-center", "--all-targets", "--", "-D", "warnings")
-    Invoke-Checked cargo @("test", "-p", "dragonforge-agent", "-p", "dragonforge-agent-service", "-p", "dragonforge-security-center", "--all-targets")
-    Invoke-Checked node @("--check", "apps/security-center/ui/app.js")
+    Invoke-Checked cargo "fmt" "--all" "--check"
+    Invoke-Checked cargo "check" "-p" "dragonforge-core" "-p" "dragonforge-agent" "-p" "dragonforge-agent-service" "-p" "dragonforge-security-center" "--all-targets"
+    Invoke-Checked cargo "clippy" "-p" "dragonforge-core" "-p" "dragonforge-agent" "-p" "dragonforge-agent-service" "-p" "dragonforge-security-center" "--all-targets" "--" "-D" "warnings"
+    Invoke-Checked cargo "test" "-p" "dragonforge-agent" "-p" "dragonforge-agent-service" "-p" "dragonforge-security-center" "--all-targets"
+    Invoke-Checked node "--check" "apps/security-center/ui/app.js"
 
     foreach ($Path in @(
         "docs/PHASE_12_0_EXTERNAL_TEST_BASELINE.md",
