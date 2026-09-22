@@ -14,8 +14,8 @@ pub use error::{ApiError, StoreError};
 pub use model::{
     AccountRecord, AccountResponse, DeviceDecisionRequest, DeviceRecord, DeviceStatus,
     DeviceSummary, EnrollDeviceRequest, EnrollDeviceResponse, HealthResponse,
-    MAX_RECOVERY_ENVELOPE_BYTES, MAX_SYNC_BLOB_BYTES, MIN_SUPPORTED_SYNC_PROTOCOL_VERSION, RecoveryRecord, SYNC_PROTOCOL_VERSION,
-    StoredVault, SyncMetadata,
+    MAX_RECOVERY_ENVELOPE_BYTES, MAX_SYNC_BLOB_BYTES, MIN_SUPPORTED_SYNC_PROTOCOL_VERSION,
+    RecoveryRecord, SYNC_PROTOCOL_VERSION, StoredVault, SyncMetadata,
 };
 pub use store::{InMemoryStore, SyncStore};
 
