@@ -9,12 +9,23 @@ $LogPath = Join-Path $LogDir "dragonforge-phase12-external-test-baseline-$Stamp.
 $HashPath = "$LogPath.sha256"
 
 function Invoke-Checked {
-    param([string]$Command, [string[]]$Arguments)
+    param(
+        [Parameter(Mandatory = $true)] [string]$Command,
+        [Parameter(ValueFromRemainingArguments = $true)] [string[]]$Arguments
+    )
     Write-Host ""
     Write-Host ">>> $Command $($Arguments -join ' ')"
-    & $Command @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed with exit code $LASTEXITCODE - $Command $($Arguments -join ' ')"
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        & $Command @Arguments 2>&1 | ForEach-Object { Write-Host $_ }
+        $CommandExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($CommandExitCode -ne 0) {
+        throw "Command failed with exit code $CommandExitCode - $Command $($Arguments -join ' ')"
     }
 }
 
