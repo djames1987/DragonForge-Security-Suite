@@ -61,6 +61,34 @@ impl AgentClient {
     }
 
     pub fn health(&self) -> Result<AgentHealth> {
+        let response = self.request("health")?;
+        let health = response
+            .health
+            .ok_or(AgentError::Protocol("agent health response is missing"))?;
+
+        Ok(AgentHealth {
+            available: true,
+            state: health.state,
+            detail: "Authenticated local agent session is healthy.".to_owned(),
+            transport: "loopback-tcp+hmac-sha256".to_owned(),
+            pid: Some(health.pid),
+            uptime_ms: Some(health.uptime_ms),
+            capabilities: health.capabilities,
+        })
+    }
+
+    pub fn shutdown(&self) -> Result<()> {
+        let response = self.request("shutdown")?;
+        if response.ok {
+            Ok(())
+        } else {
+            Err(AgentError::Unavailable(
+                "agent rejected the authenticated shutdown request",
+            ))
+        }
+    }
+
+    fn request(&self, action: &str) -> Result<ResponseWire> {
         let descriptor_bytes = fs::read(self.paths.runtime_file())
             .map_err(|_| AgentError::Unavailable("agent runtime descriptor is unavailable"))?;
         if descriptor_bytes.len() > MAX_WIRE_BYTES {
@@ -94,7 +122,7 @@ impl AgentClient {
             protocol_minor: AGENT_PROTOCOL_MINOR,
             request_id: random_request_id(),
             source: "security-center".to_owned(),
-            action: "health".to_owned(),
+            action: action.to_owned(),
             timestamp_ms: now_ms(),
             nonce_b64: BASE64.encode(nonce),
             auth_tag_hex: String::new(),
@@ -137,19 +165,7 @@ impl AgentClient {
                 "agent returned an authenticated failure response",
             ));
         }
-        let health = response
-            .health
-            .ok_or(AgentError::Protocol("agent health response is missing"))?;
-
-        Ok(AgentHealth {
-            available: true,
-            state: health.state,
-            detail: "Authenticated local agent session is healthy.".to_owned(),
-            transport: "loopback-tcp+hmac-sha256".to_owned(),
-            pid: Some(health.pid),
-            uptime_ms: Some(health.uptime_ms),
-            capabilities: health.capabilities,
-        })
+        Ok(response)
     }
 }
 
@@ -192,5 +208,6 @@ mod tests {
         let dir = tempdir().expect("tempdir");
         let client = AgentClient::from_paths(AgentPaths::from_root(dir.path()));
         assert!(client.health().is_err());
+        assert!(client.shutdown().is_err());
     }
 }
