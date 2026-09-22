@@ -67,7 +67,7 @@ The record does not collect a username and requires the tester to explicitly cla
 - Agent lifecycle result;
 - suite launch result.
 
-The script verifies the qualification log against its sidecar before writing the record.
+The script verifies the qualification log against its sidecar and requires the exact Phase 13 PASS marker before writing the record.
 
 ## Disk-space policy
 
