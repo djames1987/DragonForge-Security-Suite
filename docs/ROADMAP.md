@@ -250,6 +250,11 @@ Delivered:
 
 The existing v0.1.0-alpha.1 release remains frozen. Fixes discovered through external testing should ship in a new pre-release rather than replacing that release in place.
 
+Phase 12.0 scope alignment note:
+- the current diagnostic report already records platform/OS family, architecture, suite package version, exact build commit, release channel, component states, and Agent capabilities;
+- WebView2 **version** and per-component application **version** metadata are not yet recorded in the diagnostic JSON and remain explicit follow-up work for the diagnostics/release-hardening cycle;
+- diagnostics must continue to exclude passwords, vault contents, sync/admin tokens, OTP seeds, recovery material, private keys, sensitive file contents, and similar secrets.
+
 See [PHASE_12_0_EXTERNAL_TEST_BASELINE.md](PHASE_12_0_EXTERNAL_TEST_BASELINE.md).
 
 
@@ -261,7 +266,7 @@ Delivered:
 - per-user default installation under LocalAppData with no elevation required for the normal path;
 - stable installer AppId for in-place alpha upgrades;
 - Start Menu integration, optional desktop shortcut, and Security Center post-install launch;
-- explicit WebView2 detection/warning without silently downloading third-party executables;
+- explicit WebView2 detection/warning without silently downloading third-party executables, with clear direction to install the Microsoft Edge WebView2 Evergreen Runtime when missing;
 - upgrade-time exact-path Agent shutdown plus Windows application-closing integration;
 - uninstall behavior that removes installed program files while preserving DragonForge user data and externally stored vault/backup/share files;
 - installer-specific staged BUILD-INFO and SHA256SUMS metadata;
@@ -271,6 +276,96 @@ Delivered:
 - Phase 12.1 Windows verification harness with real installer compilation.
 
 See [PHASE_12_1_WINDOWS_INSTALLER.md](PHASE_12_1_WINDOWS_INSTALLER.md).
+
+
+## Phase 12.2 — Agent Lifecycle
+**Status: Planned**
+
+Goals:
+- improve the current normal-user, per-user DragonForge Agent lifecycle;
+- start the Agent automatically when Security Center needs it rather than requiring unnecessary manual startup;
+- detect crashed, stale, or orphaned Agent instances and recover safely;
+- add graceful Agent shutdown;
+- add restart and reconnect behavior after Agent failure or Security Center restart;
+- define reboot/login behavior and validate recovery after Windows sign-in;
+- keep the Agent non-elevated and per-user during Phase 12.2;
+- preserve the existing authenticated, narrow IPC trust boundary and fail-closed behavior.
+
+Phase 12.2 must not silently expand into a privileged Windows service. Privileged service work remains a separately reviewed future phase.
+
+
+## Phase 12.3 — Release Engineering
+**Status: Planned**
+
+Goals:
+- automate suite-wide version stamping;
+- build portable ZIP and Windows installer artifacts from an exact Git tag;
+- produce SHA-256 manifests and sidecars for release artifacts;
+- generate version-specific release notes from repository-controlled metadata/templates;
+- enforce a committed `Cargo.lock` for release builds;
+- verify release artifact contents, hashes, build commit/tag identity, and expected executable set before publication;
+- ensure published assets cannot silently diverge from the source tag;
+- evolve the release pipeline toward signed builds without making code signing a hidden prerequisite for development builds.
+
+
+## Phase 12.4 — Code Signing
+**Status: Planned**
+
+Goals:
+- design the Windows Authenticode signing path before production distribution;
+- identify certificate/provider requirements and secret-key handling constraints;
+- integrate signing into the release pipeline without exposing signing credentials to ordinary development workflows;
+- sign installer and executable release artifacts when a suitable certificate is available;
+- verify signatures after packaging and before GitHub release publication;
+- document certificate rotation, revocation, timestamping, and compromised-key response;
+- reduce SmartScreen/unknown-publisher friction for external testers and future production users.
+
+Unsigned alpha builds must continue to state clearly that SmartScreen warnings are expected until signing is enabled.
+
+
+## Phase 12.5 — Crash Handling & Diagnostics
+**Status: Planned**
+
+Goals:
+- add panic/crash logging that never records secrets;
+- provide per-component diagnostic logs with consistent metadata and redaction policy;
+- implement bounded log rotation and retention;
+- create an exportable support bundle suitable for bug reports;
+- add automated redaction tests covering credentials, vault paths/content, sync/admin tokens, OTP seeds, recovery material, private keys, and sensitive user data;
+- add Security Center visibility for the most recent failure/status of each installed application;
+- extend diagnostic metadata to include WebView2 version and per-component application versions;
+- keep diagnostic collection metadata-focused and opt-in where identifiers could increase privacy risk.
+
+
+## Phase 12.6 — UX Consistency
+**Status: Planned**
+
+Goals:
+- make every DragonForge application visibly and behaviorally part of one suite;
+- standardize navigation patterns, typography, spacing, buttons, dialogs, status terminology, error presentation, version display, and About pages;
+- standardize safe confirmation patterns for destructive/security-sensitive actions;
+- make Security Center the primary suite entry point while preserving direct component launching for troubleshooting and advanced use;
+- align component health/status presentation between Security Center and individual applications;
+- ensure installer, portable package, diagnostics, and application UI use consistent product/version terminology.
+
+
+## Phase 12.7 — Security Hardening Review
+**Status: Planned**
+
+Goals:
+- threat-model DragonForge as one deployed product rather than as isolated applications;
+- review filesystem permissions and ownership expectations for installed binaries, runtime files, configuration, logs, and security-sensitive data;
+- review Agent and cross-component IPC authentication/authorization boundaries;
+- review all suite data directories and persistence locations;
+- audit logs and diagnostic surfaces for secret leakage;
+- perform dependency/security advisory review and establish repeatable dependency-audit tooling;
+- fuzz or property-test package/container parsers, including `.dfvault`, `.dfbackup`, `.dfshare`, and other versioned formats;
+- add corrupted, truncated, oversized, malformed, duplicate-entry, and unsupported-version tests;
+- expand malicious path, traversal, symlink/reparse-point, and destination-overwrite tests;
+- add concurrent-access/race-condition tests around vaults, stores, backups, Agent runtime files, and other shared state;
+- document residual risks and explicit non-claims before moving toward a broader beta/stable channel.
+
+Phase 12.7 is a hardening/review phase, not a mandate to add antivirus, EDR, packet filtering, or privileged remediation features.
 
 
 ## Later research
