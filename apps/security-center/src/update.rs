@@ -119,12 +119,17 @@ impl UpdateManager {
             .send()
             .map_err(|_| "unable to download the verified update installer".to_owned())?;
         if !response.status().is_success() || response.url().scheme() != "https" {
-            return Err("update installer download did not remain on successful HTTPS".to_owned());
+            return Err(
+                "update installer download did not remain on successful HTTPS".to_owned(),
+            );
         }
-        if let Some(length) = response.content_length() {
-            if length != artifact.bytes {
-                return Err("update installer content length does not match signed metadata".to_owned());
-            }
+        if response
+            .content_length()
+            .is_some_and(|length| length != artifact.bytes)
+        {
+            return Err(
+                "update installer content length does not match signed metadata".to_owned(),
+            );
         }
         let bytes = response
             .bytes()
@@ -154,8 +159,9 @@ impl UpdateManager {
                 .map_err(|_| "unable to flush the staged update installer".to_owned())?;
         }
         if final_path.exists() {
-            fs::remove_file(&final_path)
-                .map_err(|_| "unable to replace the previously staged update installer".to_owned())?;
+            fs::remove_file(&final_path).map_err(|_| {
+                "unable to replace the previously staged update installer".to_owned()
+            })?;
         }
         fs::rename(&partial_path, &final_path)
             .map_err(|_| "unable to finalize the staged update installer".to_owned())?;
@@ -223,7 +229,9 @@ impl UpdateManager {
             .send()
             .map_err(|_| "unable to retrieve the secure update manifest".to_owned())?;
         if !response.status().is_success() || response.url().scheme() != "https" {
-            return Err("secure update manifest request did not remain on successful HTTPS".to_owned());
+            return Err(
+                "secure update manifest request did not remain on successful HTTPS".to_owned(),
+            );
         }
         if response
             .content_length()
