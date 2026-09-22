@@ -37,7 +37,7 @@ impl AgentServer {
         Ok(Self::from_paths(AgentPaths::discover()?))
     }
 
-    pub fn run(&self) -> Result<bool> {
+    pub fn run(&self) -> Result<()> {
         self.run_internal(None)
     }
 
@@ -121,7 +121,7 @@ fn handle_connection(
     session_key: &[u8],
     started: Instant,
     replay: &mut ReplayCache,
-) -> Result<()> {
+) -> Result<bool> {
     stream
         .set_read_timeout(Some(READ_TIMEOUT))
         .map_err(|_| AgentError::Io("agent read timeout could not be configured"))?;
