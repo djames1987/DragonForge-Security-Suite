@@ -139,11 +139,11 @@ pub fn build_router(state: AppState) -> Router {
             StatusCode::REQUEST_TIMEOUT,
             Duration::from_secs(30),
         ))
-        .layer(middleware::from_fn(security_headers))
         .layer(middleware::from_fn_with_state(
             limiter_state,
             enforce_rate_limit,
         ))
+        .layer(middleware::from_fn(security_headers))
         .with_state(state)
 }
 
