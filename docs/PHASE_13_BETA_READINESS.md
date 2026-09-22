@@ -12,6 +12,7 @@ Phase 13 converts DragonForge's external-test baseline into a release-qualificat
 - a release-blocking versus advisory defect policy;
 - an explicit beta release gate;
 - a machine-readable qualification-record generator that validates the verifier log SHA-256 before recording evidence;
+- a fail-closed evidence evaluator that requires all six scenarios to pass for the same candidate commit;
 - an authoritative Phase 13 Windows verifier;
 - real release-profile builds for all ten executables;
 - qualification-only portable ZIP and Inno Setup installer construction;
@@ -81,3 +82,12 @@ See:
 - `docs/INSTALLER_TEST_CHECKLIST.md`
 
 No beta label should be applied merely because one machine passes the automated verifier.
+
+
+## Evaluate collected evidence
+
+After records from all required machines are gathered under `test-logs\beta-qualification`, run:
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\evaluate-beta-qualification.ps1 -CandidateCommit <commit>
+
+The evaluator requires BQ-01 through BQ-06 for the same candidate commit and fails if required automated, Agent, suite-launch, reboot, installer-lifecycle, or disposable-data attestations fail.
