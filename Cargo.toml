@@ -12,6 +12,7 @@ members = [
     "services/password-manager-sync",
     "services/dragonforge-agent",
     "crates/dragonforge-core",
+    "crates/dragonforge-update",
     "crates/dragonforge-agent",
     "crates/dragonforge-file-vault",
     "crates/dragonforge-authenticator",
