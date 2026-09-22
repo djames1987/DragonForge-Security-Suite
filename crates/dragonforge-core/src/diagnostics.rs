@@ -196,11 +196,21 @@ fn now_ms() -> u128 {
 #[cfg(test)]
 mod tests {
     use std::fs;
-
-    use tempfile::tempdir;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     use super::{ComponentLogger, sanitize_diagnostic_text};
     use crate::LogPolicy;
+
+    fn test_dir(name: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!("dragonforge-core-{name}-{nonce}"));
+        fs::create_dir_all(&path).expect("create test directory");
+        path
+    }
 
     #[test]
     fn diagnostic_sanitizer_redacts_secret_markers() {
@@ -221,8 +231,8 @@ mod tests {
 
     #[test]
     fn component_logger_rotates_bounded_files() {
-        let dir = tempdir().expect("tempdir");
-        let path = dir.path().join("component.log");
+        let dir = test_dir("rotation");
+        let path = dir.join("component.log");
         let logger = ComponentLogger::from_path(path.clone(), LogPolicy::default())
             .with_rotation(4_096, 2);
         for _ in 0..100 {
@@ -236,13 +246,13 @@ mod tests {
 
     #[test]
     fn failure_record_never_persists_sensitive_summary() {
-        let dir = tempdir().expect("tempdir");
-        let path = dir.path().join("component.log");
+        let dir = test_dir("failure");
+        let path = dir.join("component.log");
         let logger = ComponentLogger::from_path(path, LogPolicy::default());
         logger
             .record_failure("test.failure", "token=super-secret-value")
             .expect("record");
-        let failure = fs::read_to_string(dir.path().join("last-failure.txt")).expect("read");
+        let failure = fs::read_to_string(dir.join("last-failure.txt")).expect("read");
         assert!(!failure.contains("super-secret-value"));
         assert!(failure.contains("[REDACTED]"));
     }
