@@ -32,6 +32,11 @@ on:
       - "scripts/run-phase10-secure-share-tests.ps1"
       - "scripts/run-phase11-agent-tests.ps1"
       - "scripts/build-all-apps-for-testing.ps1"
+      - "scripts/run-phase13-beta-readiness-tests.ps1"
+      - "scripts/new-beta-qualification-record.ps1"
+      - "docs/PHASE_13_BETA_READINESS.md"
+      - "docs/BETA_QUALIFICATION_MATRIX.md"
+      - "docs/BETA_RELEASE_GATE.md"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
@@ -65,6 +70,11 @@ on:
       - "scripts/run-phase10-secure-share-tests.ps1"
       - "scripts/run-phase11-agent-tests.ps1"
       - "scripts/build-all-apps-for-testing.ps1"
+      - "scripts/run-phase13-beta-readiness-tests.ps1"
+      - "scripts/new-beta-qualification-record.ps1"
+      - "docs/PHASE_13_BETA_READINESS.md"
+      - "docs/BETA_QUALIFICATION_MATRIX.md"
+      - "docs/BETA_RELEASE_GATE.md"
       - "Cargo.toml"
       - "rust-toolchain.toml"
       - ".github/workflows/ci.yml"
@@ -120,6 +130,28 @@ jobs:
           node --check apps/network-guard/ui/app.js
           node --check apps/backup-recovery/ui/app.js
           node --check apps/secure-share/ui/app.js
+
+      - name: Phase 13 qualification invariants
+        shell: pwsh
+        run: |
+          $scripts = @(
+            'scripts/run-phase13-beta-readiness-tests.ps1',
+            'scripts/new-beta-qualification-record.ps1'
+          )
+          foreach ($file in $scripts) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+          }
+          $apps = @('security-center','password-manager','file-vault','authenticator','security-scanner','integrity-monitor','network-guard','backup-recovery','secure-share')
+          foreach ($app in $apps) {
+            $html = Get-Content -Raw "apps/$app/ui/index.html"
+            if (-not $html.Contains('Suite Phase 13')) { throw "$app has stale suite phase metadata." }
+          }
+          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md')) {
+            if (-not (Test-Path $file)) { throw "Missing Phase 13 artifact: $file" }
+          }
 
       - name: Build all suite applications for testing
         shell: pwsh
