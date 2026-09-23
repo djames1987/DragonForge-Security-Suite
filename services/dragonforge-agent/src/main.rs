@@ -183,10 +183,10 @@ fn firewall_command(action: FirewallCliAction) -> ExitCode {
         FirewallCliAction::Allow => client.firewall_apply(identity, FirewallAction::Allow),
         FirewallCliAction::Block => client.firewall_apply(identity, FirewallAction::Block),
         FirewallCliAction::Remove => client.firewall_remove(identity),
-        FirewallCliAction::Rollback => client.firewall_rollback(
-            identity,
-            rollback_token.expect("rollback token checked above"),
-        ),
+        FirewallCliAction::Rollback => match rollback_token {
+            Some(token) => client.firewall_rollback(identity, token),
+            None => return firewall_usage(),
+        },
     };
     print_firewall_result(result)
 }
