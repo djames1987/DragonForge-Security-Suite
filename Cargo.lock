@@ -1288,6 +1288,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "dragonforge-windows-boundary"
+version = "0.1.0"
+
+[[package]]
 name = "dragonforge-vault"
 version = "0.1.0"
 dependencies = [
