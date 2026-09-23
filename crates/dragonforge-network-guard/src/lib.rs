@@ -2,10 +2,11 @@
 
 //! Windows-first network visibility for DragonForge Network Guard.
 //!
-//! Phase 8 is observation-only. It inventories bounded TCP/UDP endpoints and
-//! the Windows DNS client cache using fixed native probes. It does not capture
-//! packet payloads, alter firewall policy, terminate connections, or request
-//! elevation.
+//! Phase 8 inventories bounded TCP/UDP endpoints and the Windows DNS client
+//! cache using fixed native probes. Phase 19 adds application identity hashing
+//! for typed outbound firewall policy requests routed through the authenticated
+//! DragonForge Agent and privileged service. Packet payload capture and
+//! connection termination remain out of scope.
 
 use std::fs::File;
 use std::io::Read;
