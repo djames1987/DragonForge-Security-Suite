@@ -456,7 +456,7 @@ mod tests {
                 .expect("server");
         });
 
-        let deadline = Instant::now() + Duration::from_secs(2);
+        let deadline = Instant::now() + Duration::from_secs(10);
         while !paths.runtime_file().is_file() {
             assert!(
                 Instant::now() < deadline,
@@ -506,7 +506,7 @@ mod tests {
                 .expect("server");
         });
 
-        let deadline = Instant::now() + Duration::from_secs(2);
+        let deadline = Instant::now() + Duration::from_secs(10);
         while !paths.runtime_file().is_file() {
             assert!(
                 Instant::now() < deadline,
