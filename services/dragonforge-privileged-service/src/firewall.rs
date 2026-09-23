@@ -696,7 +696,8 @@ mod tests {
         let dir = tempdir().expect("tempdir");
         let mut identity = executable(dir.path(), "test.exe");
         identity.sha256_hex = "00".repeat(32);
-        let manager = FirewallManager::new(dir.path().join("firewall.json"), FakeBackend::default());
+        let manager =
+            FirewallManager::new(dir.path().join("firewall.json"), FakeBackend::default());
         assert!(
             manager
                 .apply(
