@@ -79,7 +79,8 @@ try {
         "dragonforge-network-guard$Extension",
         "dragonforge-backup-recovery$Extension",
         "dragonforge-secure-share$Extension",
-        "dragonforge-agent$Extension"
+        "dragonforge-agent$Extension",
+        "dragonforge-privileged-service$Extension"
     )
 
     if ($env:OS -eq "Windows_NT") {
@@ -98,6 +99,7 @@ try {
     Invoke-Checked cargo "build" "-p" "dragonforge-backup-recovery-app" @ReleaseArgs
     Invoke-Checked cargo "build" "-p" "dragonforge-secure-share-app" @ReleaseArgs
     Invoke-Checked cargo "build" "-p" "dragonforge-agent-service" @ReleaseArgs
+    Invoke-Checked cargo "build" "-p" "dragonforge-privileged-service" @ReleaseArgs
 
     Write-Host ""
     Write-Host "Verifying expected test executables in $TargetDirectory"
