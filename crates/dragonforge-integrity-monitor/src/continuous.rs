@@ -58,7 +58,9 @@ impl ContinuousMonitorPolicy {
             let prefix = rule.key_prefix.trim();
             if prefix.is_empty()
                 || prefix.len() > 256
-                || prefix.chars().any(|value| matches!(value, '\r' | '\n' | '\0'))
+                || prefix
+                    .chars()
+                    .any(|value| matches!(value, '\r' | '\n' | '\0'))
             {
                 return Err(IntegrityError::InvalidBaseline(
                     "continuous integrity suppression rule is invalid",
@@ -139,10 +141,7 @@ pub fn configure_continuous_monitoring(
     status_for(&state, baseline_path)
 }
 
-pub fn reseal_continuous_baseline(
-    state_path: &Path,
-    baseline_path: &Path,
-) -> IntegrityResult<()> {
+pub fn reseal_continuous_baseline(state_path: &Path, baseline_path: &Path) -> IntegrityResult<()> {
     let Some(mut state) = load_state_optional(state_path)? else {
         return Ok(());
     };
@@ -240,14 +239,9 @@ fn run_continuous_check_at(
     } else {
         let report = compare_to_baseline(baseline_path)?;
         for change in report.changes {
-            let suppressed = state
-                .policy
-                .suppressions
-                .iter()
-                .any(|rule| {
-                    rule.surface == change.surface
-                        && change.key.starts_with(rule.key_prefix.trim())
-                });
+            let suppressed = state.policy.suppressions.iter().any(|rule| {
+                rule.surface == change.surface && change.key.starts_with(rule.key_prefix.trim())
+            });
             let change_name = match change.kind {
                 ChangeKind::Added => "added",
                 ChangeKind::Removed => "removed",
@@ -275,9 +269,8 @@ fn run_continuous_check_at(
     }
 
     state.last_check_ms = Some(now);
-    state.next_check_ms = Some(
-        now.saturating_add(state.policy.interval_seconds.saturating_mul(1_000)),
-    );
+    state.next_check_ms =
+        Some(now.saturating_add(state.policy.interval_seconds.saturating_mul(1_000)));
     write_state(state_path, &state)?;
     let status = status_for(&state, baseline_path)?;
     Ok(ContinuousCheckOutcome {
@@ -312,7 +305,11 @@ fn status_for(
         last_check_ms: state.last_check_ms,
         next_check_ms: state.next_check_ms,
         retained_events: state.events.len(),
-        unsuppressed_events: state.events.iter().filter(|event| !event.suppressed).count(),
+        unsuppressed_events: state
+            .events
+            .iter()
+            .filter(|event| !event.suppressed)
+            .count(),
         suppression_rules: state.policy.suppressions.clone(),
     })
 }
@@ -407,13 +404,15 @@ fn backup_path(path: &Path) -> PathBuf {
 fn now_ms() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |duration| duration.as_millis().min(u128::from(u64::MAX)) as u64)
+        .map_or(0, |duration| {
+            duration.as_millis().min(u128::from(u64::MAX)) as u64
+        })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{BaselineEntry, IntegrityBaseline, BASELINE_VERSION};
+    use crate::{BASELINE_VERSION, BaselineEntry, IntegrityBaseline};
 
     fn write_baseline(path: &Path, fingerprint: &str) {
         let baseline = IntegrityBaseline {
@@ -450,15 +449,16 @@ mod tests {
         let baseline = dir.path().join("baseline.json");
         let state = dir.path().join("continuous.json");
         write_baseline(&baseline, &"00".repeat(32));
-        let status = configure_continuous_monitoring(
-            &state,
-            &baseline,
-            ContinuousMonitorPolicy::default(),
-        )
-        .expect("configure");
+        let status =
+            configure_continuous_monitoring(&state, &baseline, ContinuousMonitorPolicy::default())
+                .expect("configure");
         assert!(status.configured);
         assert!(status.baseline_sealed);
-        assert!(continuous_status(&state, &baseline).expect("status").baseline_sealed);
+        assert!(
+            continuous_status(&state, &baseline)
+                .expect("status")
+                .baseline_sealed
+        );
     }
 
     #[test]
