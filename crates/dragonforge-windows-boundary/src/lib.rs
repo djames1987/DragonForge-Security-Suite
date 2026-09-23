@@ -80,7 +80,6 @@ impl CapabilityPolicy {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum FirewallAction {
@@ -122,10 +121,7 @@ impl FirewallApplicationIdentity {
             return Err(BoundaryError::InvalidFirewallRequest);
         }
         let name = self.display_name.trim();
-        if name.is_empty()
-            || name.chars().count() > 120
-            || name.chars().any(char::is_control)
-        {
+        if name.is_empty() || name.chars().count() > 120 || name.chars().any(char::is_control) {
             return Err(BoundaryError::InvalidFirewallRequest);
         }
         Ok(())
@@ -171,7 +167,6 @@ pub struct FirewallMutationResult {
     pub rollback_token: Option<String>,
     pub policy: Option<FirewallPolicyState>,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
