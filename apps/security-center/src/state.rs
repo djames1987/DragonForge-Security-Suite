@@ -178,7 +178,9 @@ impl AppState {
             .suite_policy
             .notification_min_severity
             .clone();
-        Ok(self.lock_events()?.notifications(&threshold, limit.min(2_000)))
+        Ok(self
+            .lock_events()?
+            .notifications(&threshold, limit.min(2_000)))
     }
 
     pub fn acknowledge_event(&self, event_id: u64) -> Result<bool, String> {
@@ -241,7 +243,9 @@ impl AppState {
     }
 
     pub fn clear_events(&self) -> Result<(), String> {
-        self.lock_events()?.clear().map_err(|error| error.to_string())?;
+        self.lock_events()?
+            .clear()
+            .map_err(|error| error.to_string())?;
         let _ = self.logger.write(
             "info",
             "security-center.events-cleared",
