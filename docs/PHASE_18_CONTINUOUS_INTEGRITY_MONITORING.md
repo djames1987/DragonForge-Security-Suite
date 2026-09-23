@@ -1,6 +1,6 @@
 # Phase 18 — Continuous Integrity Monitoring
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 18 turns the Phase 7 integrity baseline engine into a restart-persistent, Agent-driven change detector. It remains intentionally detection-only: a reported change is evidence for review, not a malware verdict, and Phase 18 does not add quarantine, process termination, firewall mutation, registry remediation, or arbitrary privileged execution.
 
@@ -103,3 +103,18 @@ Run on Windows:
 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase18-continuous-integrity-tests.ps1`
 
 The verifier writes a transcript and a matching SHA-256 sidecar under `test-logs\`. Phase 18 must remain **Implementation Complete — Local Verification Pending** until that authoritative Windows run passes and the sidecar is independently checked.
+
+
+## Authoritative local verification
+
+Phase 18 was verified on 2026-09-23 on DRACO (Microsoft Windows NT 10.0.26200.0) using Windows PowerShell 5.1.26100.9444 with `scripts/run-phase18-continuous-integrity-tests.ps1`.
+
+The authoritative verifier passed formatting, locked Cargo metadata, full workspace checking, strict Clippy, the complete workspace and doc-test suite, Integrity Monitor JavaScript syntax validation, Phase 18 architecture/security invariants, PowerShell syntax validation, and the complete Windows application build including both `dragonforge-agent.exe` and `dragonforge-privileged-service.exe`.
+
+Final verifier marker:
+
+`PHASE 18 CONTINUOUS INTEGRITY MONITORING VERIFICATION: PASS`
+
+Authoritative log SHA-256:
+
+`7B98CFC0812068187F7CA978C1657EFB3043D6D3358DFA27225F4DE4F30FE931`
