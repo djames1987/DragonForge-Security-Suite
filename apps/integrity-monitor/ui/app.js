@@ -139,6 +139,9 @@
     document.getElementById("continuous-enabled").checked = Boolean(status.enabled);
     document.getElementById("continuous-interval").value = String(status.interval_seconds ?? 300);
     document.getElementById("continuous-save").disabled = !state.baseline?.exists;
+    document.getElementById("continuous-suppressions").value = (status.suppression_rules ?? [])
+      .map((rule) => `${rule.surface}:${rule.key_prefix}`)
+      .join("\n");
     document.getElementById("continuous-seal").textContent =
       !status.configured ? "Not configured" : status.baseline_sealed ? "Baseline sealed" : "Baseline changed";
     document.getElementById("continuous-meta").textContent =
