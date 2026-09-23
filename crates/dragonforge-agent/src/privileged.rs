@@ -2,6 +2,7 @@ use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Read, Write};
 
 use dragonforge_windows_boundary::{
+    FirewallAction, FirewallApplicationIdentity, FirewallMutationRequest, FirewallMutationResult,
     MAX_MESSAGE_BYTES, PIPE_NAME, PROTOCOL_MAJOR, PROTOCOL_MINOR, PrivilegedPolicyDescription,
     PrivilegedRequest, PrivilegedResponse, PrivilegedServiceHealth,
 };
@@ -19,20 +20,80 @@ impl PrivilegedServiceClient {
     }
 
     pub fn health(&self) -> Result<PrivilegedServiceHealth> {
-        self.request("health")?.health.ok_or(AgentError::Protocol(
+        self.request("health", None)?.health.ok_or(AgentError::Protocol(
             "privileged service health response is missing",
         ))
     }
 
     pub fn describe_policy(&self) -> Result<PrivilegedPolicyDescription> {
-        self.request("describe-policy")?
+        self.request("describe-policy", None)?
             .policy
             .ok_or(AgentError::Protocol(
                 "privileged service policy response is missing",
             ))
     }
 
-    fn request(&self, action: &str) -> Result<PrivilegedResponse> {
+    pub fn firewall_status(
+        &self,
+        identity: FirewallApplicationIdentity,
+    ) -> Result<FirewallMutationResult> {
+        self.firewall_request("firewall-status", identity, FirewallAction::Block, None)
+    }
+
+    pub fn firewall_apply(
+        &self,
+        identity: FirewallApplicationIdentity,
+        action: FirewallAction,
+    ) -> Result<FirewallMutationResult> {
+        self.firewall_request("firewall-apply", identity, action, None)
+    }
+
+    pub fn firewall_remove(
+        &self,
+        identity: FirewallApplicationIdentity,
+    ) -> Result<FirewallMutationResult> {
+        self.firewall_request("firewall-remove", identity, FirewallAction::Block, None)
+    }
+
+    pub fn firewall_rollback(
+        &self,
+        identity: FirewallApplicationIdentity,
+        rollback_token: String,
+    ) -> Result<FirewallMutationResult> {
+        self.firewall_request(
+            "firewall-rollback",
+            identity,
+            FirewallAction::Block,
+            Some(rollback_token),
+        )
+    }
+
+    fn firewall_request(
+        &self,
+        action_name: &str,
+        identity: FirewallApplicationIdentity,
+        action: FirewallAction,
+        rollback_token: Option<String>,
+    ) -> Result<FirewallMutationResult> {
+        self.request(
+            action_name,
+            Some(FirewallMutationRequest {
+                identity,
+                action,
+                rollback_token,
+            }),
+        )?
+        .firewall
+        .ok_or(AgentError::Protocol(
+            "privileged firewall response is missing",
+        ))
+    }
+
+    fn request(
+        &self,
+        action: &str,
+        firewall: Option<FirewallMutationRequest>,
+    ) -> Result<PrivilegedResponse> {
         let mut pipe = OpenOptions::new()
             .read(true)
             .write(true)
@@ -46,6 +107,7 @@ impl PrivilegedServiceClient {
             action: action.to_owned(),
             timestamp_ms: now_ms(),
             nonce_hex: random_nonce_hex(),
+            firewall,
         };
 
         let mut encoded = serde_json::to_vec(&request)
