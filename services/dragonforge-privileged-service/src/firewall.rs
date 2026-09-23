@@ -72,12 +72,16 @@ impl<B: FirewallBackend> FirewallManager<B> {
         identity
             .validate()
             .map_err(|_| ServiceError::RequestRejected)?;
+        verify_application_identity(identity)?;
         let state = self.load_state()?;
         let rule_name = rule_name_for_path(&identity.application_path)?;
-        let policy = state
+        let mut policy = state
             .policies
             .into_iter()
             .find(|policy| policy.rule_name == rule_name);
+        if let Some(policy) = policy.as_mut() {
+            policy.enabled = self.backend.exists(&rule_name)?;
+        }
         Ok(FirewallMutationResult {
             changed: false,
             rollback_token: None,
@@ -440,21 +444,53 @@ impl FirewallBackend for WindowsFirewallBackend {
             };
 
             unsafe {
-                rule.SetName(&name).ok();
-                rule.SetDescription(&description).ok();
-                rule.SetApplicationName(&path).ok();
-                rule.SetDirection(NET_FW_RULE_DIR_OUT).ok();
-                rule.SetProfiles(NET_FW_PROFILE2_ALL).ok();
-                rule.SetGrouping(&grouping).ok();
-                rule.SetEnabled(VARIANT_TRUE).ok();
-                rule.SetAction(action).ok();
-                rules.Add(&rule).ok();
+                rule.SetName(&name).ok().map_err(|_| ServiceError::Platform)?;
+                rule.SetDescription(&description)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetApplicationName(&path)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetDirection(NET_FW_RULE_DIR_OUT)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetProfiles(NET_FW_PROFILE2_ALL)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetGrouping(&grouping)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetEnabled(VARIANT_TRUE)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetAction(action)
+                    .ok()
+                    .map_err(|_| ServiceError::Platform)?;
+                rules.Add(&rule).ok().map_err(|_| ServiceError::Platform)?;
             }
+
             let current = unsafe { rules.Item(&name) }.map_err(|_| ServiceError::Platform)?;
             let current_path = unsafe { current.ApplicationName() }
                 .map_err(|_| ServiceError::Platform)?
                 .to_string();
-            if !same_path(Path::new(&current_path), &policy.application_path) {
+            let current_group = unsafe { current.Grouping() }
+                .map_err(|_| ServiceError::Platform)?
+                .to_string();
+            let current_direction =
+                unsafe { current.Direction() }.map_err(|_| ServiceError::Platform)?;
+            let current_action = unsafe { current.Action() }.map_err(|_| ServiceError::Platform)?;
+            let current_profiles =
+                unsafe { current.Profiles() }.map_err(|_| ServiceError::Platform)?;
+            let current_enabled =
+                unsafe { current.Enabled() }.map_err(|_| ServiceError::Platform)?;
+            if !same_path(Path::new(&current_path), &policy.application_path)
+                || current_group != FIREWALL_RULE_GROUP
+                || current_direction != NET_FW_RULE_DIR_OUT
+                || current_action != action
+                || current_profiles != NET_FW_PROFILE2_ALL
+                || current_enabled != VARIANT_TRUE
+            {
+                let _ = unsafe { rules.Remove(&name) };
                 return Err(ServiceError::Platform);
             }
             Ok(())
@@ -464,8 +500,14 @@ impl FirewallBackend for WindowsFirewallBackend {
     fn remove(&self, rule_name: &str) -> Result<()> {
         with_rules(|rules| {
             let name = windows::core::BSTR::from(rule_name);
-            if unsafe { rules.Item(&name) }.is_err() {
+            let Ok(rule) = (unsafe { rules.Item(&name) }) else {
                 return Ok(());
+            };
+            let grouping = unsafe { rule.Grouping() }
+                .map_err(|_| ServiceError::Platform)?
+                .to_string();
+            if grouping != FIREWALL_RULE_GROUP {
+                return Err(ServiceError::RequestRejected);
             }
             unsafe { rules.Remove(&name) }
                 .ok()
