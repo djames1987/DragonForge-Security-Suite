@@ -156,13 +156,7 @@ fn handle_connection(
                 state: "healthy".to_owned(),
                 pid: std::process::id(),
                 uptime_ms: started.elapsed().as_millis().min(u128::from(u64::MAX)) as u64,
-                capabilities: vec![
-                    "health".to_owned(),
-                    "authenticated-ipc".to_owned(),
-                    "background-lifetime".to_owned(),
-                    "graceful-shutdown".to_owned(),
-                    "restartable-session".to_owned(),
-                ],
+                capabilities: health_capabilities(),
             }),
             error: None,
             auth_tag_hex: String::new(),
@@ -199,6 +193,19 @@ fn handle_connection(
         .and_then(|_| stream.write_all(b"\n"))
         .map_err(|_| AgentError::Io("agent response could not be written"))?;
     Ok(request.action == "shutdown" && signed.ok)
+}
+
+fn health_capabilities() -> Vec<String> {
+    let mut capabilities = vec![
+        "health".to_owned(),
+        "authenticated-ipc".to_owned(),
+        "background-lifetime".to_owned(),
+        "graceful-shutdown".to_owned(),
+        "restartable-session".to_owned(),
+    ];
+    #[cfg(windows)]
+    capabilities.push("privileged-service-client".to_owned());
+    capabilities
 }
 
 fn validate_request(
