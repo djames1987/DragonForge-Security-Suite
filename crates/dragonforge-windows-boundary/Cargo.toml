@@ -1,0 +1,13 @@
+[package]
+name = "dragonforge-windows-boundary"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish = false
+description = "Fail-closed privileged Windows service boundary policy for DragonForge Security Suite"
+
+[dependencies]
+
+[lints]
+workspace = true

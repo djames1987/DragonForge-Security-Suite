@@ -483,12 +483,22 @@ Delivered:
 See [PHASE_15_PASSWORD_MANAGER_HARDENING.md](PHASE_15_PASSWORD_MANAGER_HARDENING.md).
 
 ## Phase 16 — Windows Security Boundary Foundation
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- design the privileged Windows service boundary before introducing privileged capabilities;
-- define service identity, authenticated Agent/service IPC, DACLs, command allow-lists, executable/publisher verification, and least-privilege capability policy;
-- prohibit generic arbitrary privileged command execution.
+Delivered:
+- dedicated `dragonforge-windows-boundary` policy crate with no privileged runtime behavior;
+- fixed future Windows service identity, virtual service account, local named-pipe endpoint, protocol and message bounds;
+- explicit OS peer-process verification requirement for Agent/service IPC;
+- exact installed Agent executable-path verification requirement;
+- valid Authenticode and exact publisher-subject verification requirements;
+- deny-by-default privileged capability model with zero Phase 16 privileged capabilities enabled;
+- fixed non-privileged command allow-list containing only `health` and `describe-policy`;
+- explicit rejection tests for generic `exec`, `shell`, `PowerShell`, `cmd`, and `run` command surfaces;
+- documented explicit named-pipe DACL/service-SID requirements for Phase 17;
+- ADR defining the future privileged-service trust boundary;
+- dedicated Phase 16 verification tooling and CI coverage.
+
+See [PHASE_16_WINDOWS_SECURITY_BOUNDARY.md](PHASE_16_WINDOWS_SECURITY_BOUNDARY.md).
 
 ## Phase 17 — DragonForge Privileged Service
 **Status: Planned**

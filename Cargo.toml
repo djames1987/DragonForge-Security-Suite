@@ -13,6 +13,7 @@ members = [
     "services/dragonforge-agent",
     "crates/dragonforge-core",
     "crates/dragonforge-update",
+    "crates/dragonforge-windows-boundary",
     "crates/dragonforge-agent",
     "crates/dragonforge-file-vault",
     "crates/dragonforge-authenticator",
