@@ -18,9 +18,17 @@ try {
     function Run([string]$Label, [scriptblock]$Command) {
         Write-Host ""
         Write-Host ">>> $Label"
-        & $Command
-        if ($LASTEXITCODE -ne 0) {
-            throw "Command failed with exit code $LASTEXITCODE - $Label"
+        $Previous = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
+            & $Command 2>&1 | ForEach-Object { Write-Host $_ }
+            $ExitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $Previous
+        }
+        if ($ExitCode -ne 0) {
+            throw "Command failed with exit code $ExitCode - $Label"
         }
     }
 
