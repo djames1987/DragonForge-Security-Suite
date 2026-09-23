@@ -64,7 +64,7 @@ The install flow refuses to register the service unless both:
 
 have valid Authenticode signatures from the same publisher.
 
-The installer writes the exact publisher certificate subject to protected service configuration and applies restricted ACLs before starting the service.
+The UAC installer copies the signed privileged-service executable into a protected `%ProgramFiles%\DragonForge Security Suite\Privileged Service` directory before SCM registration. It stores the exact signed Agent path and exact publisher certificate subject in protected service configuration, then applies restricted ACLs before starting the service.
 
 Unsigned development builds therefore cannot silently become the privileged service.
 
@@ -77,6 +77,7 @@ Configuration lives at:
 It contains only bounded operational policy:
 
 - schema version;
+- exact expected Agent executable path;
 - expected publisher subject;
 - maximum requests per minute;
 - maximum audit file size.
