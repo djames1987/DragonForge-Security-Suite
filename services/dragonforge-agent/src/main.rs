@@ -4,6 +4,8 @@ use std::env;
 use std::process::ExitCode;
 
 use dragonforge_agent::{AgentClient, AgentServer};
+#[cfg(windows)]
+use dragonforge_agent::PrivilegedServiceClient;
 use dragonforge_core::{Component, ComponentLogger, install_safe_panic_hook};
 
 fn main() -> ExitCode {
@@ -13,9 +15,13 @@ fn main() -> ExitCode {
     match env::args().nth(1).as_deref() {
         Some("--health") => health(),
         Some("--stop") => stop(),
+        #[cfg(windows)]
+        Some("--privileged-health") => privileged_health(),
+        #[cfg(windows)]
+        Some("--privileged-policy") => privileged_policy(),
         Some("--serve") | None => serve(),
         Some(_) => {
-            eprintln!("Usage: dragonforge-agent [--serve|--health|--stop]");
+            eprintln!("Usage: dragonforge-agent [--serve|--health|--stop|--privileged-health|--privileged-policy]");
             ExitCode::from(2)
         }
     }
@@ -77,6 +83,41 @@ fn stop() -> ExitCode {
         }
         Err(error) => {
             eprintln!("DragonForge Agent could not be stopped gracefully: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+
+#[cfg(windows)]
+fn privileged_health() -> ExitCode {
+    match PrivilegedServiceClient::new().health() {
+        Ok(health) => match serde_json::to_string_pretty(&health) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("DragonForge Privileged Service is unavailable: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+#[cfg(windows)]
+fn privileged_policy() -> ExitCode {
+    match PrivilegedServiceClient::new().describe_policy() {
+        Ok(policy) => match serde_json::to_string_pretty(&policy) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("DragonForge Privileged Service policy is unavailable: {error}");
             ExitCode::from(1)
         }
     }

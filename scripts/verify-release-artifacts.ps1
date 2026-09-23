@@ -29,7 +29,8 @@ $ExpectedExecutables = @(
     "dragonforge-network-guard.exe",
     "dragonforge-backup-recovery.exe",
     "dragonforge-secure-share.exe",
-    "dragonforge-agent.exe"
+    "dragonforge-agent.exe",
+    "dragonforge-privileged-service.exe"
 )
 
 function Verify-Sidecar {

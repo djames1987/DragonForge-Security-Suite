@@ -10,6 +10,7 @@ description = "Authenticated local DragonForge Agent IPC and background runtime"
 [dependencies]
 base64 = "0.22.1"
 dragonforge-core = { path = "../dragonforge-core" }
+dragonforge-windows-boundary = { path = "../dragonforge-windows-boundary" }
 hmac = "0.12.1"
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 serde = { version = "1.0", features = ["derive"] }

@@ -51,6 +51,7 @@ VersionInfoCopyright=DragonForge
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
+Name: "privilegedservice"; Description: "Install DragonForge Privileged Service (requires signed build and Administrator approval)"; GroupDescription: "Optional security boundary:"; Flags: unchecked
 
 [Files]
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -59,12 +60,18 @@ Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs c
 Name: "{userprograms}\DragonForge Security Suite\DragonForge Security Center"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"
 Name: "{userprograms}\DragonForge Security Suite\Check prerequisites"; Filename: "{app}\Check-Prerequisites.cmd"; WorkingDir: "{app}"
 Name: "{userprograms}\DragonForge Security Suite\External test checklist"; Filename: "{app}\EXTERNAL-TEST-CHECKLIST.md"; WorkingDir: "{app}"
+Name: "{userprograms}\DragonForge Security Suite\Install Privileged Service (Administrator)"; Filename: "{app}\install-privileged-service.cmd"; WorkingDir: "{app}"
+Name: "{userprograms}\DragonForge Security Suite\Remove Privileged Service (Administrator)"; Filename: "{app}\uninstall-privileged-service.cmd"; WorkingDir: "{app}"
 Name: "{userprograms}\DragonForge Security Suite\Uninstall DragonForge Security Suite"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\DragonForge Security Center"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 Name: "{userstartup}\DragonForge Agent"; Filename: "{app}\dragonforge-agent.exe"; Parameters: "--serve"; WorkingDir: "{app}"
 
 [Run]
+Filename: "{app}\install-privileged-service.cmd"; Description: "Install DragonForge Privileged Service"; WorkingDir: "{app}"; Tasks: privilegedservice; Flags: runhidden waituntilterminated
 Filename: "{app}\{#MyExeName}"; Description: "Launch DragonForge Security Center"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "{app}\uninstall-privileged-service.cmd"; RunOnceId: "DragonForgePrivilegedServiceRemove"; Flags: runhidden waituntilterminated
 
 [Code]
 function ContainsText(const Haystack, Needle: String): Boolean;

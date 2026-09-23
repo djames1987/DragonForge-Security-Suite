@@ -16,6 +16,7 @@ on:
       - "apps/backup-recovery/**"
       - "apps/secure-share/**"
       - "services/dragonforge-agent/**"
+      - "services/dragonforge-privileged-service/**"
       - "crates/dragonforge-core/**"
       - "crates/dragonforge-update/**"
       - "crates/dragonforge-windows-boundary/**"
@@ -41,6 +42,10 @@ on:
       - "scripts/run-phase14-secure-update-tests.ps1"
       - "scripts/run-phase15-password-manager-hardening-tests.ps1"
       - "scripts/run-phase16-windows-security-boundary-tests.ps1"
+      - "scripts/run-phase17-privileged-service-tests.ps1"
+      - "scripts/install-privileged-service.ps1"
+      - "scripts/uninstall-privileged-service.ps1"
+      - "scripts/test-privileged-service.ps1"
       - "scripts/password-manager/backup-sync-server.ps1"
       - "scripts/password-manager/restore-sync-server.ps1"
       - "scripts/password-manager/package-browser-extension.ps1"
@@ -54,6 +59,8 @@ on:
       - "docs/PHASE_14_SECURE_UPDATE.md"
       - "docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md"
       - "docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md"
+      - "docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md"
+      - "docs/adr/0010-privileged-service-runtime.md"
       - "docs/adr/0009-windows-privileged-service-boundary.md"
       - "docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
@@ -75,6 +82,7 @@ on:
       - "apps/backup-recovery/**"
       - "apps/secure-share/**"
       - "services/dragonforge-agent/**"
+      - "services/dragonforge-privileged-service/**"
       - "crates/dragonforge-core/**"
       - "crates/dragonforge-update/**"
       - "crates/dragonforge-windows-boundary/**"
@@ -100,6 +108,10 @@ on:
       - "scripts/run-phase14-secure-update-tests.ps1"
       - "scripts/run-phase15-password-manager-hardening-tests.ps1"
       - "scripts/run-phase16-windows-security-boundary-tests.ps1"
+      - "scripts/run-phase17-privileged-service-tests.ps1"
+      - "scripts/install-privileged-service.ps1"
+      - "scripts/uninstall-privileged-service.ps1"
+      - "scripts/test-privileged-service.ps1"
       - "scripts/password-manager/backup-sync-server.ps1"
       - "scripts/password-manager/restore-sync-server.ps1"
       - "scripts/password-manager/package-browser-extension.ps1"
@@ -113,6 +125,8 @@ on:
       - "docs/PHASE_14_SECURE_UPDATE.md"
       - "docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md"
       - "docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md"
+      - "docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md"
+      - "docs/adr/0010-privileged-service-runtime.md"
       - "docs/adr/0009-windows-privileged-service-boundary.md"
       - "docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md"
       - "docs/BETA_QUALIFICATION_MATRIX.md"
@@ -153,13 +167,13 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Check suite applications
-        run: cargo check -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-windows-boundary -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
+        run: cargo check -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-windows-boundary -p dragonforge-privileged-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets
 
       - name: Clippy suite applications
-        run: cargo clippy -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-windows-boundary -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
+        run: cargo clippy -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-windows-boundary -p dragonforge-privileged-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app -p dragonforge-agent -p dragonforge-agent-service --all-targets -- -D warnings
 
       - name: Test suite applications
-        run: cargo test -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-windows-boundary -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
+        run: cargo test -p dragonforge-desktop -p dragonforge-sync-server -p dragonforge-core -p dragonforge-update -p dragonforge-windows-boundary -p dragonforge-privileged-service -p dragonforge-agent -p dragonforge-agent-service -p dragonforge-security-center -p dragonforge-file-vault -p dragonforge-file-vault-app -p dragonforge-authenticator -p dragonforge-authenticator-app -p dragonforge-security-scanner -p dragonforge-security-scanner-app -p dragonforge-integrity-monitor -p dragonforge-integrity-monitor-app -p dragonforge-network-guard -p dragonforge-network-guard-app -p dragonforge-backup-recovery -p dragonforge-backup-recovery-app -p dragonforge-secure-share -p dragonforge-secure-share-app --all-targets
 
       - name: Check application JavaScript
         shell: pwsh
@@ -189,6 +203,10 @@ jobs:
             'scripts/publish-windows-release.ps1',
             'scripts/run-phase15-password-manager-hardening-tests.ps1',
             'scripts/run-phase16-windows-security-boundary-tests.ps1',
+            'scripts/run-phase17-privileged-service-tests.ps1',
+            'scripts/install-privileged-service.ps1',
+            'scripts/uninstall-privileged-service.ps1',
+            'scripts/test-privileged-service.ps1',
             'scripts/password-manager/backup-sync-server.ps1',
             'scripts/password-manager/restore-sync-server.ps1',
             'scripts/password-manager/package-browser-extension.ps1'
@@ -204,7 +222,7 @@ jobs:
             $html = Get-Content -Raw "apps/$app/ui/index.html"
             if (-not $html.Contains('Suite Phase 14')) { throw "$app has stale suite phase metadata." }
           }
-          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md','docs/adr/0009-windows-privileged-service-boundary.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs','crates/dragonforge-windows-boundary/src/lib.rs')) {
+          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md','docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md','docs/adr/0009-windows-privileged-service-boundary.md','docs/adr/0010-privileged-service-runtime.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs','crates/dragonforge-windows-boundary/src/lib.rs')) {
             if (-not (Test-Path $file)) { throw "Missing release/security artifact: $file" }
           }
           $update = Get-Content -Raw 'crates/dragonforge-update/src/lib.rs'

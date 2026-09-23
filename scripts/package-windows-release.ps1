@@ -26,7 +26,8 @@ $Executables = @(
     "dragonforge-network-guard.exe",
     "dragonforge-backup-recovery.exe",
     "dragonforge-secure-share.exe",
-    "dragonforge-agent.exe"
+    "dragonforge-agent.exe",
+    "dragonforge-privileged-service.exe"
 )
 
 function Invoke-Checked {
@@ -113,6 +114,15 @@ try {
 
     Copy-Item -LiteralPath (Join-Path $RepoRoot "SECURITY.md") -Destination (Join-Path $StageRoot "SECURITY.md")
     Copy-Item -LiteralPath (Join-Path $RepoRoot "docs\EXTERNAL_TEST_CHECKLIST.md") -Destination (Join-Path $StageRoot "EXTERNAL-TEST-CHECKLIST.md")
+    foreach ($ScriptName in @(
+        "install-privileged-service.ps1",
+        "install-privileged-service.cmd",
+        "uninstall-privileged-service.ps1",
+        "uninstall-privileged-service.cmd",
+        "test-privileged-service.ps1"
+    )) {
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot $ScriptName) -Destination (Join-Path $StageRoot $ScriptName)
+    }
 
     $BuildInfo = @"
 DragonForge Security Suite
@@ -210,7 +220,8 @@ $Required = @(
     "dragonforge-network-guard.exe",
     "dragonforge-backup-recovery.exe",
     "dragonforge-secure-share.exe",
-    "dragonforge-agent.exe"
+    "dragonforge-agent.exe",
+    "dragonforge-privileged-service.exe"
 )
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path

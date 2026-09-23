@@ -501,13 +501,23 @@ Delivered:
 See [PHASE_16_WINDOWS_SECURITY_BOUNDARY.md](PHASE_16_WINDOWS_SECURITY_BOUNDARY.md).
 
 ## Phase 17 — DragonForge Privileged Service
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- implement the separately reviewed Windows service boundary;
-- authenticated and authorization-scoped privileged requests;
-- protected service configuration, lifecycle, audit events, quotas, and abuse testing;
-- no unrelated firewall/quarantine feature expansion in the service phase itself.
+Delivered:
+- real Windows SCM service executable for the separately reviewed Phase 16 boundary;
+- virtual service account and restricted service SID lifecycle;
+- explicit local named-pipe DACL with remote-client rejection;
+- Windows-reported client PID, exact Agent executable path, Authenticode, and full publisher-subject verification;
+- versioned fixed-command protocol with freshness, nonce replay protection, bounded per-process quotas, message limits, and I/O timeouts;
+- protected ProgramData service configuration;
+- bounded redaction-safe JSONL audit events with rotation;
+- Agent health/policy client for the privileged service;
+- guarded signed-only Administrator/UAC service installation and removal;
+- optional installer integration while preserving the normal per-user non-elevated suite install;
+- zero firewall, quarantine, process-control, registry-remediation, or other privileged mutation capabilities enabled in Phase 17;
+- dedicated Phase 17 verifier and signed-service acceptance tooling.
+
+See [PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md](PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md).
 
 ## Phase 18 — Continuous Integrity Monitoring
 **Status: Planned**
