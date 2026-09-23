@@ -18,6 +18,11 @@ if ($Service) {
     & sc.exe delete $ServiceName | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Failed to delete DragonForge Privileged Service." }
 }
+$ProtectedRoot = Join-Path $env:ProgramFiles "DragonForge Security Suite\Privileged Service"
+if (Test-Path -LiteralPath $ProtectedRoot) {
+    Remove-Item -LiteralPath $ProtectedRoot -Recurse -Force
+}
+
 if ($RemoveData) {
     $DataRoot = Join-Path $env:ProgramData "DragonForge\Security\privileged-service"
     if (Test-Path -LiteralPath $DataRoot) {
