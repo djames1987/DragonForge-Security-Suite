@@ -126,7 +126,6 @@ fn privileged_policy() -> ExitCode {
     }
 }
 
-
 fn integrity_status() -> ExitCode {
     let runtime = match AgentIntegrityRuntime::discover() {
         Ok(runtime) => runtime,
