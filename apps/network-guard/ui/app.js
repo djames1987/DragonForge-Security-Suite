@@ -100,7 +100,7 @@
     status.textContent = !identity
       ? "No process selected"
       : policy
-        ? `${String(policy.action).toUpperCase()} outbound · ${policy.enabled ? "active" : "not active"}`
+        ? `${String(policy.action).toUpperCase()} outbound · ${policy.enabled ? "rule active" : "rule missing"} · ${policy.identityMatches ? "hash matches" : "binary changed"}`
         : "No DragonForge-managed rule";
 
     const ready = Boolean(identity);
