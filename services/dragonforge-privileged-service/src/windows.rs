@@ -292,6 +292,9 @@ async fn handle_connected_client(
                 arbitrary_command_execution_prohibited: true,
                 generic_shell_execution_prohibited: true,
                 max_message_bytes: MAX_MESSAGE_BYTES,
+                firewall_policy_mutation_enabled: CapabilityPolicy::phase19_allows(
+                    PrivilegedCapability::FirewallPolicyMutation,
+                ),
             }),
             firewall: None,
         },
