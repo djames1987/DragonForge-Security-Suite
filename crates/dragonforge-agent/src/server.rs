@@ -76,8 +76,12 @@ impl AgentServer {
         let started = Instant::now();
         let mut replay = ReplayCache::default();
         let mut handled = 0_usize;
+        let mut next_integrity_poll = Instant::now();
         loop {
-            let _ = self.integrity.tick();
+            if Instant::now() >= next_integrity_poll {
+                let _ = self.integrity.tick();
+                next_integrity_poll = Instant::now() + Duration::from_secs(5);
+            }
             match listener.accept() {
                 Ok((mut stream, _)) => {
                     let shutdown = handle_connection(
