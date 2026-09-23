@@ -227,11 +227,14 @@ pub fn inspect_process_application(process_id: u32) -> Result<ApplicationIdentit
 fn hash_application(path: &std::path::Path) -> Result<String, String> {
     let metadata = std::fs::symlink_metadata(path)
         .map_err(|_| "application executable metadata is unavailable".to_owned())?;
-    if metadata.file_type().is_symlink() || !metadata.is_file() || metadata.len() > 1024 * 1024 * 1024 {
+    if metadata.file_type().is_symlink()
+        || !metadata.is_file()
+        || metadata.len() > 1024 * 1024 * 1024
+    {
         return Err("application executable is not eligible for firewall policy".to_owned());
     }
-    let mut file = File::open(path)
-        .map_err(|_| "application executable could not be opened".to_owned())?;
+    let mut file =
+        File::open(path).map_err(|_| "application executable could not be opened".to_owned())?;
     let mut hasher = Sha256::new();
     let mut buffer = [0_u8; 64 * 1024];
     loop {
