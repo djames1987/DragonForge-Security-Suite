@@ -96,7 +96,7 @@ try {
     $SecurityCenter = Get-Content -Raw "apps/security-center/src/state.rs"
     foreach ($Needle in @(
         "sync_integrity_events",
-        "integrity_last_event_id",
+        "integrity_alert_cursor",
         "integrity-monitor.change-detected",
         "EventKind::Security",
         "Severity::Warning"
