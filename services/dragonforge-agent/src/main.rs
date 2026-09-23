@@ -3,11 +3,11 @@
 use std::env;
 use std::process::ExitCode;
 
+use dragonforge_agent::{AgentClient, AgentIntegrityRuntime, AgentServer};
 #[cfg(windows)]
 use dragonforge_agent::{
     FirewallAction, FirewallApplicationIdentity, FirewallMutationResult, PrivilegedServiceClient,
 };
-use dragonforge_agent::{AgentClient, AgentIntegrityRuntime, AgentServer};
 use dragonforge_core::{Component, ComponentLogger, install_safe_panic_hook};
 
 fn main() -> ExitCode {
@@ -200,9 +200,7 @@ fn firewall_usage() -> ExitCode {
 }
 
 #[cfg(windows)]
-fn print_firewall_result(
-    result: dragonforge_agent::Result<FirewallMutationResult>,
-) -> ExitCode {
+fn print_firewall_result(result: dragonforge_agent::Result<FirewallMutationResult>) -> ExitCode {
     match result {
         Ok(result) => match serde_json::to_string_pretty(&result) {
             Ok(encoded) => {
