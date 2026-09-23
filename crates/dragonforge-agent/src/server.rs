@@ -53,6 +53,10 @@ impl AgentServer {
 
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
             .map_err(|_| AgentError::Io("agent loopback listener could not be created"))?;
+        listener
+            .set_nonblocking(true)
+            .map_err(|_| AgentError::Io("agent listener nonblocking mode could not be configured"))?;
+        let integrity = crate::AgentIntegrityRuntime::discover()?;
         let port = listener
             .local_addr()
             .map_err(|_| AgentError::Io("agent listener address is unavailable"))?
@@ -66,14 +70,25 @@ impl AgentServer {
         let mut replay = ReplayCache::default();
         let mut handled = 0_usize;
         loop {
-            let (mut stream, _) = listener
-                .accept()
-                .map_err(|_| AgentError::Io("agent client connection failed"))?;
-            let shutdown =
-                handle_connection(&mut stream, &session_key, started, &mut replay).unwrap_or(false);
-            handled += 1;
-            if shutdown || max_connections.is_some_and(|limit| handled >= limit) {
-                break;
+            let _ = integrity.tick();
+            match listener.accept() {
+                Ok((mut stream, _)) => {
+                    let shutdown = handle_connection(
+                        &mut stream,
+                        &session_key,
+                        started,
+                        &mut replay,
+                    )
+                    .unwrap_or(false);
+                    handled += 1;
+                    if shutdown || max_connections.is_some_and(|limit| handled >= limit) {
+                        break;
+                    }
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                    std::thread::sleep(Duration::from_millis(250));
+                }
+                Err(_) => return Err(AgentError::Io("agent client connection failed")),
             }
         }
         Ok(())
@@ -202,6 +217,7 @@ fn health_capabilities() -> Vec<String> {
         "background-lifetime".to_owned(),
         "graceful-shutdown".to_owned(),
         "restartable-session".to_owned(),
+        "continuous-integrity-monitoring".to_owned(),
     ];
     #[cfg(windows)]
     capabilities.push("privileged-service-client".to_owned());
