@@ -4,7 +4,10 @@ use std::path::PathBuf;
 
 use dragonforge_core::{Component, SuitePaths};
 use dragonforge_integrity_monitor::{
-    ComparisonReport, SnapshotSummary, baseline_summary, compare_to_baseline, create_baseline,
+    ComparisonReport, ContinuousIntegrityEvent, ContinuousMonitorPolicy, ContinuousMonitorStatus,
+    SnapshotSummary, SuppressionRule, baseline_summary, compare_to_baseline,
+    configure_continuous_monitoring, continuous_events, continuous_status, create_baseline,
+    reseal_continuous_baseline,
 };
 use serde::Serialize;
 
@@ -34,13 +37,23 @@ fn baseline_path() -> Result<PathBuf, String> {
         .map_err(|error| error.to_string())
 }
 
+fn continuous_state_path() -> Result<PathBuf, String> {
+    SuitePaths::discover()
+        .map(|paths| {
+            paths
+                .component_data_dir(Component::Agent)
+                .join("continuous-integrity-v1.json")
+        })
+        .map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 fn monitor_info() -> MonitorInfo {
     MonitorInfo {
         name: "DragonForge Integrity Monitor",
         mode: "baseline_compare",
         platform_scope: "windows_first",
-        continuous_background_monitoring: false,
+        continuous_background_monitoring: true,
     }
 }
 
@@ -67,7 +80,10 @@ fn get_baseline_status() -> Result<BaselineStatus, String> {
 #[tauri::command]
 fn create_integrity_baseline(replace: bool) -> Result<SnapshotSummary, String> {
     let path = baseline_path()?;
-    create_baseline(&path, replace).map_err(|error| error.to_string())
+    let summary = create_baseline(&path, replace).map_err(|error| error.to_string())?;
+    let state = continuous_state_path()?;
+    reseal_continuous_baseline(&state, &path).map_err(|error| error.to_string())?;
+    Ok(summary)
 }
 
 #[tauri::command]
@@ -76,13 +92,52 @@ fn check_integrity() -> Result<ComparisonReport, String> {
     compare_to_baseline(&path).map_err(|error| error.to_string())
 }
 
+#[tauri::command]
+fn get_continuous_monitor_status() -> Result<ContinuousMonitorStatus, String> {
+    let state = continuous_state_path()?;
+    let baseline = baseline_path()?;
+    continuous_status(&state, &baseline).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn configure_continuous_integrity(
+    enabled: bool,
+    interval_seconds: u64,
+    suppressions: Vec<SuppressionRule>,
+) -> Result<ContinuousMonitorStatus, String> {
+    let state = continuous_state_path()?;
+    let baseline = baseline_path()?;
+    configure_continuous_monitoring(
+        &state,
+        &baseline,
+        ContinuousMonitorPolicy {
+            enabled,
+            interval_seconds,
+            suppressions,
+        },
+    )
+    .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn get_continuous_integrity_events(
+    after_id: u64,
+    limit: usize,
+) -> Result<Vec<ContinuousIntegrityEvent>, String> {
+    let state = continuous_state_path()?;
+    continuous_events(&state, after_id, limit).map_err(|error| error.to_string())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             monitor_info,
             get_baseline_status,
             create_integrity_baseline,
-            check_integrity
+            check_integrity,
+            get_continuous_monitor_status,
+            configure_continuous_integrity,
+            get_continuous_integrity_events
         ])
         .run(tauri::generate_context!())
         .expect("error while running DragonForge Integrity Monitor");
@@ -93,9 +148,9 @@ mod tests {
     use super::monitor_info;
 
     #[test]
-    fn phase7_monitor_does_not_claim_background_agent_monitoring() {
+    fn phase18_monitor_reports_background_agent_monitoring() {
         let info = monitor_info();
         assert_eq!(info.mode, "baseline_compare");
-        assert!(!info.continuous_background_monitoring);
+        assert!(info.continuous_background_monitoring);
     }
 }
