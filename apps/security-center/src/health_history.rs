@@ -224,8 +224,7 @@ fn valid_entry(entry: &HealthHistoryEntry) -> bool {
     matches!(entry.suite_state.as_str(), "healthy" | "attention")
         && entry.components.len() <= 64
         && entry.components.iter().all(|component| {
-            component.id.len() <= 64
-                && matches!(component.state.as_str(), "active" | "integrated")
+            component.id.len() <= 64 && matches!(component.state.as_str(), "active" | "integrated")
         })
 }
 
