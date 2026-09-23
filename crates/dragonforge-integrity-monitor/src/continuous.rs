@@ -244,7 +244,10 @@ fn run_continuous_check_at(
                 .policy
                 .suppressions
                 .iter()
-                .any(|rule| rule.surface == change.surface && change.key.starts_with(&rule.key_prefix));
+                .any(|rule| {
+                    rule.surface == change.surface
+                        && change.key.starts_with(rule.key_prefix.trim())
+                });
             let change_name = match change.kind {
                 ChangeKind::Added => "added",
                 ChangeKind::Removed => "removed",
@@ -348,8 +351,9 @@ fn write_state(path: &Path, state: &ContinuousState) -> IntegrityResult<()> {
         "continuous integrity state parent is unavailable",
     ))?;
     fs::create_dir_all(parent)?;
-    let bytes = serde_json::to_vec_pretty(state)
-        .map_err(|_| IntegrityError::InvalidBaseline("continuous integrity state could not be encoded"))?;
+    let bytes = serde_json::to_vec_pretty(state).map_err(|_| {
+        IntegrityError::InvalidBaseline("continuous integrity state could not be encoded")
+    })?;
     if bytes.len() > MAX_STATE_BYTES {
         return Err(IntegrityError::LimitExceeded(
             "continuous integrity state exceeded the safe size limit",
@@ -377,6 +381,12 @@ fn write_state(path: &Path, state: &ContinuousState) -> IntegrityResult<()> {
 }
 
 fn file_sha256(path: &Path) -> IntegrityResult<String> {
+    let metadata = fs::metadata(path)?;
+    if metadata.len() > 4 * 1024 * 1024 {
+        return Err(IntegrityError::LimitExceeded(
+            "integrity baseline exceeded the safe seal size limit",
+        ));
+    }
     let bytes = fs::read(path)?;
     let digest = Sha256::digest(&bytes);
     Ok(digest.iter().map(|byte| format!("{byte:02x}")).collect())
@@ -456,7 +466,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("tempdir");
         let baseline = dir.path().join("baseline.json");
         let state = dir.path().join("continuous.json");
-        write_baseline(&baseline, "00");
+        write_baseline(&baseline, &"00".repeat(32));
         configure_continuous_monitoring(&state, &baseline, ContinuousMonitorPolicy::default())
             .expect("configure");
         write_baseline(&baseline, &"11".repeat(32));
