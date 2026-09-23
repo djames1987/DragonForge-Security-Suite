@@ -224,9 +224,7 @@ impl EventStore {
         self.events
             .iter()
             .rev()
-            .filter(|event| {
-                event.status == "open" && severity_rank(&event.severity) >= threshold
-            })
+            .filter(|event| event.status == "open" && severity_rank(&event.severity) >= threshold)
             .take(limit.min(MAX_EVENT_CAPACITY))
             .cloned()
             .collect()
@@ -354,7 +352,9 @@ fn valid_event(event: &DashboardEvent) -> bool {
 fn single_line_valid(value: &str, max_chars: usize) -> bool {
     !value.is_empty()
         && value.chars().count() <= max_chars
-        && !value.chars().any(|value| matches!(value, '\r' | '\n' | '\0'))
+        && !value
+            .chars()
+            .any(|value| matches!(value, '\r' | '\n' | '\0'))
 }
 
 fn severity_rank(value: &str) -> u8 {
