@@ -2,7 +2,7 @@
 //!
 //! Phase 17 established the Windows service control plane. Phase 19 enables
 //! only typed DragonForge-owned Windows Firewall policy mutation. Quarantine,
- //! process control, registry remediation, system-integrity remediation, and
+//! process control, registry remediation, system-integrity remediation, and
 //! generic command execution remain disabled.
 
 use std::collections::{HashMap, HashSet, VecDeque};
