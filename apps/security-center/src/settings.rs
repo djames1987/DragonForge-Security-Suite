@@ -183,10 +183,13 @@ mod tests {
         let store = SettingsStore::from_dir(dir.path());
         let settings = SecurityCenterSettings {
             retain_event_count: 500,
+            integrity_alert_cursor: 42,
             ..SecurityCenterSettings::default()
         };
         store.save(&settings).expect("save");
-        assert_eq!(store.load().expect("load"), settings);
+        let loaded = store.load().expect("load");
+        assert_eq!(loaded, settings);
+        assert_eq!(loaded.integrity_alert_cursor, 42);
     }
 
     #[test]
