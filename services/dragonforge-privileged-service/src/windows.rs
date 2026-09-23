@@ -41,7 +41,7 @@ use windows_sys::Win32::{
         Authorization::{
             ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
         },
-        Cryptography::{CertGetNameStringW, CERT_NAME_SIMPLE_DISPLAY_TYPE},
+        Cryptography::{CertNameToStrW, CERT_X500_NAME_STR, X509_ASN_ENCODING},
         WinTrust::{
             WinVerifyTrust, WTHelperGetProvCertFromChain, WTHelperGetProvSignerFromChain,
             WTHelperProvDataFromStateData, WINTRUST_ACTION_GENERIC_VERIFY_V2, WINTRUST_DATA,
@@ -463,13 +463,24 @@ fn extract_signer_subject(trust_data: &WINTRUST_DATA) -> Result<String> {
         return Err(ServiceError::Platform);
     }
 
+    let cert_info = unsafe {
+        // SAFETY: certificate context is live and pCertInfo is owned by it.
+        (*cert_context).pCertInfo
+    };
+    if cert_info.is_null() {
+        return Err(ServiceError::Platform);
+    }
+
+    let subject = unsafe {
+        // SAFETY: cert_info is live while the WinTrust state is open.
+        &(*cert_info).Subject
+    };
     let length = unsafe {
-        // SAFETY: certificate context is valid while WinTrust state remains open.
-        CertGetNameStringW(
-            cert_context,
-            CERT_NAME_SIMPLE_DISPLAY_TYPE,
-            0,
-            null_mut(),
+        // SAFETY: subject is a valid CERT_NAME_BLOB owned by the certificate.
+        CertNameToStrW(
+            X509_ASN_ENCODING,
+            subject,
+            CERT_X500_NAME_STR,
             null_mut(),
             0,
         )
@@ -480,12 +491,11 @@ fn extract_signer_subject(trust_data: &WINTRUST_DATA) -> Result<String> {
 
     let mut buffer = vec![0_u16; length as usize];
     let written = unsafe {
-        // SAFETY: buffer has length writable UTF-16 code units.
-        CertGetNameStringW(
-            cert_context,
-            CERT_NAME_SIMPLE_DISPLAY_TYPE,
-            0,
-            null_mut(),
+        // SAFETY: buffer contains length writable UTF-16 code units.
+        CertNameToStrW(
+            X509_ASN_ENCODING,
+            subject,
+            CERT_X500_NAME_STR,
             buffer.as_mut_ptr(),
             length,
         )
