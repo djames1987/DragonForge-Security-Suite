@@ -169,6 +169,34 @@ pub fn validate_request_shape(request: &PrivilegedRequest) -> Result<()> {
     if request.action.is_empty() || request.action.len() > 64 {
         return Err(ServiceError::RequestRejected);
     }
+    match request.action.as_str() {
+        "health" | "describe-policy" => {
+            if request.firewall.is_some() {
+                return Err(ServiceError::RequestRejected);
+            }
+        }
+        "firewall-status" | "firewall-apply" | "firewall-remove" | "firewall-rollback" => {
+            let firewall = request
+                .firewall
+                .as_ref()
+                .ok_or(ServiceError::RequestRejected)?;
+            firewall
+                .validate()
+                .map_err(|_| ServiceError::RequestRejected)?;
+            match request.action.as_str() {
+                "firewall-rollback" if firewall.rollback_token.is_none() => {
+                    return Err(ServiceError::RequestRejected);
+                }
+                "firewall-status" | "firewall-apply" | "firewall-remove"
+                    if firewall.rollback_token.is_some() =>
+                {
+                    return Err(ServiceError::RequestRejected);
+                }
+                _ => {}
+            }
+        }
+        _ => {}
+    }
     if request.nonce_hex.len() != 32
         || !request
             .nonce_hex
