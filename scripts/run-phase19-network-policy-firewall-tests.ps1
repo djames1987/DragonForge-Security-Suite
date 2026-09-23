@@ -102,6 +102,8 @@ try {
         "MAX_ROLLBACKS",
         "verify_application_identity",
         "sha256_file",
+        "dragonforge-agent.exe",
+        "dragonforge-privileged-service.exe",
         "Grouping()",
         "SetApplicationName",
         "SetAction"
