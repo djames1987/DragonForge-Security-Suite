@@ -11,6 +11,7 @@ members = [
     "apps/secure-share",
     "services/password-manager-sync",
     "services/dragonforge-agent",
+    "services/dragonforge-privileged-service",
     "crates/dragonforge-core",
     "crates/dragonforge-update",
     "crates/dragonforge-windows-boundary",
