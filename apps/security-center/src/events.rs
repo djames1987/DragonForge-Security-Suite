@@ -121,10 +121,24 @@ impl EventStore {
                 "Security Center event history is invalid",
             )
         })?;
+        let ids_are_monotonic = persisted
+            .events
+            .iter()
+            .map(|event| event.id)
+            .try_fold(0_u64, |previous, current| {
+                (current > previous).then_some(current)
+            })
+            .is_some();
+        let next_id_is_newer = persisted
+            .events
+            .back()
+            .is_none_or(|event| persisted.next_id > event.id);
         if persisted.version != EVENT_HUB_VERSION
             || persisted.next_id == 0
             || persisted.events.len() > MAX_EVENT_CAPACITY
             || persisted.events.iter().any(|event| !valid_event(event))
+            || !ids_are_monotonic
+            || !next_id_is_newer
         {
             return Err(CoreError::new_safe(
                 ErrorCode::InvalidConfiguration,
@@ -132,6 +146,7 @@ impl EventStore {
             ));
         }
 
+        let original_len = persisted.events.len();
         let mut store = Self {
             events: persisted.events,
             capacity,
@@ -139,6 +154,9 @@ impl EventStore {
             path: Some(path),
         };
         store.trim();
+        if store.events.len() != original_len {
+            store.persist()?;
+        }
         Ok(store)
     }
 
@@ -420,7 +438,7 @@ fn replace_file(path: &Path, encoded: &[u8]) -> CoreResult<()> {
             )
         })?;
     }
-    if let Err(_) = fs::rename(&temporary, path) {
+    if fs::rename(&temporary, path).is_err() {
         if backup.exists() && !path.exists() {
             let _ = fs::rename(&backup, path);
         }
