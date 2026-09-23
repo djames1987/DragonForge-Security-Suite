@@ -103,9 +103,16 @@ impl FirewallApplicationIdentity {
             .file_name()
             .and_then(|value| value.to_str())
             .ok_or(BoundaryError::InvalidFirewallRequest)?;
+        let normalized_file_name = file_name.to_ascii_lowercase();
+        let path_text = self.application_path.to_string_lossy();
         if !self.application_path.is_absolute()
-            || !file_name.to_ascii_lowercase().ends_with(".exe")
+            || !normalized_file_name.ends_with(".exe")
+            || path_text.starts_with(r"\")
             || self.application_path.as_os_str().len() > 2048
+            || matches!(
+                normalized_file_name.as_str(),
+                "dragonforge-agent.exe" | "dragonforge-privileged-service.exe"
+            )
         {
             return Err(BoundaryError::InvalidFirewallRequest);
         }
@@ -415,6 +422,25 @@ mod tests {
             assert_eq!(
                 policy().authorize_command(denied),
                 Err(BoundaryError::CommandDenied)
+            );
+        }
+    }
+
+    #[test]
+    fn firewall_identity_rejects_control_plane_and_network_paths() {
+        for path in [
+            r"C:\DragonForge\dragonforge-agent.exe",
+            r"C:\DragonForge\dragonforge-privileged-service.exe",
+            r"\\server\share\application.exe",
+        ] {
+            let identity = FirewallApplicationIdentity {
+                application_path: PathBuf::from(path),
+                sha256_hex: "00".repeat(32),
+                display_name: "test".to_owned(),
+            };
+            assert_eq!(
+                identity.validate(),
+                Err(BoundaryError::InvalidFirewallRequest)
             );
         }
     }
