@@ -35,6 +35,10 @@ impl ServiceCommand {
         match self {
             Self::Health => "health",
             Self::DescribePolicy => "describe-policy",
+            Self::ApplyFirewallRule => "firewall-apply",
+            Self::RemoveFirewallRule => "firewall-remove",
+            Self::ListFirewallRules => "firewall-list",
+            Self::RollbackFirewallRules => "firewall-rollback",
             Self::FirewallStatus => "firewall-status",
             Self::FirewallApply => "firewall-apply",
             Self::FirewallRemove => "firewall-remove",
@@ -165,6 +169,67 @@ pub struct FirewallMutationResult {
     pub policy: Option<FirewallPolicyState>,
 }
 
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FirewallRuleAction {
+    Allow,
+    Block,
+}
+
+impl FirewallRuleAction {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Allow => "allow",
+            Self::Block => "block",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FirewallRuleDirection {
+    Inbound,
+    Outbound,
+}
+
+impl FirewallRuleDirection {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Inbound => "in",
+            Self::Outbound => "out",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FirewallApplicationIdentity {
+    pub executable_path: PathBuf,
+    pub sha256_hex: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FirewallRuleRequest {
+    pub application: FirewallApplicationIdentity,
+    pub action: FirewallRuleAction,
+    pub direction: FirewallRuleDirection,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ManagedFirewallRule {
+    pub rule_id: String,
+    pub executable_path: PathBuf,
+    pub sha256_hex: String,
+    pub action: FirewallRuleAction,
+    pub direction: FirewallRuleDirection,
+    pub created_at_ms: u64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrivilegedRequest {
@@ -197,6 +262,7 @@ pub struct PrivilegedPolicyDescription {
     pub arbitrary_command_execution_prohibited: bool,
     pub generic_shell_execution_prohibited: bool,
     pub max_message_bytes: usize,
+    pub firewall_policy_mutation_enabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -292,6 +358,10 @@ impl BoundaryPolicy {
         match command {
             "health" => Ok(ServiceCommand::Health),
             "describe-policy" => Ok(ServiceCommand::DescribePolicy),
+            "firewall-apply" => Ok(ServiceCommand::ApplyFirewallRule),
+            "firewall-remove" => Ok(ServiceCommand::RemoveFirewallRule),
+            "firewall-list" => Ok(ServiceCommand::ListFirewallRules),
+            "firewall-rollback" => Ok(ServiceCommand::RollbackFirewallRules),
             "firewall-status" => Ok(ServiceCommand::FirewallStatus),
             "firewall-apply" => Ok(ServiceCommand::FirewallApply),
             "firewall-remove" => Ok(ServiceCommand::FirewallRemove),
