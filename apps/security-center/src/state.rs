@@ -245,7 +245,7 @@ impl AppState {
         let _ = self.logger.write(
             "info",
             "security-center.events-cleared",
-            "In-memory activity history cleared",
+            "Persistent activity history cleared",
         );
         Ok(())
     }
