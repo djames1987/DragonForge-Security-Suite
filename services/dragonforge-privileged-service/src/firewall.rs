@@ -488,7 +488,7 @@ impl FirewallBackend for WindowsFirewallBackend {
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetDirection(NET_FW_RULE_DIR_OUT)
                     .map_err(|_| ServiceError::Platform)?;
-                rule.SetProfiles(NET_FW_PROFILE2_ALL)
+                rule.SetProfiles(NET_FW_PROFILE2_ALL.0)
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetGrouping(&grouping)
                     .map_err(|_| ServiceError::Platform)?;
@@ -516,7 +516,7 @@ impl FirewallBackend for WindowsFirewallBackend {
                 || current_group != FIREWALL_RULE_GROUP
                 || current_direction != NET_FW_RULE_DIR_OUT
                 || current_action != action
-                || current_profiles != NET_FW_PROFILE2_ALL
+                || current_profiles != NET_FW_PROFILE2_ALL.0
                 || current_enabled != VARIANT_TRUE
             {
                 let _ = unsafe { rules.Remove(&name) };
