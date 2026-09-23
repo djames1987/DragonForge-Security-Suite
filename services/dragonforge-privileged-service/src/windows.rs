@@ -11,7 +11,7 @@ use std::mem::{size_of, zeroed};
 use std::os::windows::ffi::OsStrExt;
 use std::os::windows::io::AsRawHandle;
 use std::path::{Path, PathBuf};
-use std::ptr::{null, null_mut};
+use std::ptr::null_mut;
 use std::sync::{
     Arc, Mutex,
     atomic::{AtomicBool, Ordering},
