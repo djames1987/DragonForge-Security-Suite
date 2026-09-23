@@ -1,5 +1,8 @@
 #![forbid(unsafe_code)]
 
+mod continuous;
+pub use continuous::*;
+
 //! Local integrity baseline and change detection for DragonForge Integrity Monitor.
 //!
 //! Phase 7 records bounded identifiers and SHA-256 fingerprints for selected
