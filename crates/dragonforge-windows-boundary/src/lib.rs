@@ -302,7 +302,6 @@ impl BoundaryPolicy {
         }
     }
 }
-}
 
 fn same_path(left: &Path, right: &Path) -> bool {
     #[cfg(target_os = "windows")]
