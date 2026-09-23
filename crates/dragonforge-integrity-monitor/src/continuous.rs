@@ -56,7 +56,10 @@ impl ContinuousMonitorPolicy {
         }
         for rule in &self.suppressions {
             let prefix = rule.key_prefix.trim();
-            if prefix.is_empty() || prefix.len() > 256 || prefix.contains(['\r', '\n', '\0']) {
+            if prefix.is_empty()
+                || prefix.len() > 256
+                || prefix.chars().any(|value| matches!(value, '\r' | '\n' | '\0'))
+            {
                 return Err(IntegrityError::InvalidBaseline(
                     "continuous integrity suppression rule is invalid",
                 ));
@@ -413,7 +416,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("tempdir");
         let baseline = dir.path().join("baseline.json");
         let state = dir.path().join("continuous.json");
-        write_baseline(&baseline, "00");
+        write_baseline(&baseline, &"00".repeat(32));
         let status = configure_continuous_monitoring(
             &state,
             &baseline,
@@ -433,7 +436,7 @@ mod tests {
         write_baseline(&baseline, "00");
         configure_continuous_monitoring(&state, &baseline, ContinuousMonitorPolicy::default())
             .expect("configure");
-        write_baseline(&baseline, "11");
+        write_baseline(&baseline, &"11".repeat(32));
 
         let outcome = run_continuous_check_at(&state, &baseline, now_ms() + 1).expect("run");
         assert!(outcome.ran);
