@@ -112,8 +112,10 @@ fn run_service() -> Result<()> {
 
     let paths = ServicePaths::discover()?;
     let config = load_config(&paths.config_file)?;
-    let install_dir = current_install_directory()?;
-    let policy = BoundaryPolicy::new(&install_dir, config.expected_publisher_subject.clone());
+    let policy = BoundaryPolicy::from_expected_agent_path(
+        config.expected_agent_path.clone(),
+        config.expected_publisher_subject.clone(),
+    );
     if !policy.expected_agent_path().ends_with(EXPECTED_AGENT_EXE) {
         return Err(ServiceError::InvalidConfiguration);
     }
@@ -572,14 +574,6 @@ fn create_secured_pipe() -> Result<NamedPipeServer> {
 
 fn wide_null(value: &str) -> Vec<u16> {
     value.encode_utf16().chain(std::iter::once(0)).collect()
-}
-
-fn current_install_directory() -> Result<PathBuf> {
-    let executable = env::current_exe().map_err(|_| ServiceError::Platform)?;
-    executable
-        .parent()
-        .map(Path::to_path_buf)
-        .ok_or(ServiceError::Platform)
 }
 
 #[derive(Debug)]
