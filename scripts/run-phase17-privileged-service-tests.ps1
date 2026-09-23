@@ -28,8 +28,11 @@ try {
     Write-Host "Windows host: $env:COMPUTERNAME"
     Write-Host "Repository: $RepoRoot"
 
-    Run "cargo fmt --all --check" {
-        cargo fmt --all --check
+    Write-Host ""
+    Write-Host ">>> cargo fmt --all --check"
+    & cargo fmt --all --check 2>&1 | ForEach-Object { Write-Host $_ }
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed with exit code $LASTEXITCODE - cargo fmt --all --check"
     }
     Run "cargo metadata --locked" {
         cargo metadata --locked --format-version 1 --no-deps | Out-Null
