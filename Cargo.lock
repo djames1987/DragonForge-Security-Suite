@@ -1196,6 +1196,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "dragonforge-privileged-service"
+version = "0.1.0"
+dependencies = [
+ "dragonforge-windows-boundary",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "widestring",
+ "windows-service",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "dragonforge-secure-share"
 version = "0.1.0"
 dependencies = [
@@ -1273,21 +1288,6 @@ dependencies = [
  "tower-http",
  "uuid",
  "zeroize",
-]
-
-[[package]]
-name = "dragonforge-privileged-service"
-version = "0.1.0"
-dependencies = [
- "dragonforge-windows-boundary",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "widestring",
- "windows-service",
- "windows-sys 0.59.0",
 ]
 
 [[package]]
