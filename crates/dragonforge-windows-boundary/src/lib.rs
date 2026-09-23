@@ -175,17 +175,12 @@ mod tests {
     use super::*;
 
     fn policy() -> BoundaryPolicy {
-        BoundaryPolicy::new(
-            r"C:\Program Files\DragonForge",
-            "CN=DragonForge Software",
-        )
+        BoundaryPolicy::new(r"C:\Program Files\DragonForge", "CN=DragonForge Software")
     }
 
     fn valid_caller() -> CallerIdentity {
         CallerIdentity {
-            executable_path: PathBuf::from(
-                r"C:\Program Files\DragonForge\dragonforge-agent.exe",
-            ),
+            executable_path: PathBuf::from(r"C:\Program Files\DragonForge\dragonforge-agent.exe"),
             authenticode_valid: true,
             publisher_subject: Some("CN=DragonForge Software".to_owned()),
             operating_system_peer_verified: true,
@@ -207,7 +202,10 @@ mod tests {
 
     #[test]
     fn only_fixed_non_privileged_commands_are_authorized() {
-        assert_eq!(policy().authorize_command("health"), Ok(ServiceCommand::Health));
+        assert_eq!(
+            policy().authorize_command("health"),
+            Ok(ServiceCommand::Health)
+        );
         assert_eq!(
             policy().authorize_command("describe-policy"),
             Ok(ServiceCommand::DescribePolicy)
