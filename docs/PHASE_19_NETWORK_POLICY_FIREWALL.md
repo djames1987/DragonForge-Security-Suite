@@ -1,6 +1,6 @@
 # Phase 19 — Network Policy & Firewall Integration
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 19 extends the verified Phase 8 Network Guard and Phase 17 privileged-service boundary with controlled Windows Firewall application policy. The phase is deliberately narrow: DragonForge may create, replace, remove, or roll back only its own outbound per-application rules through a fixed typed protocol. It does not expose arbitrary firewall command text or generic privileged execution.
 
@@ -91,3 +91,18 @@ Run on Windows:
 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase19-network-policy-firewall-tests.ps1`
 
 The verifier writes a transcript and matching SHA-256 sidecar under `test-logs\`. Phase 19 remains **Implementation Complete — Local Verification Pending** until the authoritative Windows verifier reaches its PASS marker and the sidecar is independently checked.
+
+
+## Authoritative local verification
+
+Phase 19 was verified on 2026-09-23 on DRACO (Microsoft Windows NT 10.0.26200.0) using Windows PowerShell 5.1.26100.9444 with `scripts/run-phase19-network-policy-firewall-tests.ps1`.
+
+The authoritative verifier passed formatting, locked Cargo metadata, full workspace checking, strict Clippy, the complete workspace and doc-test suite, Network Guard JavaScript syntax validation, Phase 19 architecture/security invariants, PowerShell syntax validation, and the complete Windows application build including `dragonforge-agent.exe` and `dragonforge-privileged-service.exe`.
+
+Final verifier marker:
+
+`PHASE 19 NETWORK POLICY & FIREWALL INTEGRATION VERIFICATION: PASS`
+
+Authoritative log SHA-256:
+
+`1BF31EC9E7D4CEB2D935EF9C2EB137F9EBD5074EA7A6AFD82B24CC1902AA6E66`
