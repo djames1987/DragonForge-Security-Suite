@@ -430,16 +430,21 @@ mod tests {
 
     #[test]
     fn policy_is_bounded() {
-        let mut policy = ContinuousMonitorPolicy::default();
-        policy.interval_seconds = 1;
+        let policy = ContinuousMonitorPolicy {
+            interval_seconds: 1,
+            ..ContinuousMonitorPolicy::default()
+        };
         assert!(policy.validate().is_err());
-        policy.interval_seconds = DEFAULT_INTERVAL_SECONDS;
-        policy.suppressions = (0..=MAX_SUPPRESSION_RULES)
-            .map(|index| SuppressionRule {
-                surface: SurfaceKind::Startup,
-                key_prefix: format!("rule-{index}"),
-            })
-            .collect();
+
+        let policy = ContinuousMonitorPolicy {
+            suppressions: (0..=MAX_SUPPRESSION_RULES)
+                .map(|index| SuppressionRule {
+                    surface: SurfaceKind::Startup,
+                    key_prefix: format!("rule-{index}"),
+                })
+                .collect(),
+            ..ContinuousMonitorPolicy::default()
+        };
         assert!(policy.validate().is_err());
     }
 
