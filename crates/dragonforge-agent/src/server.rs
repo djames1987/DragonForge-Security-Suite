@@ -25,16 +25,24 @@ const MAX_REPLAY_NONCES: usize = 4_096;
 #[derive(Debug)]
 pub struct AgentServer {
     paths: AgentPaths,
+    integrity: crate::AgentIntegrityRuntime,
 }
 
 impl AgentServer {
     #[must_use]
     pub fn from_paths(paths: AgentPaths) -> Self {
-        Self { paths }
+        let integrity = crate::AgentIntegrityRuntime::from_paths(
+            paths.root().join("continuous-integrity-v1.json"),
+            paths.root().join("integrity-baseline-v1.json"),
+        );
+        Self { paths, integrity }
     }
 
     pub fn discover() -> Result<Self> {
-        Ok(Self::from_paths(AgentPaths::discover()?))
+        Ok(Self {
+            paths: AgentPaths::discover()?,
+            integrity: crate::AgentIntegrityRuntime::discover()?,
+        })
     }
 
     pub fn run(&self) -> Result<()> {
@@ -56,7 +64,6 @@ impl AgentServer {
         listener
             .set_nonblocking(true)
             .map_err(|_| AgentError::Io("agent listener nonblocking mode could not be configured"))?;
-        let integrity = crate::AgentIntegrityRuntime::discover()?;
         let port = listener
             .local_addr()
             .map_err(|_| AgentError::Io("agent listener address is unavailable"))?
@@ -70,7 +77,7 @@ impl AgentServer {
         let mut replay = ReplayCache::default();
         let mut handled = 0_usize;
         loop {
-            let _ = integrity.tick();
+            let _ = self.integrity.tick();
             match listener.accept() {
                 Ok((mut stream, _)) => {
                     let shutdown = handle_connection(
