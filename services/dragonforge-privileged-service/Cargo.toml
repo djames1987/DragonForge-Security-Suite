@@ -35,3 +35,6 @@ widestring = "=1.1.0"
 # Phase 17 deliberately contains a small audited Windows FFI module for named-pipe
 # peer identity, explicit pipe ACL construction, and Authenticode publisher checks.
 # The rest of the workspace continues to forbid unsafe code.
+
+[dev-dependencies]
+tempfile = "3.27"
