@@ -94,3 +94,15 @@ select:disabled {
   opacity: 0.55;
 }
 
+
+.continuous-panel { margin-top: 18px; background: #15181d; border: 1px solid #2d3138; border-radius: 14px; padding: 18px; }
+.section-heading.compact { margin: 0 0 14px; }
+.continuous-grid { display: grid; grid-template-columns: 160px 220px; gap: 14px; }
+.continuous-grid label { display: grid; gap: 7px; color: #aeb4be; font-size: 12px; }
+.continuous-grid .wide { grid-column: 1 / -1; }
+.continuous-grid input, .continuous-grid select, .continuous-grid textarea { background: #101318; color: #f4f5f7; border: 1px solid #3a4049; border-radius: 8px; padding: 9px; }
+.continuous-grid textarea { resize: vertical; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.continuous-grid small { color: #858c97; line-height: 1.4; }
+.continuous-actions { margin-top: 14px; display: flex; align-items: center; gap: 14px; }
+.compact-events { margin-top: 14px; }
+.compact-events .change { padding: 12px 14px; }

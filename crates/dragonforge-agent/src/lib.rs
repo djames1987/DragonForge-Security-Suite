@@ -8,6 +8,7 @@
 
 mod client;
 mod error;
+mod integrity;
 mod paths;
 #[cfg(windows)]
 mod privileged;
@@ -16,6 +17,7 @@ mod server;
 
 pub use client::{AgentClient, AgentHealth};
 pub use error::{AgentError, Result};
+pub use integrity::AgentIntegrityRuntime;
 pub use paths::AgentPaths;
 #[cfg(windows)]
 pub use privileged::PrivilegedServiceClient;

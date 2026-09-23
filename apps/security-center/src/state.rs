@@ -4,7 +4,9 @@ use std::time::{Duration, Instant};
 
 use dragonforge_core::{
     Component, ComponentLogger, CoreError, CoreResult, ErrorCode, EventKind, Platform, Severity,
+    SuitePaths,
 };
+use dragonforge_integrity_monitor::continuous_events;
 use serde::Serialize;
 
 use crate::agent::{AgentClient, AgentStatus};
@@ -109,6 +111,7 @@ impl AppState {
     }
 
     pub fn snapshot(&self) -> Result<DashboardSnapshot, String> {
+        let _ = self.sync_integrity_events();
         let agent = self.agent.status();
         let mut components = self.registry.all().to_vec();
         let mut health = self.registry.health_summary();
@@ -197,8 +200,9 @@ impl AppState {
 
     pub fn update_settings(
         &self,
-        updated: SecurityCenterSettings,
+        mut updated: SecurityCenterSettings,
     ) -> Result<SecurityCenterSettings, String> {
+        updated.integrity_alert_cursor = self.lock_settings()?.integrity_alert_cursor;
         updated.validate().map_err(|error| error.to_string())?;
         self.settings_store
             .save(&updated)
@@ -320,6 +324,46 @@ impl AppState {
             }
             thread::sleep(Duration::from_millis(100));
         }
+    }
+
+    fn sync_integrity_events(&self) -> Result<(), String> {
+        let suite = SuitePaths::discover().map_err(|error| error.to_string())?;
+        let state_path = suite
+            .component_data_dir(Component::Agent)
+            .join("continuous-integrity-v1.json");
+        let after_id = self.lock_settings()?.integrity_alert_cursor;
+        let events =
+            continuous_events(&state_path, after_id, 250).map_err(|error| error.to_string())?;
+        if events.is_empty() {
+            return Ok(());
+        }
+
+        let mut newest = after_id;
+        let mut store = self.lock_events()?;
+        for event in events {
+            newest = newest.max(event.id);
+            if event.suppressed {
+                continue;
+            }
+            store.push(
+                Component::IntegrityMonitor,
+                EventKind::Security,
+                Severity::Warning,
+                "integrity-monitor.change-detected",
+                event.summary,
+            );
+        }
+        drop(store);
+
+        let updated = {
+            let mut settings = self.lock_settings()?;
+            settings.integrity_alert_cursor = newest;
+            settings.clone()
+        };
+        self.settings_store
+            .save(&updated)
+            .map_err(|error| error.to_string())
+    }
     }
 
     fn record_agent_event(&self, code: &'static str, message: &'static str) -> Result<(), String> {

@@ -19,6 +19,7 @@ path = "src/main.rs"
 [dependencies]
 dragonforge-agent = { path = "../../crates/dragonforge-agent" }
 dragonforge-core = { path = "../../crates/dragonforge-core" }
+dragonforge-integrity-monitor = { path = "../../crates/dragonforge-integrity-monitor" }
 dragonforge-update = { path = "../../crates/dragonforge-update" }
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
 semver = "1.0"

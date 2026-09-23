@@ -17,6 +17,8 @@ pub struct SecurityCenterSettings {
     pub include_diagnostic_identifiers: bool,
     #[serde(default)]
     pub update_channel: UpdateChannel,
+    #[serde(default)]
+    pub integrity_alert_cursor: u64,
 }
 
 impl Default for SecurityCenterSettings {
@@ -27,6 +29,7 @@ impl Default for SecurityCenterSettings {
             retain_event_count: 250,
             include_diagnostic_identifiers: false,
             update_channel: UpdateChannel::Stable,
+            integrity_alert_cursor: 0,
         }
     }
 }
@@ -180,10 +183,13 @@ mod tests {
         let store = SettingsStore::from_dir(dir.path());
         let settings = SecurityCenterSettings {
             retain_event_count: 500,
+            integrity_alert_cursor: 42,
             ..SecurityCenterSettings::default()
         };
         store.save(&settings).expect("save");
-        assert_eq!(store.load().expect("load"), settings);
+        let loaded = store.load().expect("load");
+        assert_eq!(loaded, settings);
+        assert_eq!(loaded.integrity_alert_cursor, 42);
     }
 
     #[test]

@@ -520,13 +520,24 @@ Delivered:
 See [PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md](PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md).
 
 ## Phase 18 — Continuous Integrity Monitoring
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- Agent/service-backed scheduled integrity monitoring;
-- bounded event queues and notifications;
-- restart persistence, baseline protection, allow/suppress rules, and Security Center alerting;
-- remain a change detector rather than claiming malware verdicts.
+Delivered:
+- Agent-driven restart-persistent scheduled integrity comparisons;
+- versioned continuous-monitor state with bounded event history and persisted due time;
+- SHA-256 baseline seal with explicit resealing through the approved baseline create/replace workflow;
+- fail-safe alert when the saved baseline changes unexpectedly;
+- bounded per-surface key-prefix suppression rules that retain suppressed events for audit;
+- Security Center warning/security alerts for new unsuppressed integrity events;
+- Integrity Monitor controls for schedule, enable/disable state, suppression rules, seal status, and retained events;
+- Agent health capability plus `--integrity-status` and `--integrity-events` diagnostics;
+- five-second bounded scheduler polling with 60-second minimum monitoring interval;
+- Phase 17 privileged service command surface left unchanged with zero privileged mutation capabilities enabled;
+- dedicated Phase 18 Windows verifier, documentation, ADR, and CI coverage.
+
+Phase 18 remains a change detector. It does not claim malware classification, same-user tamper resistance, quarantine, process termination, registry remediation, or firewall enforcement.
+
+See [PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md](PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md).
 
 ## Phase 19 — Network Policy & Firewall Integration
 **Status: Planned**

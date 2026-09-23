@@ -20,8 +20,8 @@
         <button class="nav" data-view="about">About</button>
       </nav>
       <div class="sidebar-note">
-        <strong>Baseline comparison</strong>
-        <span>Integrity Monitor records fingerprints and compares them on demand. Background Agent lifecycle support does not turn this screen into continuous file monitoring.</span>
+        <strong>Continuous change detection</strong>
+        <span>The Agent can compare selected Windows persistence and configuration fingerprints on a restart-persistent schedule. Changes are review signals, not malware verdicts.</span>
       </div>
       <div class="phase">Suite Phase 14</div>
     </aside>
@@ -53,6 +53,36 @@
           </div>
         </div>
 
+        <div class="continuous-panel">
+          <div class="section-heading compact">
+            <div>
+              <div class="eyebrow">Agent schedule</div>
+              <h2>Continuous monitoring</h2>
+            </div>
+            <span id="continuous-seal" class="pill">Not configured</span>
+          </div>
+          <div class="continuous-grid">
+            <label><span>Enabled</span><input id="continuous-enabled" type="checkbox"></label>
+            <label><span>Interval</span>
+              <select id="continuous-interval">
+                <option value="300">5 minutes</option>
+                <option value="900">15 minutes</option>
+                <option value="1800">30 minutes</option>
+                <option value="3600">1 hour</option>
+              </select>
+            </label>
+            <label class="wide"><span>Suppressions</span>
+              <textarea id="continuous-suppressions" rows="3" placeholder="startup:user/known-item.lnk&#10;services:KnownService"></textarea>
+              <small>One rule per line: surface:key-prefix. Suppressed changes remain in bounded history but do not become Security Center alerts.</small>
+            </label>
+          </div>
+          <div class="continuous-actions">
+            <button id="continuous-save" class="secondary" disabled>Save monitoring settings</button>
+            <span id="continuous-meta" class="muted">Create a baseline before enabling continuous monitoring.</span>
+          </div>
+          <div id="continuous-events" class="changes compact-events"></div>
+        </div>
+
         <div class="metrics">
           <article><span>Unchanged</span><strong id="metric-unchanged">—</strong></article>
           <article><span>Added</span><strong id="metric-added">—</strong></article>
@@ -81,7 +111,7 @@
           <h2>Integrity Monitor</h2>
           <p>Phase 7 fingerprints selected Windows startup, persistence, service, scheduled-task, hosts-file, and security-configuration surfaces and compares them against a local baseline.</p>
           <p>The baseline stores identifiers and SHA-256 fingerprints, not command contents or monitored file contents. A detected change is evidence for review, not proof of malicious activity.</p>
-          <p>The monitor remains on-demand in this application. Background lifecycle capabilities are provided only where the DragonForge Agent explicitly reports them.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p>
+          <p>Phase 18 adds restart-persistent Agent scheduling, a baseline integrity seal, bounded event history, suppression rules, and Security Center alerts. The seal detects unexpected baseline changes but is not claimed to resist an attacker who already controls the same user account and can rewrite all local state.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p>
         </div>
       </section>
     </main>
