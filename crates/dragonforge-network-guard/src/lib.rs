@@ -2,14 +2,19 @@
 
 //! Windows-first network visibility for DragonForge Network Guard.
 //!
-//! Phase 8 is observation-only. It inventories bounded TCP/UDP endpoints and
-//! the Windows DNS client cache using fixed native probes. It does not capture
-//! packet payloads, alter firewall policy, terminate connections, or request
-//! elevation.
+//! Phase 8 inventories bounded TCP/UDP endpoints and the Windows DNS client
+//! cache using fixed native probes. Phase 19 adds application identity hashing
+//! for typed outbound firewall policy requests routed through the authenticated
+//! DragonForge Agent and privileged service. Packet payload capture and
+//! connection termination remain out of scope.
 
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 
 const MAX_CONNECTIONS: usize = 4_096;
 const MAX_DNS_ENTRIES: usize = 4_096;
@@ -33,6 +38,15 @@ pub struct NetworkConnection {
     pub remote_port: Option<u16>,
     pub state: Option<String>,
     pub wildcard_listener: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApplicationIdentity {
+    pub process_id: u32,
+    pub process_name: String,
+    pub application_path: PathBuf,
+    pub sha256_hex: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -160,6 +174,80 @@ impl ProbeRunner for PlatformRunner {
     fn run(&self, _probe: Probe) -> Result<String, String> {
         Err("Phase 8 network visibility currently supports Windows".to_owned())
     }
+}
+
+pub fn inspect_process_application(process_id: u32) -> Result<ApplicationIdentity, String> {
+    if process_id == 0 {
+        return Err("process id must be nonzero".to_owned());
+    }
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        let script = format!(
+            "$p = Get-Process -Id {process_id} -ErrorAction Stop; [Console]::Out.WriteLine($p.ProcessName); [Console]::Out.WriteLine($p.Path)"
+        );
+        let output = Command::new("powershell.exe")
+            .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|_| "application identity probe could not be started".to_owned())?;
+        if !output.status.success() || output.stdout.len() > 32 * 1024 {
+            return Err("application identity probe failed".to_owned());
+        }
+        let text = String::from_utf8(output.stdout)
+            .map_err(|_| "application identity probe returned invalid text".to_owned())?;
+        let mut lines = text.lines();
+        let process_name = clean(lines.next().unwrap_or_default(), 260);
+        let path_text = clean(lines.next().unwrap_or_default(), 2048);
+        if process_name.is_empty() || path_text.is_empty() {
+            return Err("application executable path is unavailable".to_owned());
+        }
+        let application_path = PathBuf::from(path_text);
+        if !application_path.is_absolute() || !application_path.is_file() {
+            return Err("application executable path is invalid".to_owned());
+        }
+        let sha256_hex = hash_application(&application_path)?;
+        Ok(ApplicationIdentity {
+            process_id,
+            process_name,
+            application_path,
+            sha256_hex,
+        })
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = process_id;
+        Err("Phase 19 application identity inspection requires Windows".to_owned())
+    }
+}
+
+fn hash_application(path: &std::path::Path) -> Result<String, String> {
+    let metadata = std::fs::symlink_metadata(path)
+        .map_err(|_| "application executable metadata is unavailable".to_owned())?;
+    if metadata.file_type().is_symlink() || !metadata.is_file() || metadata.len() > 1024 * 1024 * 1024 {
+        return Err("application executable is not eligible for firewall policy".to_owned());
+    }
+    let mut file = File::open(path)
+        .map_err(|_| "application executable could not be opened".to_owned())?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0_u8; 64 * 1024];
+    loop {
+        let count = file
+            .read(&mut buffer)
+            .map_err(|_| "application executable could not be hashed".to_owned())?;
+        if count == 0 {
+            break;
+        }
+        hasher.update(&buffer[..count]);
+    }
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect())
 }
 
 #[must_use]

@@ -18,7 +18,9 @@ path = "src/main.rs"
 
 [dependencies]
 dragonforge-network-guard = { path = "../../crates/dragonforge-network-guard" }
+dragonforge-windows-boundary = { path = "../../crates/dragonforge-windows-boundary" }
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 tauri = { version = "2.11.5", features = [] }
 
 [build-dependencies]

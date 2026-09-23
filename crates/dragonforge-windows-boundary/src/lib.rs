@@ -14,7 +14,7 @@ pub const SERVICE_DISPLAY_NAME: &str = "DragonForge Privileged Service";
 pub const SERVICE_ACCOUNT: &str = r"NT SERVICE\DragonForgePrivilegedService";
 pub const PIPE_NAME: &str = r"\\.\pipe\DragonForgePrivilegedService-v1";
 pub const PROTOCOL_MAJOR: u16 = 1;
-pub const PROTOCOL_MINOR: u16 = 0;
+pub const PROTOCOL_MINOR: u16 = 1;
 pub const MAX_MESSAGE_BYTES: usize = 16 * 1024;
 pub const MAX_CLOCK_SKEW_SECONDS: u64 = 60;
 pub const EXPECTED_AGENT_EXE: &str = "dragonforge-agent.exe";
@@ -23,6 +23,10 @@ pub const EXPECTED_AGENT_EXE: &str = "dragonforge-agent.exe";
 pub enum ServiceCommand {
     Health,
     DescribePolicy,
+    FirewallStatus,
+    FirewallApply,
+    FirewallRemove,
+    FirewallRollback,
 }
 
 impl ServiceCommand {
@@ -31,12 +35,19 @@ impl ServiceCommand {
         match self {
             Self::Health => "health",
             Self::DescribePolicy => "describe-policy",
+            Self::FirewallStatus => "firewall-status",
+            Self::FirewallApply => "firewall-apply",
+            Self::FirewallRemove => "firewall-remove",
+            Self::FirewallRollback => "firewall-rollback",
         }
     }
 
     #[must_use]
     pub const fn is_privileged(self) -> bool {
-        false
+        matches!(
+            self,
+            Self::FirewallApply | Self::FirewallRemove | Self::FirewallRollback
+        )
     }
 }
 
@@ -62,7 +73,98 @@ impl CapabilityPolicy {
     pub const fn phase17_allows(_capability: PrivilegedCapability) -> bool {
         false
     }
+
+    #[must_use]
+    pub const fn phase19_allows(capability: PrivilegedCapability) -> bool {
+        matches!(capability, PrivilegedCapability::FirewallPolicyMutation)
+    }
 }
+
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FirewallAction {
+    Allow,
+    Block,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FirewallApplicationIdentity {
+    pub application_path: PathBuf,
+    pub sha256_hex: String,
+    pub display_name: String,
+}
+
+impl FirewallApplicationIdentity {
+    pub fn validate(&self) -> Result<(), BoundaryError> {
+        let file_name = self
+            .application_path
+            .file_name()
+            .and_then(|value| value.to_str())
+            .ok_or(BoundaryError::InvalidFirewallRequest)?;
+        if !self.application_path.is_absolute()
+            || !file_name.to_ascii_lowercase().ends_with(".exe")
+            || self.application_path.as_os_str().len() > 2048
+        {
+            return Err(BoundaryError::InvalidFirewallRequest);
+        }
+        if self.sha256_hex.len() != 64
+            || !self.sha256_hex.bytes().all(|byte| byte.is_ascii_hexdigit())
+        {
+            return Err(BoundaryError::InvalidFirewallRequest);
+        }
+        let name = self.display_name.trim();
+        if name.is_empty()
+            || name.chars().count() > 120
+            || name.chars().any(char::is_control)
+        {
+            return Err(BoundaryError::InvalidFirewallRequest);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FirewallMutationRequest {
+    pub identity: FirewallApplicationIdentity,
+    pub action: FirewallAction,
+    #[serde(default)]
+    pub rollback_token: Option<String>,
+}
+
+impl FirewallMutationRequest {
+    pub fn validate(&self) -> Result<(), BoundaryError> {
+        self.identity.validate()?;
+        if let Some(token) = &self.rollback_token {
+            if token.len() != 32 || !token.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+                return Err(BoundaryError::InvalidFirewallRequest);
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FirewallPolicyState {
+    pub rule_name: String,
+    pub application_path: PathBuf,
+    pub sha256_hex: String,
+    pub action: FirewallAction,
+    pub enabled: bool,
+    pub identity_matches: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FirewallMutationResult {
+    pub changed: bool,
+    pub rollback_token: Option<String>,
+    pub policy: Option<FirewallPolicyState>,
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -73,6 +175,8 @@ pub struct PrivilegedRequest {
     pub action: String,
     pub timestamp_ms: u64,
     pub nonce_hex: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub firewall: Option<FirewallMutationRequest>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -94,6 +198,7 @@ pub struct PrivilegedPolicyDescription {
     pub arbitrary_command_execution_prohibited: bool,
     pub generic_shell_execution_prohibited: bool,
     pub max_message_bytes: usize,
+    pub firewall_policy_mutation_enabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -106,6 +211,8 @@ pub struct PrivilegedResponse {
     pub health: Option<PrivilegedServiceHealth>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub policy: Option<PrivilegedPolicyDescription>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub firewall: Option<FirewallMutationResult>,
 }
 
 impl PrivilegedResponse {
@@ -117,6 +224,7 @@ impl PrivilegedResponse {
             code: code.into(),
             health: None,
             policy: None,
+            firewall: None,
         }
     }
 }
@@ -186,6 +294,10 @@ impl BoundaryPolicy {
         match command {
             "health" => Ok(ServiceCommand::Health),
             "describe-policy" => Ok(ServiceCommand::DescribePolicy),
+            "firewall-status" => Ok(ServiceCommand::FirewallStatus),
+            "firewall-apply" => Ok(ServiceCommand::FirewallApply),
+            "firewall-remove" => Ok(ServiceCommand::FirewallRemove),
+            "firewall-rollback" => Ok(ServiceCommand::FirewallRollback),
             _ => Err(BoundaryError::CommandDenied),
         }
     }
@@ -210,6 +322,7 @@ pub enum BoundaryError {
     InvalidAuthenticode,
     PublisherMismatch,
     CommandDenied,
+    InvalidFirewallRequest,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -273,6 +386,10 @@ mod tests {
         ] {
             assert!(!CapabilityPolicy::phase16_allows(capability));
             assert!(!CapabilityPolicy::phase17_allows(capability));
+            assert_eq!(
+                CapabilityPolicy::phase19_allows(capability),
+                capability == PrivilegedCapability::FirewallPolicyMutation
+            );
         }
     }
 
@@ -286,6 +403,14 @@ mod tests {
             policy().authorize_command("describe-policy"),
             Ok(ServiceCommand::DescribePolicy)
         );
+        for allowed in [
+            "firewall-status",
+            "firewall-apply",
+            "firewall-remove",
+            "firewall-rollback",
+        ] {
+            assert!(policy().authorize_command(allowed).is_ok());
+        }
         for denied in ["exec", "shell", "powershell", "cmd", "run", "firewall-add"] {
             assert_eq!(
                 policy().authorize_command(denied),

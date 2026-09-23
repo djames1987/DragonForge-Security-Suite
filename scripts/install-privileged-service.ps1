@@ -93,7 +93,7 @@ try {
     & icacls.exe $DataRoot /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "BUILTIN\\Administrators:(OI)(CI)F" $ServiceDataAcl | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Failed to protect privileged-service data directory ACL." }
 
-    & sc.exe description $ServiceName "Narrow authenticated DragonForge Windows privilege boundary. No generic elevated command execution." | Out-Null
+    & sc.exe description $ServiceName "Narrow authenticated DragonForge Windows privilege boundary with typed firewall policy. No generic elevated command execution." | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Failed to configure service description." }
     & sc.exe sidtype $ServiceName restricted | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Failed to configure restricted service SID." }

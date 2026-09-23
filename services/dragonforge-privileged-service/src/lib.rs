@@ -1,8 +1,9 @@
 //! DragonForge privileged-service runtime foundations.
 //!
-//! Phase 17 implements the Windows service control plane only. No firewall,
-//! quarantine, process-control, registry-remediation, or generic command runner
-//! is enabled here.
+//! Phase 17 established the Windows service control plane. Phase 19 enables
+//! only typed DragonForge-owned Windows Firewall policy mutation. Quarantine,
+//! process control, registry remediation, system-integrity remediation, and
+//! generic command execution remain disabled.
 
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fs::{self, OpenOptions};
@@ -16,6 +17,7 @@ use dragonforge_windows_boundary::{
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod firewall;
 #[cfg(windows)]
 pub mod windows;
 
@@ -167,6 +169,34 @@ pub fn validate_request_shape(request: &PrivilegedRequest) -> Result<()> {
     }
     if request.action.is_empty() || request.action.len() > 64 {
         return Err(ServiceError::RequestRejected);
+    }
+    match request.action.as_str() {
+        "health" | "describe-policy" => {
+            if request.firewall.is_some() {
+                return Err(ServiceError::RequestRejected);
+            }
+        }
+        "firewall-status" | "firewall-apply" | "firewall-remove" | "firewall-rollback" => {
+            let firewall = request
+                .firewall
+                .as_ref()
+                .ok_or(ServiceError::RequestRejected)?;
+            firewall
+                .validate()
+                .map_err(|_| ServiceError::RequestRejected)?;
+            match request.action.as_str() {
+                "firewall-rollback" if firewall.rollback_token.is_none() => {
+                    return Err(ServiceError::RequestRejected);
+                }
+                "firewall-status" | "firewall-apply" | "firewall-remove"
+                    if firewall.rollback_token.is_some() =>
+                {
+                    return Err(ServiceError::RequestRejected);
+                }
+                _ => {}
+            }
+        }
+        _ => {}
     }
     if request.nonce_hex.len() != 32
         || !request
@@ -324,6 +354,7 @@ mod tests {
             action: "health".to_owned(),
             timestamp_ms: now_ms(),
             nonce_hex: nonce.to_owned(),
+            firewall: None,
         }
     }
 

@@ -23,3 +23,8 @@ pub use paths::AgentPaths;
 pub use privileged::PrivilegedServiceClient;
 pub use protocol::{AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, MAX_CLOCK_SKEW_MS};
 pub use server::AgentServer;
+
+#[cfg(windows)]
+pub use dragonforge_windows_boundary::{
+    FirewallAction, FirewallApplicationIdentity, FirewallMutationResult, FirewallPolicyState,
+};

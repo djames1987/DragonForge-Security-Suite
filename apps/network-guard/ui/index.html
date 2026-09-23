@@ -14,8 +14,9 @@
       <div class="brand"><div class="mark">DF</div><div><strong>DragonForge</strong><span>Network Guard</span></div></div>
       <button class="nav active" data-view="connections">Connections</button>
       <button class="nav" data-view="dns">DNS Cache</button>
+      <button class="nav" data-view="policy">Policy</button>
       <button class="nav" data-view="about">About</button>
-      <div class="note">Visibility-only. Network Guard does not block traffic, capture packets, or change Windows Firewall.</div>
+      <div class="note">Phase 19 can create DragonForge-owned outbound application rules through the authenticated privileged service. It does not expose raw firewall commands or capture packet payloads.</div>
       <div class="phase">Suite Phase 14</div>
     </aside>
     <main>
@@ -30,7 +31,30 @@
         </div>
         <div id="warnings"></div>
         <div class="section-head"><div><div class="eyebrow">Per-process visibility</div><h2>Endpoints</h2></div><span id="stamp">No snapshot yet.</span></div>
-        <div class="table-wrap"><table><thead><tr><th>Protocol</th><th>Process</th><th>PID</th><th>Local</th><th>Remote</th><th>State</th></tr></thead><tbody id="connections"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Protocol</th><th>Process</th><th>PID</th><th>Local</th><th>Remote</th><th>State</th><th>Policy</th></tr></thead><tbody id="connections"></tbody></table></div>
+      </section>
+
+      <section id="view-policy" class="view">
+        <div class="policy-card">
+          <div class="section-head">
+            <div><div class="eyebrow">Windows Firewall</div><h2>Application policy</h2></div>
+            <span id="policy-state">No process selected</span>
+          </div>
+          <p class="policy-copy">Rules are outbound-only and apply to all Windows Firewall profiles. Windows Firewall enforces the executable path; DragonForge records SHA-256 and re-hashes the executable before every policy operation so binary changes can be detected and reviewed.</p>
+          <div class="policy-grid">
+            <div><span>Process</span><strong id="policy-process">—</strong></div>
+            <div><span>PID</span><strong id="policy-pid">—</strong></div>
+            <div class="wide"><span>Executable</span><code id="policy-path">—</code></div>
+            <div class="wide"><span>SHA-256</span><code id="policy-hash">—</code></div>
+          </div>
+          <div class="policy-actions">
+            <button id="policy-allow" class="primary" disabled>Allow outbound</button>
+            <button id="policy-block" class="danger" disabled>Block outbound</button>
+            <button id="policy-remove" class="secondary" disabled>Remove managed rule</button>
+            <button id="policy-rollback" class="secondary" disabled>Rollback last change</button>
+          </div>
+          <p class="policy-footnote">Only DragonForge-managed rules can be changed or rolled back. Phase 19 does not change global firewall defaults, inbound policy, or unrelated Windows Firewall rules.</p>
+        </div>
       </section>
 
       <section id="view-dns" class="view">
@@ -39,7 +63,7 @@
       </section>
 
       <section id="view-about" class="view">
-        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Network Guard</h2><p>Phase 8 provides Windows-first, on-demand network visibility for TCP/UDP endpoints and the Windows DNS client cache.</p><p>It does not inspect packet payloads, block traffic, terminate connections, change firewall rules, or claim persistent protection while closed. Network Guard remains visibility-only; traffic blocking and firewall enforcement are not claimed by this application.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p></div>
+        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Network Guard</h2><p>Phase 19 extends the existing Windows-first TCP/UDP and DNS visibility with explicit per-application outbound Windows Firewall policy.</p><p>Allow/block requests use the exact sibling DragonForge Agent and authenticated privileged service. Rules are scoped to the application path and SHA-256, use a DragonForge-owned rule namespace, and support bounded rollback. Network Guard still does not inspect packet payloads, terminate connections, expose arbitrary firewall syntax, or change unrelated firewall rules.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p></div>
       </section>
     </main>
   </div>

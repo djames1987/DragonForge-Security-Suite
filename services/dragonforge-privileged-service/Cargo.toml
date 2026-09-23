@@ -16,6 +16,7 @@ dragonforge-windows-boundary = { path = "../../crates/dragonforge-windows-bounda
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
+sha2 = "0.10"
 tokio = { version = "1.47", features = ["io-util", "net", "rt-multi-thread", "time"] }
 
 [target.'cfg(windows)'.dependencies]
@@ -33,6 +34,12 @@ windows-sys = { version = "0.59.0", features = [
     "Win32_System_Threading",
 ] }
 widestring = "=1.1.0"
+windows = { version = "=0.61.3", features = [
+    "Win32_Foundation",
+    "Win32_NetworkManagement_WindowsFirewall",
+    "Win32_System_Com",
+    "Win32_System_Variant",
+] }
 
 # Phase 17 deliberately contains a small audited Windows FFI module for named-pipe
 # peer identity, explicit pipe ACL construction, and Authenticode publisher checks.

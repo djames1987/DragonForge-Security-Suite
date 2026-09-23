@@ -540,13 +540,23 @@ Phase 18 remains a change detector. It does not claim malware classification, sa
 See [PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md](PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md).
 
 ## Phase 19 — Network Policy & Firewall Integration
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- controlled Windows Firewall/Filtering Platform integration behind the privileged service;
-- explicit allow/block policy with rollback and safety controls;
-- application identity/path/hash context;
-- no arbitrary firewall command surface exposed to the UI.
+Delivered:
+- controlled native Windows Firewall integration behind the authenticated privileged service;
+- typed firewall status/apply/remove/rollback commands with protocol minor-version evolution;
+- Phase 19 capability policy enabling only `FirewallPolicyMutation`;
+- outbound-only all-profile per-application allow/block rules;
+- application PID/name/path/SHA-256 identity context with privileged-service re-hashing before mutation;
+- deterministic DragonForge-owned rule namespace/group with collision and ownership checks;
+- bounded protected service state for managed policies and rollback records;
+- rollback tokens tied to replay-protected privileged requests;
+- Network Guard policy UI and exact-sibling Agent routing;
+- no direct UI privileged-pipe access and no raw firewall/shell command surface;
+- no packet-payload capture, connection termination, inbound custom rules, or unrelated privileged capabilities;
+- Phase 19 Windows verifier, documentation, ADR, and CI coverage.
+
+See [PHASE_19_NETWORK_POLICY_FIREWALL.md](PHASE_19_NETWORK_POLICY_FIREWALL.md).
 
 ## Phase 20 — Security Center Policy & Event Hub
 **Status: Planned**
