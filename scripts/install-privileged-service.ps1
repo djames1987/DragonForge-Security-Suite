@@ -49,6 +49,17 @@ $ProtectedServiceExe = Join-Path $ProtectedRoot "dragonforge-privileged-service.
 $DataRoot = Join-Path $env:ProgramData "DragonForge\\Security\\privileged-service"
 $ConfigPath = Join-Path $DataRoot "service-config.json"
 
+$Existing = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+if ($Existing) {
+    if ($Existing.Status -ne "Stopped") {
+        Stop-Service -Name $ServiceName -Force
+        $Existing.WaitForStatus("Stopped", [TimeSpan]::FromSeconds(15))
+    }
+    & sc.exe delete $ServiceName | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Unable to remove previous privileged service registration." }
+    Start-Sleep -Milliseconds 750
+}
+
 New-Item -ItemType Directory -Force -Path $ProtectedRoot | Out-Null
 & icacls.exe $ProtectedRoot /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "BUILTIN\\Administrators:(OI)(CI)F" | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Failed to protect privileged-service binary directory ACL." }
@@ -71,16 +82,6 @@ $Config = [ordered]@{
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [IO.File]::WriteAllText($ConfigPath, ($Config | ConvertTo-Json -Depth 3), $Utf8NoBom)
 
-$Existing = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-if ($Existing) {
-    if ($Existing.Status -ne "Stopped") {
-        Stop-Service -Name $ServiceName -Force
-        $Existing.WaitForStatus("Stopped", [TimeSpan]::FromSeconds(15))
-    }
-    & sc.exe delete $ServiceName | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "Unable to remove previous privileged service registration." }
-    Start-Sleep -Milliseconds 750
-}
 $BinPath = '"' + $ProtectedServiceExe + '"'
 & sc.exe create $ServiceName "binPath= $BinPath" "start= auto" "obj= $ServiceAccount" "DisplayName= $ServiceDisplayName" | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Failed to register DragonForge Privileged Service." }
