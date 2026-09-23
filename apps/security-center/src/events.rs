@@ -188,6 +188,12 @@ impl EventStore {
             ));
         }
 
+        if self.next_id == u64::MAX {
+            return Err(CoreError::new_safe(
+                ErrorCode::Internal,
+                "Security Center event identifier space is exhausted",
+            ));
+        }
         let record = EventRecord::new(
             u128::from(self.next_id),
             component,
@@ -196,7 +202,7 @@ impl EventStore {
             code,
             summary,
         );
-        self.next_id = self.next_id.saturating_add(1).max(1);
+        self.next_id += 1;
         self.events.push_back(record.into());
         self.trim();
         self.persist()
