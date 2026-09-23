@@ -4,7 +4,9 @@ use std::env;
 use std::process::ExitCode;
 
 #[cfg(windows)]
-use dragonforge_agent::PrivilegedServiceClient;
+use dragonforge_agent::{
+    FirewallAction, FirewallApplicationIdentity, FirewallMutationResult, PrivilegedServiceClient,
+};
 use dragonforge_agent::{AgentClient, AgentIntegrityRuntime, AgentServer};
 use dragonforge_core::{Component, ComponentLogger, install_safe_panic_hook};
 
@@ -21,10 +23,20 @@ fn main() -> ExitCode {
         Some("--privileged-health") => privileged_health(),
         #[cfg(windows)]
         Some("--privileged-policy") => privileged_policy(),
+        #[cfg(windows)]
+        Some("--firewall-status") => firewall_command(FirewallCliAction::Status),
+        #[cfg(windows)]
+        Some("--firewall-allow") => firewall_command(FirewallCliAction::Allow),
+        #[cfg(windows)]
+        Some("--firewall-block") => firewall_command(FirewallCliAction::Block),
+        #[cfg(windows)]
+        Some("--firewall-remove") => firewall_command(FirewallCliAction::Remove),
+        #[cfg(windows)]
+        Some("--firewall-rollback") => firewall_command(FirewallCliAction::Rollback),
         Some("--serve") | None => serve(),
         Some(_) => {
             eprintln!(
-                "Usage: dragonforge-agent [--serve|--health|--stop|--integrity-status|--integrity-events|--privileged-health|--privileged-policy]"
+                "Usage: dragonforge-agent [--serve|--health|--stop|--integrity-status|--integrity-events|--privileged-health|--privileged-policy|--firewall-status|--firewall-allow|--firewall-block|--firewall-remove|--firewall-rollback]"
             );
             ExitCode::from(2)
         }
@@ -121,6 +133,86 @@ fn privileged_policy() -> ExitCode {
         },
         Err(error) => {
             eprintln!("DragonForge Privileged Service policy is unavailable: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+#[cfg(windows)]
+#[derive(Debug, Clone, Copy)]
+enum FirewallCliAction {
+    Status,
+    Allow,
+    Block,
+    Remove,
+    Rollback,
+}
+
+#[cfg(windows)]
+fn firewall_command(action: FirewallCliAction) -> ExitCode {
+    let mut args = env::args().skip(2);
+    let rollback_token = if matches!(action, FirewallCliAction::Rollback) {
+        match args.next() {
+            Some(value) => Some(value),
+            None => return firewall_usage(),
+        }
+    } else {
+        None
+    };
+    let Some(path) = args.next() else {
+        return firewall_usage();
+    };
+    let Some(sha256_hex) = args.next() else {
+        return firewall_usage();
+    };
+    let Some(display_name) = args.next() else {
+        return firewall_usage();
+    };
+    if args.next().is_some() {
+        return firewall_usage();
+    }
+
+    let identity = FirewallApplicationIdentity {
+        application_path: path.into(),
+        sha256_hex,
+        display_name,
+    };
+    let client = PrivilegedServiceClient::new();
+    let result = match action {
+        FirewallCliAction::Status => client.firewall_status(identity),
+        FirewallCliAction::Allow => client.firewall_apply(identity, FirewallAction::Allow),
+        FirewallCliAction::Block => client.firewall_apply(identity, FirewallAction::Block),
+        FirewallCliAction::Remove => client.firewall_remove(identity),
+        FirewallCliAction::Rollback => client.firewall_rollback(
+            identity,
+            rollback_token.expect("rollback token checked above"),
+        ),
+    };
+    print_firewall_result(result)
+}
+
+#[cfg(windows)]
+fn firewall_usage() -> ExitCode {
+    eprintln!(
+        "Firewall usage: --firewall-status <exe> <sha256> <name> | --firewall-allow <exe> <sha256> <name> | --firewall-block <exe> <sha256> <name> | --firewall-remove <exe> <sha256> <name> | --firewall-rollback <token> <exe> <sha256> <name>"
+    );
+    ExitCode::from(2)
+}
+
+#[cfg(windows)]
+fn print_firewall_result(
+    result: dragonforge_agent::Result<FirewallMutationResult>,
+) -> ExitCode {
+    match result {
+        Ok(result) => match serde_json::to_string_pretty(&result) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("Firewall policy request failed: {error}");
             ExitCode::from(1)
         }
     }
