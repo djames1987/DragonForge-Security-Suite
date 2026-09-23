@@ -60,10 +60,7 @@ impl AppState {
         };
         let logger = SafeLogger::discover(settings.include_diagnostic_identifiers)?;
         logger.install_panic_hook();
-        let mut events = match EventStore::discover(settings.retain_event_count) {
-            Ok(store) => store,
-            Err(_) => EventStore::new(settings.retain_event_count),
-        };
+        let mut events = EventStore::discover(settings.retain_event_count)?;
         events.push(
             Component::SecurityCenter,
             EventKind::Lifecycle,
@@ -87,8 +84,7 @@ impl AppState {
             )
         })?;
         let health_history =
-            HealthHistoryStore::discover(settings.suite_policy.health_history_limit)
-                .unwrap_or_else(|_| HealthHistoryStore::new(settings.suite_policy.health_history_limit));
+            HealthHistoryStore::discover(settings.suite_policy.health_history_limit)?;
         let state = Self {
             registry: ComponentRegistry::phase3_default(),
             events: Mutex::new(events),
