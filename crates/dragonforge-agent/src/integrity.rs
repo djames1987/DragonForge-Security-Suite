@@ -28,7 +28,6 @@ impl AgentIntegrityRuntime {
         })
     }
 
-    #[cfg(test)]
     #[must_use]
     pub fn from_paths(state_path: PathBuf, baseline_path: PathBuf) -> Self {
         Self {
