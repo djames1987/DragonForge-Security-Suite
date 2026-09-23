@@ -65,10 +65,7 @@ impl<B: FirewallBackend> FirewallManager<B> {
         }
     }
 
-    pub fn status(
-        &self,
-        identity: &FirewallApplicationIdentity,
-    ) -> Result<FirewallMutationResult> {
+    pub fn status(&self, identity: &FirewallApplicationIdentity) -> Result<FirewallMutationResult> {
         identity
             .validate()
             .map_err(|_| ServiceError::RequestRejected)?;
@@ -81,8 +78,7 @@ impl<B: FirewallBackend> FirewallManager<B> {
             .find(|policy| policy.rule_name == rule_name);
         if let Some(policy) = policy.as_mut() {
             policy.enabled = self.backend.exists(&rule_name)?;
-            policy.identity_matches =
-                policy.sha256_hex.eq_ignore_ascii_case(&identity.sha256_hex);
+            policy.identity_matches = policy.sha256_hex.eq_ignore_ascii_case(&identity.sha256_hex);
         }
         Ok(FirewallMutationResult {
             changed: false,
@@ -215,9 +211,7 @@ impl<B: FirewallBackend> FirewallManager<B> {
             .map_err(|_| ServiceError::RequestRejected)?;
         verify_application_identity(&identity)?;
         if rollback_token.len() != 32
-            || !rollback_token
-                .bytes()
-                .all(|byte| byte.is_ascii_hexdigit())
+            || !rollback_token.bytes().all(|byte| byte.is_ascii_hexdigit())
         {
             return Err(ServiceError::RequestRejected);
         }
@@ -380,7 +374,8 @@ pub fn verify_application_identity(identity: &FirewallApplicationIdentity) -> Re
         return Err(ServiceError::RequestRejected);
     }
 
-    let metadata = fs::symlink_metadata(&identity.application_path).map_err(|_| ServiceError::Io)?;
+    let metadata =
+        fs::symlink_metadata(&identity.application_path).map_err(|_| ServiceError::Io)?;
     if metadata.file_type().is_symlink()
         || !metadata.is_file()
         || metadata.len() > MAX_APPLICATION_BYTES
@@ -473,7 +468,8 @@ impl FirewallBackend for WindowsFirewallBackend {
             let rule: INetFwRule =
                 unsafe { CoCreateInstance(&NetFwRule, None, CLSCTX_INPROC_SERVER) }
                     .map_err(|_| ServiceError::Platform)?;
-            let path = windows::core::BSTR::from(policy.application_path.to_string_lossy().as_ref());
+            let path =
+                windows::core::BSTR::from(policy.application_path.to_string_lossy().as_ref());
             let description = windows::core::BSTR::from(format!(
                 "DragonForge managed outbound application policy; SHA-256 {}",
                 policy.sha256_hex
@@ -498,8 +494,7 @@ impl FirewallBackend for WindowsFirewallBackend {
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetEnabled(VARIANT_TRUE)
                     .map_err(|_| ServiceError::Platform)?;
-                rule.SetAction(action)
-                    .map_err(|_| ServiceError::Platform)?;
+                rule.SetAction(action).map_err(|_| ServiceError::Platform)?;
                 rules.Add(&rule).map_err(|_| ServiceError::Platform)?;
             }
 
@@ -559,7 +554,8 @@ fn with_rules<T>(
         INetFwPolicy2, NET_FW_MODIFY_STATE_OK, NetFwPolicy2,
     };
     use windows::Win32::System::Com::{
-        CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx, CoUninitialize,
+        CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx,
+        CoUninitialize,
     };
 
     let initialized = unsafe { CoInitializeEx(None, COINIT_MULTITHREADED) };
@@ -637,7 +633,8 @@ mod tests {
     fn apply_remove_and_rollback_are_bounded_to_managed_rule() {
         let dir = tempdir().expect("tempdir");
         let identity = executable(dir.path(), "test.exe");
-        let manager = FirewallManager::new(dir.path().join("firewall.json"), FakeBackend::default());
+        let manager =
+            FirewallManager::new(dir.path().join("firewall.json"), FakeBackend::default());
 
         let applied = manager
             .apply(
@@ -714,7 +711,10 @@ mod tests {
     #[test]
     fn control_plane_binaries_are_not_eligible_for_firewall_policy() {
         let dir = tempdir().expect("tempdir");
-        for name in ["dragonforge-agent.exe", "dragonforge-privileged-service.exe"] {
+        for name in [
+            "dragonforge-agent.exe",
+            "dragonforge-privileged-service.exe",
+        ] {
             let identity = executable(dir.path(), name);
             assert!(verify_application_identity(&identity).is_err());
         }
