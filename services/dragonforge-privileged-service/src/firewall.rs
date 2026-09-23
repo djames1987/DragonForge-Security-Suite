@@ -438,7 +438,7 @@ pub struct WindowsFirewallBackend;
 #[cfg(windows)]
 impl FirewallBackend for WindowsFirewallBackend {
     fn exists(&self, rule_name: &str) -> Result<bool> {
-        with_rules(|rules| {
+        with_rules(false, |rules| {
             let name = windows::core::BSTR::from(rule_name);
             let Ok(rule) = (unsafe { rules.Item(&name) }) else {
                 return Ok(false);
@@ -458,7 +458,7 @@ impl FirewallBackend for WindowsFirewallBackend {
         };
         use windows::Win32::System::Com::{CLSCTX_INPROC_SERVER, CoCreateInstance};
 
-        with_rules(|rules| {
+        with_rules(true, |rules| {
             let name = windows::core::BSTR::from(policy.rule_name.as_str());
             if let Ok(existing) = unsafe { rules.Item(&name) } {
                 let grouping = unsafe { existing.Grouping() }
@@ -532,7 +532,7 @@ impl FirewallBackend for WindowsFirewallBackend {
     }
 
     fn remove(&self, rule_name: &str) -> Result<()> {
-        with_rules(|rules| {
+        with_rules(true, |rules| {
             let name = windows::core::BSTR::from(rule_name);
             let Ok(rule) = (unsafe { rules.Item(&name) }) else {
                 return Ok(());
@@ -550,6 +550,7 @@ impl FirewallBackend for WindowsFirewallBackend {
 
 #[cfg(windows)]
 fn with_rules<T>(
+    require_local_modification: bool,
     operation: impl FnOnce(
         &windows::Win32::NetworkManagement::WindowsFirewall::INetFwRules,
     ) -> Result<T>,
@@ -569,10 +570,12 @@ fn with_rules<T>(
         let policy: INetFwPolicy2 =
             unsafe { CoCreateInstance(&NetFwPolicy2, None, CLSCTX_INPROC_SERVER) }
                 .map_err(|_| ServiceError::Platform)?;
-        let modify_state =
-            unsafe { policy.LocalPolicyModifyState() }.map_err(|_| ServiceError::Platform)?;
-        if modify_state != NET_FW_MODIFY_STATE_OK {
-            return Err(ServiceError::RequestRejected);
+        if require_local_modification {
+            let modify_state =
+                unsafe { policy.LocalPolicyModifyState() }.map_err(|_| ServiceError::Platform)?;
+            if modify_state != NET_FW_MODIFY_STATE_OK {
+                return Err(ServiceError::RequestRejected);
+            }
         }
         let rules = unsafe { policy.Rules() }.map_err(|_| ServiceError::Platform)?;
         operation(&rules)
