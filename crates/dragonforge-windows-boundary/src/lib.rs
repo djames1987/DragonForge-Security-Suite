@@ -131,7 +131,7 @@ pub struct CallerIdentity {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BoundaryPolicy {
-    install_directory: PathBuf,
+    expected_agent_path: PathBuf,
     expected_publisher_subject: String,
 }
 
@@ -142,14 +142,25 @@ impl BoundaryPolicy {
         expected_publisher_subject: impl Into<String>,
     ) -> Self {
         Self {
-            install_directory: install_directory.into(),
+            expected_agent_path: install_directory.into().join(EXPECTED_AGENT_EXE),
+            expected_publisher_subject: expected_publisher_subject.into(),
+        }
+    }
+
+    #[must_use]
+    pub fn from_expected_agent_path(
+        expected_agent_path: impl Into<PathBuf>,
+        expected_publisher_subject: impl Into<String>,
+    ) -> Self {
+        Self {
+            expected_agent_path: expected_agent_path.into(),
             expected_publisher_subject: expected_publisher_subject.into(),
         }
     }
 
     #[must_use]
     pub fn expected_agent_path(&self) -> PathBuf {
-        self.install_directory.join(EXPECTED_AGENT_EXE)
+        self.expected_agent_path.clone()
     }
 
     pub fn authorize_caller(&self, caller: &CallerIdentity) -> Result<(), BoundaryError> {
