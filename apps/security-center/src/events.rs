@@ -70,12 +70,21 @@ pub struct EventStore {
 impl EventStore {
     pub fn discover(capacity: usize) -> CoreResult<Self> {
         let paths = SuitePaths::discover()?;
-        Self::from_path(
-            paths
-                .component_data_dir(Component::SecurityCenter)
-                .join(EVENT_HUB_FILE),
-            capacity,
-        )
+        let path = paths
+            .component_data_dir(Component::SecurityCenter)
+            .join(EVENT_HUB_FILE);
+        match Self::from_path(path.clone(), capacity) {
+            Ok(store) => Ok(store),
+            Err(_) => {
+                quarantine_invalid(&path)?;
+                Ok(Self {
+                    events: VecDeque::with_capacity(normalize_capacity(capacity)),
+                    capacity: normalize_capacity(capacity),
+                    next_id: 1,
+                    path: Some(path),
+                })
+            }
+        }
     }
 
     pub fn from_dir(directory: impl Into<PathBuf>, capacity: usize) -> CoreResult<Self> {
@@ -334,6 +343,27 @@ fn now_ms() -> u64 {
         })
 }
 
+fn quarantine_invalid(path: &Path) -> CoreResult<()> {
+    if !path.exists() {
+        return Ok(());
+    }
+    let invalid = invalid_path(path);
+    if invalid.exists() {
+        fs::remove_file(&invalid).map_err(|_| {
+            CoreError::new_safe(
+                ErrorCode::Internal,
+                "unable to replace invalid Security Center event history quarantine",
+            )
+        })?;
+    }
+    fs::rename(path, invalid).map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to quarantine invalid Security Center event history",
+        )
+    })
+}
+
 fn recover_backup(path: &Path) -> CoreResult<()> {
     if path.exists() {
         return Ok(());
@@ -422,6 +452,12 @@ fn backup_path(path: &Path) -> PathBuf {
     PathBuf::from(value)
 }
 
+fn invalid_path(path: &Path) -> PathBuf {
+    let mut value = path.as_os_str().to_os_string();
+    value.push(".invalid");
+    PathBuf::from(value)
+}
+
 #[cfg(test)]
 mod tests {
     use dragonforge_core::{Component, EventKind, Severity};
@@ -498,6 +534,19 @@ mod tests {
         assert_eq!(recovered.recent(10).len(), 1);
         assert!(path.exists());
         assert!(!backup.exists());
+    }
+
+    #[test]
+    fn discover_quarantines_invalid_persistent_state() {
+        let dir = tempdir().expect("temporary directory");
+        let path = dir.path().join(super::EVENT_HUB_FILE);
+        fs::write(&path, b"not-json").expect("write malformed state");
+        let store = EventStore::from_path(path.clone(), 10);
+        assert!(store.is_err());
+
+        super::quarantine_invalid(&path).expect("quarantine");
+        assert!(!path.exists());
+        assert!(super::invalid_path(&path).exists());
     }
 
     #[test]
