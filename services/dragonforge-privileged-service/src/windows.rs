@@ -36,7 +36,7 @@ use windows_service::{
     service_dispatcher,
 };
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, HANDLE},
+    Foundation::{CloseHandle, HANDLE, LocalFree},
     Security::{
         Authorization::{ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1},
         Cryptography::{CERT_X500_NAME_STR, CertNameToStrW, X509_ASN_ENCODING},
@@ -49,7 +49,6 @@ use windows_sys::Win32::{
         },
     },
     System::{
-        Memory::LocalFree,
         Pipes::GetNamedPipeClientProcessId,
         Threading::{OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW},
     },
@@ -356,7 +355,7 @@ fn process_image_path(pid: u32) -> Result<PathBuf> {
         // SAFETY: request only PROCESS_QUERY_LIMITED_INFORMATION for the peer PID.
         OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid)
     };
-    if process == 0 {
+    if process.is_null() {
         return Err(ServiceError::Platform);
     }
 
@@ -391,8 +390,8 @@ fn verify_authenticode_and_subject(path: &Path) -> Result<String> {
     };
     file_info.cbStruct = size_of::<WINTRUST_FILE_INFO>() as u32;
     file_info.pcwszFilePath = path_wide.as_ptr();
-    file_info.hFile = 0;
-    file_info.pgKnownSubject = null();
+    file_info.hFile = null_mut();
+    file_info.pgKnownSubject = null_mut();
 
     let mut trust_data: WINTRUST_DATA = unsafe {
         // SAFETY: zero is the documented initialization state for this WinTrust structure.
@@ -411,7 +410,7 @@ fn verify_authenticode_and_subject(path: &Path) -> Result<String> {
     let status = unsafe {
         // SAFETY: WinTrust pointers reference live stack data and a NUL-terminated path.
         WinVerifyTrust(
-            0,
+            null_mut(),
             &mut action,
             &mut trust_data as *mut WINTRUST_DATA as *mut c_void,
         )
@@ -512,7 +511,11 @@ fn close_wintrust_state(action: &mut windows_sys::core::GUID, trust_data: &mut W
     trust_data.dwStateAction = WTD_STATEACTION_CLOSE;
     unsafe {
         // SAFETY: closes the WinTrust state opened by WinVerifyTrust.
-        let _ = WinVerifyTrust(0, action, trust_data as *mut WINTRUST_DATA as *mut c_void);
+        let _ = WinVerifyTrust(
+            null_mut(),
+            action,
+            trust_data as *mut WINTRUST_DATA as *mut c_void,
+        );
     }
 }
 
@@ -553,7 +556,7 @@ fn create_secured_pipe() -> Result<NamedPipeServer> {
 
     unsafe {
         // SAFETY: descriptor was allocated by the SDDL conversion API.
-        let _ = LocalFree(descriptor as isize);
+        let _ = LocalFree(descriptor.cast());
     }
 
     created.map_err(|_| ServiceError::Io)
