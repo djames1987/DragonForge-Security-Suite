@@ -21,7 +21,9 @@ fn main() -> ExitCode {
         Some("--privileged-policy") => privileged_policy(),
         Some("--serve") | None => serve(),
         Some(_) => {
-            eprintln!("Usage: dragonforge-agent [--serve|--health|--stop|--privileged-health|--privileged-policy]");
+            eprintln!(
+                "Usage: dragonforge-agent [--serve|--health|--stop|--privileged-health|--privileged-policy]"
+            );
             ExitCode::from(2)
         }
     }
@@ -87,7 +89,6 @@ fn stop() -> ExitCode {
         }
     }
 }
-
 
 #[cfg(windows)]
 fn privileged_health() -> ExitCode {
