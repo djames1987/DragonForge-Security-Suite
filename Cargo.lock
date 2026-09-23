@@ -1010,6 +1010,7 @@ version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "dragonforge-core",
+ "dragonforge-windows-boundary",
  "hmac",
  "rand_core 0.6.4",
  "serde",
