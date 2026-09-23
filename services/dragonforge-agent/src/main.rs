@@ -5,7 +5,7 @@ use std::process::ExitCode;
 
 #[cfg(windows)]
 use dragonforge_agent::PrivilegedServiceClient;
-use dragonforge_agent::{AgentClient, AgentServer};
+use dragonforge_agent::{AgentClient, AgentIntegrityRuntime, AgentServer};
 use dragonforge_core::{Component, ComponentLogger, install_safe_panic_hook};
 
 fn main() -> ExitCode {
@@ -15,6 +15,8 @@ fn main() -> ExitCode {
     match env::args().nth(1).as_deref() {
         Some("--health") => health(),
         Some("--stop") => stop(),
+        Some("--integrity-status") => integrity_status(),
+        Some("--integrity-events") => integrity_events(),
         #[cfg(windows)]
         Some("--privileged-health") => privileged_health(),
         #[cfg(windows)]
@@ -22,7 +24,7 @@ fn main() -> ExitCode {
         Some("--serve") | None => serve(),
         Some(_) => {
             eprintln!(
-                "Usage: dragonforge-agent [--serve|--health|--stop|--privileged-health|--privileged-policy]"
+                "Usage: dragonforge-agent [--serve|--health|--stop|--integrity-status|--integrity-events|--privileged-health|--privileged-policy]"
             );
             ExitCode::from(2)
         }
@@ -119,6 +121,53 @@ fn privileged_policy() -> ExitCode {
         },
         Err(error) => {
             eprintln!("DragonForge Privileged Service policy is unavailable: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+
+fn integrity_status() -> ExitCode {
+    let runtime = match AgentIntegrityRuntime::discover() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Continuous integrity runtime is unavailable: {error}");
+            return ExitCode::from(1);
+        }
+    };
+    match runtime.status() {
+        Ok(status) => match serde_json::to_string_pretty(&status) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("Continuous integrity status is unavailable: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+fn integrity_events() -> ExitCode {
+    let runtime = match AgentIntegrityRuntime::discover() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Continuous integrity runtime is unavailable: {error}");
+            return ExitCode::from(1);
+        }
+    };
+    match runtime.events(0, 100) {
+        Ok(events) => match serde_json::to_string_pretty(&events) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("Continuous integrity events are unavailable: {error}");
             ExitCode::from(1)
         }
     }
