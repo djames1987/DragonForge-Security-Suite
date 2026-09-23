@@ -1288,10 +1288,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dragonforge-windows-boundary"
-version = "0.1.0"
-
-[[package]]
 name = "dragonforge-vault"
 version = "0.1.0"
 dependencies = [
@@ -1303,6 +1299,10 @@ dependencies = [
  "uuid",
  "zeroize",
 ]
+
+[[package]]
+name = "dragonforge-windows-boundary"
+version = "0.1.0"
 
 [[package]]
 name = "dtoa"
