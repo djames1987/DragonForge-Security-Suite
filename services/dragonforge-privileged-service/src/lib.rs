@@ -1,8 +1,9 @@
 //! DragonForge privileged-service runtime foundations.
 //!
-//! Phase 17 implements the Windows service control plane only. No firewall,
-//! quarantine, process-control, registry-remediation, or generic command runner
-//! is enabled here.
+//! Phase 17 established the Windows service control plane. Phase 19 enables
+//! only typed DragonForge-owned Windows Firewall policy mutation. Quarantine,
+ //! process control, registry remediation, system-integrity remediation, and
+//! generic command execution remain disabled.
 
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fs::{self, OpenOptions};
