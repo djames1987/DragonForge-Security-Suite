@@ -46,11 +46,7 @@ impl AgentIntegrityRuntime {
             .map_err(|_| AgentError::InvalidState("continuous integrity status is unavailable"))
     }
 
-    pub fn events(
-        &self,
-        after_id: u64,
-        limit: usize,
-    ) -> Result<Vec<ContinuousIntegrityEvent>> {
+    pub fn events(&self, after_id: u64, limit: usize) -> Result<Vec<ContinuousIntegrityEvent>> {
         continuous_events(&self.state_path, after_id, limit)
             .map_err(|_| AgentError::InvalidState("continuous integrity events are unavailable"))
     }

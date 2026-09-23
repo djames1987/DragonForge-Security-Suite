@@ -61,9 +61,9 @@ impl AgentServer {
 
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
             .map_err(|_| AgentError::Io("agent loopback listener could not be created"))?;
-        listener
-            .set_nonblocking(true)
-            .map_err(|_| AgentError::Io("agent listener nonblocking mode could not be configured"))?;
+        listener.set_nonblocking(true).map_err(|_| {
+            AgentError::Io("agent listener nonblocking mode could not be configured")
+        })?;
         let port = listener
             .local_addr()
             .map_err(|_| AgentError::Io("agent listener address is unavailable"))?
@@ -84,13 +84,9 @@ impl AgentServer {
             }
             match listener.accept() {
                 Ok((mut stream, _)) => {
-                    let shutdown = handle_connection(
-                        &mut stream,
-                        &session_key,
-                        started,
-                        &mut replay,
-                    )
-                    .unwrap_or(false);
+                    let shutdown =
+                        handle_connection(&mut stream, &session_key, started, &mut replay)
+                            .unwrap_or(false);
                     handled += 1;
                     if shutdown || max_connections.is_some_and(|limit| handled >= limit) {
                         break;

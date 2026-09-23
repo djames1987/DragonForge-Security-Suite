@@ -364,7 +364,6 @@ impl AppState {
             .save(&updated)
             .map_err(|error| error.to_string())
     }
-    }
 
     fn record_agent_event(&self, code: &'static str, message: &'static str) -> Result<(), String> {
         self.lock_events()?.push(

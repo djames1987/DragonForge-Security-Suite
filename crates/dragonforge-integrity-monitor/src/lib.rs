@@ -1,13 +1,13 @@
 #![forbid(unsafe_code)]
 
-mod continuous;
-pub use continuous::*;
-
 //! Local integrity baseline and change detection for DragonForge Integrity Monitor.
 //!
 //! Phase 7 records bounded identifiers and SHA-256 fingerprints for selected
 //! Windows persistence/configuration surfaces. It does not store command
 //! contents, file contents, or secret material in the baseline.
+
+mod continuous;
+pub use continuous::*;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
