@@ -6,7 +6,13 @@
     return;
   }
 
-  const titles = { connections: "Network visibility", dns: "DNS cache", about: "About Network Guard" };
+  const titles = { connections: "Network visibility", dns: "DNS cache", policy: "Application policy", about: "About Network Guard" };
+  const state = {
+    selectedPid: null,
+    identity: null,
+    firewall: null,
+    rollbackToken: null,
+  };
 
   function showToast(message, error = false) {
     const toast = document.getElementById("toast");
@@ -60,6 +66,13 @@
         cell(endpoint(row.remote_address, row.remote_port)),
         cell(row.state ?? (row.protocol === "udp" ? "Endpoint" : "—"))
       );
+      const policy = document.createElement("td");
+      const manage = document.createElement("button");
+      manage.className = "manage";
+      manage.textContent = "Manage";
+      manage.addEventListener("click", () => selectProcess(row.process_id));
+      policy.appendChild(manage);
+      tr.appendChild(policy);
       body.appendChild(tr);
     }
   }
@@ -73,6 +86,94 @@
       body.appendChild(tr);
     }
     document.getElementById("dns-count").textContent = `${rows.length} records`;
+  }
+
+  function renderPolicy() {
+    const identity = state.identity;
+    document.getElementById("policy-process").textContent = identity?.process_name ?? "—";
+    document.getElementById("policy-pid").textContent = identity?.process_id ?? "—";
+    document.getElementById("policy-path").textContent = identity?.application_path ?? "—";
+    document.getElementById("policy-hash").textContent = identity?.sha256_hex ?? "—";
+
+    const policy = state.firewall?.policy;
+    const status = document.getElementById("policy-state");
+    status.textContent = !identity
+      ? "No process selected"
+      : policy
+        ? `${String(policy.action).toUpperCase()} outbound · ${policy.enabled ? "active" : "not active"}`
+        : "No DragonForge-managed rule";
+
+    const ready = Boolean(identity);
+    document.getElementById("policy-allow").disabled = !ready;
+    document.getElementById("policy-block").disabled = !ready;
+    document.getElementById("policy-remove").disabled = !ready || !policy;
+    document.getElementById("policy-rollback").disabled = !ready || !state.rollbackToken;
+  }
+
+  async function selectProcess(processId) {
+    try {
+      state.selectedPid = Number(processId);
+      state.rollbackToken = null;
+      state.identity = await invoke("inspect_application", { processId: state.selectedPid });
+      state.firewall = await invoke("firewall_status", { processId: state.selectedPid });
+      renderPolicy();
+      showView("policy");
+    } catch (error) {
+      state.identity = null;
+      state.firewall = null;
+      renderPolicy();
+      showToast(String(error), true);
+    }
+  }
+
+  async function refreshPolicyStatus() {
+    if (!state.selectedPid) return;
+    state.identity = await invoke("inspect_application", { processId: state.selectedPid });
+    state.firewall = await invoke("firewall_status", { processId: state.selectedPid });
+    renderPolicy();
+  }
+
+  async function setPolicy(action) {
+    if (!state.selectedPid) return;
+    try {
+      const result = await invoke("set_firewall_policy", {
+        processId: state.selectedPid,
+        action,
+      });
+      state.rollbackToken = result.rollback_token ?? result.rollbackToken ?? null;
+      await refreshPolicyStatus();
+      showToast(`Outbound ${action} policy applied.`);
+    } catch (error) {
+      showToast(String(error), true);
+    }
+  }
+
+  async function removePolicy() {
+    if (!state.selectedPid) return;
+    try {
+      const result = await invoke("remove_firewall_policy", { processId: state.selectedPid });
+      state.rollbackToken = result.rollback_token ?? result.rollbackToken ?? null;
+      await refreshPolicyStatus();
+      showToast(result.changed ? "Managed firewall rule removed." : "No managed rule was present.");
+    } catch (error) {
+      showToast(String(error), true);
+    }
+  }
+
+  async function rollbackPolicy() {
+    if (!state.selectedPid || !state.rollbackToken) return;
+    const token = state.rollbackToken;
+    try {
+      await invoke("rollback_firewall_policy", {
+        processId: state.selectedPid,
+        rollbackToken: token,
+      });
+      state.rollbackToken = null;
+      await refreshPolicyStatus();
+      showToast("Last DragonForge firewall change rolled back.");
+    } catch (error) {
+      showToast(String(error), true);
+    }
   }
 
   async function refresh() {
@@ -102,5 +203,10 @@
     button.addEventListener("click", () => showView(button.dataset.view));
   });
   document.getElementById("refresh").addEventListener("click", refresh);
+  document.getElementById("policy-allow").addEventListener("click", () => setPolicy("allow"));
+  document.getElementById("policy-block").addEventListener("click", () => setPolicy("block"));
+  document.getElementById("policy-remove").addEventListener("click", removePolicy);
+  document.getElementById("policy-rollback").addEventListener("click", rollbackPolicy);
+  renderPolicy();
   refresh();
 })();
