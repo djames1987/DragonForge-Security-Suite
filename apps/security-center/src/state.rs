@@ -114,7 +114,7 @@ impl AppState {
     }
 
     pub fn snapshot(&self) -> Result<DashboardSnapshot, String> {
-        self.sync_integrity_events()?;
+        let _ = self.sync_integrity_events();
         let agent = self.agent.status();
         let mut components = self.registry.all().to_vec();
         let mut health = self.registry.health_summary();
