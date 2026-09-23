@@ -4,7 +4,9 @@ use std::time::{Duration, Instant};
 
 use dragonforge_core::{
     Component, ComponentLogger, CoreError, CoreResult, ErrorCode, EventKind, Platform, Severity,
+    SuitePaths,
 };
+use dragonforge_integrity_monitor::continuous_events;
 use serde::Serialize;
 
 use crate::agent::{AgentClient, AgentStatus};
@@ -42,6 +44,7 @@ pub struct AppState {
     logger: SafeLogger,
     agent: AgentClient,
     agent_auto_start_suppressed: Mutex<bool>,
+    integrity_last_event_id: Mutex<u64>,
     updater: UpdateManager,
 }
 
@@ -85,6 +88,7 @@ impl AppState {
             logger,
             agent: AgentClient::discover(),
             agent_auto_start_suppressed: Mutex::new(false),
+            integrity_last_event_id: Mutex::new(0),
             updater,
         };
         let _ = state
@@ -104,11 +108,13 @@ impl AppState {
             logger,
             agent: AgentClient::unavailable(),
             agent_auto_start_suppressed: Mutex::new(false),
+            integrity_last_event_id: Mutex::new(0),
             updater: UpdateManager::new().expect("test update manager"),
         }
     }
 
     pub fn snapshot(&self) -> Result<DashboardSnapshot, String> {
+        self.sync_integrity_events()?;
         let agent = self.agent.status();
         let mut components = self.registry.all().to_vec();
         let mut health = self.registry.health_summary();
@@ -320,6 +326,44 @@ impl AppState {
             }
             thread::sleep(Duration::from_millis(100));
         }
+    }
+
+    fn sync_integrity_events(&self) -> Result<(), String> {
+        let suite = SuitePaths::discover().map_err(|error| error.to_string())?;
+        let state_path = suite
+            .component_data_dir(Component::Agent)
+            .join("continuous-integrity-v1.json");
+        let after_id = *self
+            .integrity_last_event_id
+            .lock()
+            .map_err(|_| "Integrity alert cursor is unavailable".to_owned())?;
+        let events = continuous_events(&state_path, after_id, 250)
+            .map_err(|error| error.to_string())?;
+        if events.is_empty() {
+            return Ok(());
+        }
+
+        let mut newest = after_id;
+        let mut store = self.lock_events()?;
+        for event in events {
+            newest = newest.max(event.id);
+            if event.suppressed {
+                continue;
+            }
+            store.push(
+                Component::IntegrityMonitor,
+                EventKind::Security,
+                Severity::Warning,
+                "integrity-monitor.change-detected",
+                event.summary,
+            );
+        }
+        drop(store);
+        *self
+            .integrity_last_event_id
+            .lock()
+            .map_err(|_| "Integrity alert cursor is unavailable".to_owned())? = newest;
+        Ok(())
     }
 
     fn record_agent_event(&self, code: &'static str, message: &'static str) -> Result<(), String> {
