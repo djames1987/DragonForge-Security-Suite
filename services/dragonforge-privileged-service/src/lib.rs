@@ -44,6 +44,7 @@ pub type Result<T> = std::result::Result<T, ServiceError>;
 #[serde(rename_all = "camelCase")]
 pub struct ServiceConfig {
     pub schema_version: u16,
+    pub expected_agent_path: PathBuf,
     pub expected_publisher_subject: String,
     #[serde(default = "default_requests_per_minute")]
     pub max_requests_per_minute: u32,
@@ -56,6 +57,18 @@ impl ServiceConfig {
         if self.schema_version != CONFIG_SCHEMA_VERSION {
             return Err(ServiceError::InvalidConfiguration);
         }
+        let file_name = self
+            .expected_agent_path
+            .file_name()
+            .and_then(|value| value.to_str())
+            .ok_or(ServiceError::InvalidConfiguration)?;
+        if !self.expected_agent_path.is_absolute()
+            || !file_name.eq_ignore_ascii_case("dragonforge-agent.exe")
+            || self.expected_agent_path.as_os_str().len() > 2048
+        {
+            return Err(ServiceError::InvalidConfiguration);
+        }
+
         let subject = self.expected_publisher_subject.trim();
         if subject.is_empty() || subject.chars().count() > 512 {
             return Err(ServiceError::InvalidConfiguration);
@@ -314,6 +327,9 @@ mod tests {
     fn config_is_bounded_and_requires_publisher_pin() {
         let valid = ServiceConfig {
             schema_version: CONFIG_SCHEMA_VERSION,
+            expected_agent_path: PathBuf::from(
+                r"C:\Program Files\DragonForge\dragonforge-agent.exe",
+            ),
             expected_publisher_subject: "CN=DragonForge".to_owned(),
             max_requests_per_minute: 120,
             audit_max_bytes: DEFAULT_AUDIT_MAX_BYTES,
