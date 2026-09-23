@@ -19,10 +19,9 @@ use std::sync::{
 use std::time::{Duration, Instant};
 
 use dragonforge_windows_boundary::{
-    BoundaryPolicy, CallerIdentity, EXPECTED_AGENT_EXE, MAX_MESSAGE_BYTES, PIPE_NAME,
-    PrivilegedCapability, PrivilegedPolicyDescription, PrivilegedRequest, PrivilegedResponse,
-    PrivilegedServiceHealth, SERVICE_ACCOUNT, SERVICE_NAME, ServiceCommand,
-    CapabilityPolicy,
+    BoundaryPolicy, CallerIdentity, CapabilityPolicy, EXPECTED_AGENT_EXE, MAX_MESSAGE_BYTES,
+    PIPE_NAME, PrivilegedCapability, PrivilegedPolicyDescription, PrivilegedRequest,
+    PrivilegedResponse, PrivilegedServiceHealth, SERVICE_ACCOUNT, SERVICE_NAME, ServiceCommand,
 };
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::windows::named_pipe::{NamedPipeServer, PipeMode, ServerOptions};
@@ -299,7 +298,10 @@ async fn handle_connected_client(
             firewall: None,
         },
         ServiceCommand::FirewallStatus => {
-            let payload = request.firewall.as_ref().ok_or(ServiceError::RequestRejected)?;
+            let payload = request
+                .firewall
+                .as_ref()
+                .ok_or(ServiceError::RequestRejected)?;
             let result = firewall.status(&payload.identity)?;
             PrivilegedResponse {
                 request_id,
@@ -311,8 +313,12 @@ async fn handle_connected_client(
             }
         }
         ServiceCommand::FirewallApply => {
-            let payload = request.firewall.clone().ok_or(ServiceError::RequestRejected)?;
-            let result = firewall.apply(payload.identity, payload.action, request.nonce_hex.clone())?;
+            let payload = request
+                .firewall
+                .clone()
+                .ok_or(ServiceError::RequestRejected)?;
+            let result =
+                firewall.apply(payload.identity, payload.action, request.nonce_hex.clone())?;
             PrivilegedResponse {
                 request_id,
                 ok: true,
@@ -323,7 +329,10 @@ async fn handle_connected_client(
             }
         }
         ServiceCommand::FirewallRemove => {
-            let payload = request.firewall.clone().ok_or(ServiceError::RequestRejected)?;
+            let payload = request
+                .firewall
+                .clone()
+                .ok_or(ServiceError::RequestRejected)?;
             let result = firewall.remove(payload.identity, request.nonce_hex.clone())?;
             PrivilegedResponse {
                 request_id,
@@ -335,7 +344,10 @@ async fn handle_connected_client(
             }
         }
         ServiceCommand::FirewallRollback => {
-            let payload = request.firewall.clone().ok_or(ServiceError::RequestRejected)?;
+            let payload = request
+                .firewall
+                .clone()
+                .ok_or(ServiceError::RequestRejected)?;
             let token = payload
                 .rollback_token
                 .as_deref()

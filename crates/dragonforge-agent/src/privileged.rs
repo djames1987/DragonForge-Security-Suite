@@ -20,9 +20,11 @@ impl PrivilegedServiceClient {
     }
 
     pub fn health(&self) -> Result<PrivilegedServiceHealth> {
-        self.request("health", None)?.health.ok_or(AgentError::Protocol(
-            "privileged service health response is missing",
-        ))
+        self.request("health", None)?
+            .health
+            .ok_or(AgentError::Protocol(
+                "privileged service health response is missing",
+            ))
     }
 
     pub fn describe_policy(&self) -> Result<PrivilegedPolicyDescription> {

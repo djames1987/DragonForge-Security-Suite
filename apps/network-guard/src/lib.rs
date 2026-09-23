@@ -65,9 +65,7 @@ fn rollback_firewall_policy(
     process_id: u32,
     rollback_token: String,
 ) -> Result<FirewallMutationResult, String> {
-    if rollback_token.len() != 32
-        || !rollback_token.bytes().all(|byte| byte.is_ascii_hexdigit())
-    {
+    if rollback_token.len() != 32 || !rollback_token.bytes().all(|byte| byte.is_ascii_hexdigit()) {
         return Err("rollback token is invalid".to_owned());
     }
     let identity = inspect_process_application(process_id)?;
