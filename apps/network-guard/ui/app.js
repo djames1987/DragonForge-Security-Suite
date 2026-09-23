@@ -90,10 +90,10 @@
 
   function renderPolicy() {
     const identity = state.identity;
-    document.getElementById("policy-process").textContent = identity?.process_name ?? "—";
-    document.getElementById("policy-pid").textContent = identity?.process_id ?? "—";
-    document.getElementById("policy-path").textContent = identity?.application_path ?? "—";
-    document.getElementById("policy-hash").textContent = identity?.sha256_hex ?? "—";
+    document.getElementById("policy-process").textContent = identity?.processName ?? "—";
+    document.getElementById("policy-pid").textContent = identity?.processId ?? "—";
+    document.getElementById("policy-path").textContent = identity?.applicationPath ?? "—";
+    document.getElementById("policy-hash").textContent = identity?.sha256Hex ?? "—";
 
     const policy = state.firewall?.policy;
     const status = document.getElementById("policy-state");
