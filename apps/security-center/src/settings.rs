@@ -10,6 +10,42 @@ const SETTINGS_FILE: &str = "settings.json";
 const SETTINGS_VERSION: u32 = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SuitePolicy {
+    pub notification_min_severity: String,
+    pub health_history_limit: usize,
+}
+
+impl Default for SuitePolicy {
+    fn default() -> Self {
+        Self {
+            notification_min_severity: "warning".to_owned(),
+            health_history_limit: 100,
+        }
+    }
+}
+
+impl SuitePolicy {
+    pub fn validate(&self) -> CoreResult<()> {
+        if !matches!(
+            self.notification_min_severity.as_str(),
+            "debug" | "info" | "notice" | "warning" | "critical"
+        ) {
+            return Err(CoreError::new_safe(
+                ErrorCode::InvalidConfiguration,
+                "notification severity policy is invalid",
+            ));
+        }
+        if !(10..=500).contains(&self.health_history_limit) {
+            return Err(CoreError::new_safe(
+                ErrorCode::InvalidConfiguration,
+                "health history retention must be between 10 and 500",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SecurityCenterSettings {
     pub version: u32,
     pub start_on_overview: bool,
@@ -19,6 +55,8 @@ pub struct SecurityCenterSettings {
     pub update_channel: UpdateChannel,
     #[serde(default)]
     pub integrity_alert_cursor: u64,
+    #[serde(default)]
+    pub suite_policy: SuitePolicy,
 }
 
 impl Default for SecurityCenterSettings {
@@ -30,6 +68,7 @@ impl Default for SecurityCenterSettings {
             include_diagnostic_identifiers: false,
             update_channel: UpdateChannel::Stable,
             integrity_alert_cursor: 0,
+            suite_policy: SuitePolicy::default(),
         }
     }
 }
@@ -50,6 +89,7 @@ impl SecurityCenterSettings {
             ));
         }
 
+        self.suite_policy.validate()?;
         Ok(())
     }
 }
@@ -166,7 +206,7 @@ impl SettingsStore {
 mod tests {
     use tempfile::tempdir;
 
-    use super::{SecurityCenterSettings, SettingsStore};
+    use super::{SecurityCenterSettings, SettingsStore, SuitePolicy};
 
     #[test]
     fn missing_settings_use_safe_defaults() {
@@ -190,6 +230,19 @@ mod tests {
         let loaded = store.load().expect("load");
         assert_eq!(loaded, settings);
         assert_eq!(loaded.integrity_alert_cursor, 42);
+    }
+
+    #[test]
+    fn suite_policy_is_bounded_and_validated() {
+        let mut settings = SecurityCenterSettings::default();
+        settings.suite_policy = SuitePolicy {
+            notification_min_severity: "warning".to_owned(),
+            health_history_limit: 500,
+        };
+        assert!(settings.validate().is_ok());
+
+        settings.suite_policy.notification_min_severity = "urgent".to_owned();
+        assert!(settings.validate().is_err());
     }
 
     #[test]
