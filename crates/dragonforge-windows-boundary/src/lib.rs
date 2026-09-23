@@ -7,6 +7,8 @@
 
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
+
 pub const SERVICE_NAME: &str = "DragonForgePrivilegedService";
 pub const SERVICE_DISPLAY_NAME: &str = "DragonForge Privileged Service";
 pub const SERVICE_ACCOUNT: &str = r"NT SERVICE\DragonForgePrivilegedService";
@@ -54,6 +56,68 @@ impl CapabilityPolicy {
     #[must_use]
     pub const fn phase16_allows(_capability: PrivilegedCapability) -> bool {
         false
+    }
+
+    #[must_use]
+    pub const fn phase17_allows(_capability: PrivilegedCapability) -> bool {
+        false
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivilegedRequest {
+    pub protocol_major: u16,
+    pub protocol_minor: u16,
+    pub request_id: u64,
+    pub action: String,
+    pub timestamp_ms: u64,
+    pub nonce_hex: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivilegedServiceHealth {
+    pub state: String,
+    pub pid: u32,
+    pub uptime_ms: u64,
+    pub service_name: String,
+    pub service_account: String,
+    pub privileged_capabilities_enabled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivilegedPolicyDescription {
+    pub allowed_commands: Vec<String>,
+    pub privileged_capabilities_enabled: bool,
+    pub arbitrary_command_execution_prohibited: bool,
+    pub generic_shell_execution_prohibited: bool,
+    pub max_message_bytes: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PrivilegedResponse {
+    pub request_id: u64,
+    pub ok: bool,
+    pub code: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub health: Option<PrivilegedServiceHealth>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy: Option<PrivilegedPolicyDescription>,
+}
+
+impl PrivilegedResponse {
+    #[must_use]
+    pub fn error(request_id: u64, code: impl Into<String>) -> Self {
+        Self {
+            request_id,
+            ok: false,
+            code: code.into(),
+            health: None,
+            policy: None,
+        }
     }
 }
 
@@ -197,6 +261,7 @@ mod tests {
             PrivilegedCapability::SystemIntegrityRemediation,
         ] {
             assert!(!CapabilityPolicy::phase16_allows(capability));
+            assert!(!CapabilityPolicy::phase17_allows(capability));
         }
     }
 
