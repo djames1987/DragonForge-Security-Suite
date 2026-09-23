@@ -44,20 +44,32 @@ if ($AuditMaxBytes -lt 65536 -or $AuditMaxBytes -gt 16777216) { throw "AuditMaxB
 $ServiceName = "DragonForgePrivilegedService"
 $ServiceDisplayName = "DragonForge Privileged Service"
 $ServiceAccount = "NT SERVICE\\$ServiceName"
+$ProtectedRoot = Join-Path $env:ProgramFiles "DragonForge Security Suite\\Privileged Service"
+$ProtectedServiceExe = Join-Path $ProtectedRoot "dragonforge-privileged-service.exe"
 $DataRoot = Join-Path $env:ProgramData "DragonForge\\Security\\privileged-service"
 $ConfigPath = Join-Path $DataRoot "service-config.json"
+
+New-Item -ItemType Directory -Force -Path $ProtectedRoot | Out-Null
+& icacls.exe $ProtectedRoot /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "BUILTIN\\Administrators:(OI)(CI)F" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "Failed to protect privileged-service binary directory ACL." }
+Copy-Item -LiteralPath $ServiceExe -Destination $ProtectedServiceExe -Force
+$CopiedSignature = Get-AuthenticodeSignature -LiteralPath $ProtectedServiceExe
+if ($CopiedSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid -or
+    $null -eq $CopiedSignature.SignerCertificate -or
+    $CopiedSignature.SignerCertificate.Subject -ne $ServiceSubject) {
+    throw "Protected privileged-service copy failed Authenticode verification."
+}
+
 New-Item -ItemType Directory -Force -Path $DataRoot | Out-Null
 $Config = [ordered]@{
     schemaVersion = 1
+    expectedAgentPath = $AgentExe
     expectedPublisherSubject = $ServiceSubject
     maxRequestsPerMinute = $MaxRequestsPerMinute
     auditMaxBytes = $AuditMaxBytes
 }
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [IO.File]::WriteAllText($ConfigPath, ($Config | ConvertTo-Json -Depth 3), $Utf8NoBom)
-$ServiceAcl = $ServiceAccount + ":(OI)(CI)M"
-& icacls.exe $DataRoot /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "BUILTIN\\Administrators:(OI)(CI)F" $ServiceAcl | Out-Null
-if ($LASTEXITCODE -ne 0) { throw "Failed to protect privileged-service data directory ACL." }
 
 $Existing = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
 if ($Existing) {
@@ -69,10 +81,17 @@ if ($Existing) {
     if ($LASTEXITCODE -ne 0) { throw "Unable to remove previous privileged service registration." }
     Start-Sleep -Milliseconds 750
 }
-$BinPath = '"' + $ServiceExe + '"'
+$BinPath = '"' + $ProtectedServiceExe + '"'
 & sc.exe create $ServiceName "binPath= $BinPath" "start= auto" "obj= $ServiceAccount" "DisplayName= $ServiceDisplayName" | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Failed to register DragonForge Privileged Service." }
 try {
+    $ServiceReadAcl = $ServiceAccount + ":(OI)(CI)RX"
+    & icacls.exe $ProtectedRoot /grant $ServiceReadAcl | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Failed to grant service account read/execute access." }
+    $ServiceDataAcl = $ServiceAccount + ":(OI)(CI)M"
+    & icacls.exe $DataRoot /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "BUILTIN\\Administrators:(OI)(CI)F" $ServiceDataAcl | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Failed to protect privileged-service data directory ACL." }
+
     & sc.exe description $ServiceName "Narrow authenticated DragonForge Windows privilege boundary. No generic elevated command execution." | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Failed to configure service description." }
     & sc.exe sidtype $ServiceName restricted | Out-Null
@@ -90,6 +109,6 @@ try {
 Write-Host "DRAGONFORGE PRIVILEGED SERVICE INSTALL: PASS" -ForegroundColor Green
 Write-Host "Service: $ServiceName"
 Write-Host "Account: $ServiceAccount"
-Write-Host "Executable: $ServiceExe"
+Write-Host "Executable: $ProtectedServiceExe"
 Write-Host "Config: $ConfigPath"
 Write-Host "Publisher: $ServiceSubject"
