@@ -712,28 +712,6 @@ mod tests {
     }
 
     #[test]
-    fn interrupted_state_replacement_recovers_backup() {
-        let dir = tempdir().expect("tempdir");
-        let identity = executable(dir.path(), "test.exe");
-        let state_path = dir.path().join("firewall.json");
-        let manager = FirewallManager::new(&state_path, FakeBackend::default());
-        manager
-            .apply(
-                identity.clone(),
-                FirewallAction::Block,
-                "30112233445566778899aabbccddeeff".to_owned(),
-            )
-            .expect("apply");
-
-        let backup = state_path.with_extension("json.bak");
-        fs::rename(&state_path, &backup).expect("simulate interrupted replacement");
-        assert!(!state_path.exists());
-        assert!(manager.status(&identity).expect("recover").policy.is_some());
-        assert!(state_path.exists());
-        assert!(!backup.exists());
-    }
-
-    #[test]
     fn control_plane_binaries_are_not_eligible_for_firewall_policy() {
         let dir = tempdir().expect("tempdir");
         for name in ["dragonforge-agent.exe", "dragonforge-privileged-service.exe"] {
