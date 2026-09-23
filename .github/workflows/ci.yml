@@ -63,8 +63,6 @@ on:
       - "docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md"
       - "docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md"
       - "docs/adr/0011-continuous-integrity-runtime.md"
-      - "docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md"
-      - "docs/adr/0011-continuous-integrity-runtime.md"
       - "docs/adr/0010-privileged-service-runtime.md"
       - "docs/adr/0009-windows-privileged-service-boundary.md"
       - "docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md"
