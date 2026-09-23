@@ -280,7 +280,12 @@ impl<B: FirewallBackend> FirewallManager<B> {
 
     fn load_state(&self) -> Result<FirewallStateFile> {
         if !self.state_path.exists() {
-            return Ok(FirewallStateFile::default());
+            let backup = self.state_path.with_extension("json.bak");
+            if backup.exists() {
+                fs::rename(&backup, &self.state_path).map_err(|_| ServiceError::Io)?;
+            } else {
+                return Ok(FirewallStateFile::default());
+            }
         }
         let bytes = fs::read(&self.state_path).map_err(|_| ServiceError::Io)?;
         if bytes.len() > MAX_STATE_BYTES {
@@ -657,6 +662,28 @@ mod tests {
                 )
                 .is_err()
         );
+    }
+
+    #[test]
+    fn interrupted_state_replacement_recovers_backup() {
+        let dir = tempdir().expect("tempdir");
+        let identity = executable(dir.path(), "test.exe");
+        let state_path = dir.path().join("firewall.json");
+        let manager = FirewallManager::new(&state_path, FakeBackend::default());
+        manager
+            .apply(
+                identity.clone(),
+                FirewallAction::Block,
+                "30112233445566778899aabbccddeeff".to_owned(),
+            )
+            .expect("apply");
+
+        let backup = state_path.with_extension("json.bak");
+        fs::rename(&state_path, &backup).expect("simulate interrupted replacement");
+        assert!(!state_path.exists());
+        assert!(manager.status(&identity).expect("recover").policy.is_some());
+        assert!(state_path.exists());
+        assert!(!backup.exists());
     }
 
     #[test]
