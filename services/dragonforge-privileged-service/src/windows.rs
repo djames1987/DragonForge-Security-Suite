@@ -5,7 +5,7 @@
 //! executable-path discovery, and Authenticode signer verification.
 
 use std::env;
-use std::ffi::{c_void, OsString};
+use std::ffi::{OsString, c_void};
 use std::fs;
 use std::mem::{size_of, zeroed};
 use std::os::windows::ffi::OsStrExt;
