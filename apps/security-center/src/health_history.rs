@@ -46,12 +46,20 @@ pub struct HealthHistoryStore {
 impl HealthHistoryStore {
     pub fn discover(capacity: usize) -> CoreResult<Self> {
         let paths = SuitePaths::discover()?;
-        Self::from_path(
-            paths
-                .component_data_dir(Component::SecurityCenter)
-                .join(HEALTH_HISTORY_FILE),
-            capacity,
-        )
+        let path = paths
+            .component_data_dir(Component::SecurityCenter)
+            .join(HEALTH_HISTORY_FILE);
+        match Self::from_path(path.clone(), capacity) {
+            Ok(store) => Ok(store),
+            Err(_) => {
+                quarantine_invalid(&path)?;
+                Ok(Self {
+                    entries: VecDeque::with_capacity(capacity.clamp(10, MAX_HEALTH_HISTORY)),
+                    capacity: capacity.clamp(10, MAX_HEALTH_HISTORY),
+                    path: Some(path),
+                })
+            }
+        }
     }
 
     pub fn from_dir(directory: impl Into<PathBuf>, capacity: usize) -> CoreResult<Self> {
@@ -223,6 +231,27 @@ fn now_ms() -> u64 {
         })
 }
 
+fn quarantine_invalid(path: &Path) -> CoreResult<()> {
+    if !path.exists() {
+        return Ok(());
+    }
+    let invalid = invalid_path(path);
+    if invalid.exists() {
+        fs::remove_file(&invalid).map_err(|_| {
+            CoreError::new_safe(
+                ErrorCode::Internal,
+                "unable to replace invalid Security Center health-history quarantine",
+            )
+        })?;
+    }
+    fs::rename(path, invalid).map_err(|_| {
+        CoreError::new_safe(
+            ErrorCode::Internal,
+            "unable to quarantine invalid Security Center health history",
+        )
+    })
+}
+
 fn recover_backup(path: &Path) -> CoreResult<()> {
     if path.exists() {
         return Ok(());
@@ -308,6 +337,12 @@ fn temporary_path(path: &Path) -> PathBuf {
 fn backup_path(path: &Path) -> PathBuf {
     let mut value = path.as_os_str().to_os_string();
     value.push(".bak");
+    PathBuf::from(value)
+}
+
+fn invalid_path(path: &Path) -> PathBuf {
+    let mut value = path.as_os_str().to_os_string();
+    value.push(".invalid");
     PathBuf::from(value)
 }
 
