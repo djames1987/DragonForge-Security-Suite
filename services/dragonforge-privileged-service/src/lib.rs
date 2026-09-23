@@ -16,6 +16,7 @@ use dragonforge_windows_boundary::{
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod firewall;
 #[cfg(windows)]
 pub mod windows;
 
@@ -324,6 +325,7 @@ mod tests {
             action: "health".to_owned(),
             timestamp_ms: now_ms(),
             nonce_hex: nonce.to_owned(),
+            firewall: None,
         }
     }
 
