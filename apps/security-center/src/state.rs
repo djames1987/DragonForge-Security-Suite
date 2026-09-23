@@ -44,7 +44,6 @@ pub struct AppState {
     logger: SafeLogger,
     agent: AgentClient,
     agent_auto_start_suppressed: Mutex<bool>,
-    integrity_last_event_id: Mutex<u64>,
     updater: UpdateManager,
 }
 
@@ -88,7 +87,6 @@ impl AppState {
             logger,
             agent: AgentClient::discover(),
             agent_auto_start_suppressed: Mutex::new(false),
-            integrity_last_event_id: Mutex::new(0),
             updater,
         };
         let _ = state
@@ -108,7 +106,6 @@ impl AppState {
             logger,
             agent: AgentClient::unavailable(),
             agent_auto_start_suppressed: Mutex::new(false),
-            integrity_last_event_id: Mutex::new(0),
             updater: UpdateManager::new().expect("test update manager"),
         }
     }
@@ -333,12 +330,9 @@ impl AppState {
         let state_path = suite
             .component_data_dir(Component::Agent)
             .join("continuous-integrity-v1.json");
-        let after_id = *self
-            .integrity_last_event_id
-            .lock()
-            .map_err(|_| "Integrity alert cursor is unavailable".to_owned())?;
-        let events = continuous_events(&state_path, after_id, 250)
-            .map_err(|error| error.to_string())?;
+        let after_id = self.lock_settings()?.integrity_alert_cursor;
+        let events =
+            continuous_events(&state_path, after_id, 250).map_err(|error| error.to_string())?;
         if events.is_empty() {
             return Ok(());
         }
@@ -359,11 +353,16 @@ impl AppState {
             );
         }
         drop(store);
-        *self
-            .integrity_last_event_id
-            .lock()
-            .map_err(|_| "Integrity alert cursor is unavailable".to_owned())? = newest;
-        Ok(())
+
+        let updated = {
+            let mut settings = self.lock_settings()?;
+            settings.integrity_alert_cursor = newest;
+            settings.clone()
+        };
+        self.settings_store
+            .save(&updated)
+            .map_err(|error| error.to_string())
+    }
     }
 
     fn record_agent_event(&self, code: &'static str, message: &'static str) -> Result<(), String> {
