@@ -81,6 +81,8 @@ impl<B: FirewallBackend> FirewallManager<B> {
             .find(|policy| policy.rule_name == rule_name);
         if let Some(policy) = policy.as_mut() {
             policy.enabled = self.backend.exists(&rule_name)?;
+            policy.identity_matches =
+                policy.sha256_hex.eq_ignore_ascii_case(&identity.sha256_hex);
         }
         Ok(FirewallMutationResult {
             changed: false,
@@ -118,6 +120,7 @@ impl<B: FirewallBackend> FirewallManager<B> {
             sha256_hex: identity.sha256_hex.to_ascii_lowercase(),
             action,
             enabled: true,
+            identity_matches: true,
         };
 
         self.backend.apply(&policy)?;
@@ -234,8 +237,11 @@ impl<B: FirewallBackend> FirewallManager<B> {
 
         match &record.previous {
             Some(previous) => {
-                self.backend.apply(previous)?;
-                upsert_policy(&mut state, previous.clone())?;
+                let mut restored = previous.clone();
+                restored.sha256_hex = identity.sha256_hex.to_ascii_lowercase();
+                restored.identity_matches = true;
+                self.backend.apply(&restored)?;
+                upsert_policy(&mut state, restored)?;
             }
             None => {
                 if self.backend.exists(&record.rule_name)? {
