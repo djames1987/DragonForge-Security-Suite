@@ -434,7 +434,13 @@ impl FirewallBackend for WindowsFirewallBackend {
     fn exists(&self, rule_name: &str) -> Result<bool> {
         with_rules(|rules| {
             let name = windows::core::BSTR::from(rule_name);
-            Ok(unsafe { rules.Item(&name) }.is_ok())
+            let Ok(rule) = (unsafe { rules.Item(&name) }) else {
+                return Ok(false);
+            };
+            let grouping = unsafe { rule.Grouping() }
+                .map_err(|_| ServiceError::Platform)?
+                .to_string();
+            Ok(grouping == FIREWALL_RULE_GROUP)
         })
     }
 
