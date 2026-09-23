@@ -15,7 +15,6 @@ const MAX_EVENT_HUB_BYTES: usize = 2 * 1024 * 1024;
 const MAX_EVENT_CAPACITY: usize = 2_000;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct DashboardEvent {
     pub id: u64,
     pub timestamp_ms: u64,
