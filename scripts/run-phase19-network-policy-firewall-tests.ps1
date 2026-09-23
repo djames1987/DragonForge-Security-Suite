@@ -105,6 +105,9 @@ try {
         "dragonforge-agent.exe",
         "dragonforge-privileged-service.exe",
         "Grouping()",
+        "LocalPolicyModifyState",
+        "NET_FW_MODIFY_STATE_OK",
+        "require_local_modification",
         "SetApplicationName",
         "SetAction"
     )) {
