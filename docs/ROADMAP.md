@@ -559,12 +559,22 @@ Delivered:
 See [PHASE_19_NETWORK_POLICY_FIREWALL.md](PHASE_19_NETWORK_POLICY_FIREWALL.md).
 
 ## Phase 20 — Security Center Policy & Event Hub
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- unified suite event schema and persistent bounded event history;
-- normalized severity/status presentation;
-- notification center, acknowledgement/history, component-health history, and coordinated suite policy.
+Delivered:
+- versioned persistent bounded Security Center event hub with monotonic IDs;
+- normalized component, kind, severity, and open/acknowledged status presentation;
+- persistent acknowledgement timestamps and notification filtering by suite-policy severity threshold;
+- notification center with acknowledge-one and acknowledge-all workflows;
+- persistent bounded component-health history with unchanged-state deduplication;
+- coordinated Security Center suite policy for event retention, notification threshold, health-history retention, and signed update channel;
+- crash-recoverable event/health state replacement and invalid-state quarantine;
+- existing Agent, update, component-launch, support-bundle, and Phase 18 integrity events routed into the durable hub;
+- Phase 20 Security Center UI, documentation, ADR, CI coverage, and Windows verifier.
+
+Phase 20 remains local-first and normal-user. It does not add generic automation, automatic remediation, or privileged-service commands.
+
+See [PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md](PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md).
 
 ## Phase 21 — Scheduled Protection & Automation
 **Status: Planned**

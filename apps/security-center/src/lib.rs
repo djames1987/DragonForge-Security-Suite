@@ -3,6 +3,7 @@
 mod agent;
 mod diagnostics;
 mod events;
+mod health_history;
 mod logging;
 mod model;
 mod orchestration;
@@ -12,6 +13,7 @@ mod update;
 
 use agent::AgentStatus;
 use events::DashboardEvent;
+use health_history::HealthHistoryEntry;
 use settings::SecurityCenterSettings;
 use state::{AppState, DashboardSnapshot};
 use tauri::State;
@@ -40,6 +42,32 @@ fn recent_events(
 #[tauri::command]
 fn clear_events(state: State<'_, AppState>) -> Result<(), String> {
     state.clear_events()
+}
+
+#[tauri::command]
+fn notifications(
+    limit: Option<usize>,
+    state: State<'_, AppState>,
+) -> Result<Vec<DashboardEvent>, String> {
+    state.notifications(limit.unwrap_or(100))
+}
+
+#[tauri::command]
+fn acknowledge_event(event_id: u64, state: State<'_, AppState>) -> Result<bool, String> {
+    state.acknowledge_event(event_id)
+}
+
+#[tauri::command]
+fn acknowledge_all_notifications(state: State<'_, AppState>) -> Result<usize, String> {
+    state.acknowledge_all_notifications()
+}
+
+#[tauri::command]
+fn health_history(
+    limit: Option<usize>,
+    state: State<'_, AppState>,
+) -> Result<Vec<HealthHistoryEntry>, String> {
+    state.health_history(limit.unwrap_or(100))
 }
 
 #[tauri::command]
@@ -152,6 +180,10 @@ pub fn run() {
             refresh_health,
             recent_events,
             clear_events,
+            notifications,
+            acknowledge_event,
+            acknowledge_all_notifications,
+            health_history,
             get_settings,
             save_settings,
             agent_status,

@@ -596,3 +596,56 @@ select:disabled {
   opacity: 0.55;
 }
 
+
+/* Phase 20 Policy & Event Hub */
+.hub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  gap: 14px;
+}
+
+.event-row.acknowledged {
+  opacity: 0.68;
+}
+
+.event-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-ack {
+  padding: 6px 8px;
+  color: var(--accent-2);
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 138, 43, 0.16);
+  border-radius: 8px;
+  font-size: 10px;
+}
+
+.health-history {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.health-point {
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.health-point strong {
+  display: block;
+  font-size: 12px;
+}
+
+.health-point span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 920px) {
+  .hub-grid { grid-template-columns: 1fr; }
+}
