@@ -40,7 +40,7 @@
             <div><div class="eyebrow">Windows Firewall</div><h2>Application policy</h2></div>
             <span id="policy-state">No process selected</span>
           </div>
-          <p class="policy-copy">Rules are outbound-only, apply to all Windows Firewall profiles, and are bound to the selected executable path and SHA-256. The privileged service re-hashes the executable before every mutation.</p>
+          <p class="policy-copy">Rules are outbound-only and apply to all Windows Firewall profiles. Windows Firewall enforces the executable path; DragonForge records SHA-256 and re-hashes the executable before every policy operation so binary changes can be detected and reviewed.</p>
           <div class="policy-grid">
             <div><span>Process</span><strong id="policy-process">—</strong></div>
             <div><span>PID</span><strong id="policy-pid">—</strong></div>
