@@ -9,6 +9,7 @@
 
   const state = {
     baseline: null,
+    continuous: null,
   };
 
   const titles = {
@@ -105,6 +106,84 @@
     changes.replaceChildren(...report.changes.map(changeCard));
   }
 
+
+  const allowedSurfaces = new Set([
+    "startup",
+    "registry_persistence",
+    "services",
+    "scheduled_tasks",
+    "hosts_file",
+    "system_configuration",
+  ]);
+
+  function parseSuppressions() {
+    const lines = document.getElementById("continuous-suppressions").value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    return lines.map((line) => {
+      const split = line.indexOf(":");
+      if (split <= 0) throw new Error("Suppression rules must use surface:key-prefix.");
+      const surface = line.slice(0, split).trim();
+      const keyPrefix = line.slice(split + 1).trim();
+      if (!allowedSurfaces.has(surface) || !keyPrefix) {
+        throw new Error("Suppression rule surface or key prefix is invalid.");
+      }
+      return { surface, keyPrefix };
+    });
+  }
+
+  async function loadContinuousStatus() {
+    const status = await invoke("get_continuous_monitor_status");
+    state.continuous = status;
+    document.getElementById("continuous-enabled").checked = Boolean(status.enabled);
+    document.getElementById("continuous-interval").value = String(status.interval_seconds ?? 300);
+    document.getElementById("continuous-save").disabled = !state.baseline?.exists;
+    document.getElementById("continuous-seal").textContent =
+      !status.configured ? "Not configured" : status.baseline_sealed ? "Baseline sealed" : "Baseline changed";
+    document.getElementById("continuous-meta").textContent =
+      !status.configured
+        ? "Continuous monitoring is not configured."
+        : `${status.retained_events} retained event(s) · ${status.unsuppressed_events} unsuppressed · next ${formatTime(status.next_check_ms)}`;
+
+    const events = await invoke("get_continuous_integrity_events", { afterId: 0, limit: 8 });
+    const region = document.getElementById("continuous-events");
+    if (!events.length) {
+      region.innerHTML = '<div class="empty">No continuous integrity events have been retained.</div>';
+    } else {
+      region.replaceChildren(...events.slice().reverse().map((event) => {
+        const item = document.createElement("article");
+        item.className = "change";
+        const title = document.createElement("h3");
+        title.textContent = event.summary;
+        const copy = document.createElement("p");
+        copy.textContent = `${formatTime(event.timestamp_ms)} · ${event.suppressed ? "suppressed" : "alerts Security Center"}`;
+        item.append(title, copy);
+        return item;
+      }));
+    }
+  }
+
+  async function saveContinuousSettings() {
+    const button = document.getElementById("continuous-save");
+    button.disabled = true;
+    try {
+      const suppressions = parseSuppressions();
+      const status = await invoke("configure_continuous_integrity", {
+        enabled: document.getElementById("continuous-enabled").checked,
+        intervalSeconds: Number(document.getElementById("continuous-interval").value),
+        suppressions,
+      });
+      state.continuous = status;
+      toast("Continuous integrity monitoring settings saved.");
+      await loadContinuousStatus();
+    } catch (error) {
+      toast(String(error), true);
+    } finally {
+      button.disabled = !state.baseline?.exists;
+    }
+  }
+
   async function loadBaselineStatus() {
     const status = await invoke("get_baseline_status");
     state.baseline = status;
@@ -155,6 +234,7 @@
         document.getElementById(id).textContent = "—";
       });
       await loadBaselineStatus();
+      await loadContinuousStatus();
     } catch (error) {
       toast(String(error), true);
       await loadBaselineStatus();
@@ -186,11 +266,13 @@
     });
     document.getElementById("baseline-button").addEventListener("click", createOrReplaceBaseline);
     document.getElementById("check-button").addEventListener("click", checkIntegrity);
+    document.getElementById("continuous-save").addEventListener("click", saveContinuousSettings);
 
     try {
       const info = await invoke("monitor_info");
       document.getElementById("platform-pill").textContent = info.platform_scope.replace("_", " ");
       await loadBaselineStatus();
+      await loadContinuousStatus();
     } catch (error) {
       document.getElementById("baseline-state").textContent = "Integrity Monitor unavailable";
       document.getElementById("baseline-copy").textContent = String(error);
