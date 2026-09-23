@@ -323,13 +323,32 @@ fn normalize_capacity(capacity: usize) -> usize {
 }
 
 fn valid_event(event: &DashboardEvent) -> bool {
+    let component_is_known = Component::ALL
+        .into_iter()
+        .any(|component| component.as_str() == event.component);
+    let kind_is_known = matches!(
+        event.kind.as_str(),
+        "lifecycle" | "security" | "configuration" | "ipc" | "health" | "audit"
+    );
+    let status_is_consistent = match event.status.as_str() {
+        "open" => event.acknowledged_at_ms.is_none(),
+        "acknowledged" => event.acknowledged_at_ms.is_some(),
+        _ => false,
+    };
+
     event.id > 0
-        && event.component.len() <= 64
-        && event.kind.len() <= 32
-        && event.severity.len() <= 16
-        && event.code.len() <= 160
-        && event.summary.len() <= 512
-        && matches!(event.status.as_str(), "open" | "acknowledged")
+        && component_is_known
+        && kind_is_known
+        && severity_rank(&event.severity) > 0
+        && single_line_valid(&event.code, 160)
+        && single_line_valid(&event.summary, 512)
+        && status_is_consistent
+}
+
+fn single_line_valid(value: &str, max_chars: usize) -> bool {
+    !value.is_empty()
+        && value.chars().count() <= max_chars
+        && !value.chars().any(|value| matches!(value, '\r' | '\n' | '\0'))
 }
 
 fn severity_rank(value: &str) -> u8 {
