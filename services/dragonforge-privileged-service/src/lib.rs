@@ -121,6 +121,10 @@ impl AbuseGuard {
     pub fn authorize(&mut self, client_pid: u32, request: &PrivilegedRequest) -> Result<()> {
         validate_request_shape(request)?;
 
+        if self.replay_seen.contains(&request.nonce_hex) {
+            return Err(ServiceError::RequestRejected);
+        }
+
         let now = Instant::now();
         self.quotas
             .retain(|_, window| now.duration_since(window.started) < self.request_window);
@@ -142,9 +146,7 @@ impl AbuseGuard {
         }
         window.count += 1;
 
-        if !self.replay_seen.insert(request.nonce_hex.clone()) {
-            return Err(ServiceError::RequestRejected);
-        }
+        self.replay_seen.insert(request.nonce_hex.clone());
         self.replay_order.push_back(request.nonce_hex.clone());
         while self.replay_order.len() > MAX_REPLAY_NONCES {
             if let Some(oldest) = self.replay_order.pop_front() {
