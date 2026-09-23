@@ -50,7 +50,7 @@ The phase does not change global firewall enabled state, default inbound/outboun
 
 Network Guard obtains the PID, process name, absolute executable path, and SHA-256 executable hash. The privileged service does not trust the client-supplied hash by itself. It independently verifies that the target is a regular non-symlink file, enforces the file-size ceiling, re-hashes the executable, and requires an exact SHA-256 match before any apply, remove, rollback, or status operation.
 
-If the executable changes between inspection and privileged execution, the operation fails closed.
+Windows Firewall itself scopes this class of rule by executable path rather than continuously enforcing a file hash. DragonForge therefore records the SHA-256 as authorization and drift context, reports whether the currently observed binary still matches the recorded identity, and revalidates the current hash before each privileged policy operation. If the executable changes between client inspection and privileged execution, the operation fails closed.
 
 ## Rule ownership and rollback
 
