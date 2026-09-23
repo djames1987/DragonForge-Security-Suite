@@ -234,15 +234,23 @@ mod tests {
 
     #[test]
     fn suite_policy_is_bounded_and_validated() {
-        let mut settings = SecurityCenterSettings::default();
-        settings.suite_policy = SuitePolicy {
-            notification_min_severity: "warning".to_owned(),
-            health_history_limit: 500,
+        let settings = SecurityCenterSettings {
+            suite_policy: SuitePolicy {
+                notification_min_severity: "warning".to_owned(),
+                health_history_limit: 500,
+            },
+            ..SecurityCenterSettings::default()
         };
         assert!(settings.validate().is_ok());
 
-        settings.suite_policy.notification_min_severity = "urgent".to_owned();
-        assert!(settings.validate().is_err());
+        let invalid = SecurityCenterSettings {
+            suite_policy: SuitePolicy {
+                notification_min_severity: "urgent".to_owned(),
+                health_history_limit: 500,
+            },
+            ..SecurityCenterSettings::default()
+        };
+        assert!(invalid.validate().is_err());
     }
 
     #[test]
