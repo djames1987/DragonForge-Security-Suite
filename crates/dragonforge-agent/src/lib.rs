@@ -9,15 +9,15 @@
 mod client;
 mod error;
 mod paths;
-mod protocol;
 #[cfg(windows)]
 mod privileged;
+mod protocol;
 mod server;
 
 pub use client::{AgentClient, AgentHealth};
 pub use error::{AgentError, Result};
 pub use paths::AgentPaths;
-pub use protocol::{AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, MAX_CLOCK_SKEW_MS};
 #[cfg(windows)]
 pub use privileged::PrivilegedServiceClient;
+pub use protocol::{AGENT_PROTOCOL_MAJOR, AGENT_PROTOCOL_MINOR, MAX_CLOCK_SKEW_MS};
 pub use server::AgentServer;

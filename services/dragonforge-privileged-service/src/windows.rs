@@ -38,24 +38,20 @@ use windows_service::{
 use windows_sys::Win32::{
     Foundation::{CloseHandle, HANDLE},
     Security::{
-        Authorization::{
-            ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
-        },
-        Cryptography::{CertNameToStrW, CERT_X500_NAME_STR, X509_ASN_ENCODING},
-        WinTrust::{
-            WinVerifyTrust, WTHelperGetProvCertFromChain, WTHelperGetProvSignerFromChain,
-            WTHelperProvDataFromStateData, WINTRUST_ACTION_GENERIC_VERIFY_V2, WINTRUST_DATA,
-            WINTRUST_DATA_0, WINTRUST_FILE_INFO, WTD_CHOICE_FILE, WTD_REVOKE_WHOLECHAIN,
-            WTD_STATEACTION_CLOSE, WTD_STATEACTION_VERIFY, WTD_UI_NONE,
-        },
+        Authorization::{ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1},
+        Cryptography::{CERT_X500_NAME_STR, CertNameToStrW, X509_ASN_ENCODING},
         PSECURITY_DESCRIPTOR, SECURITY_ATTRIBUTES,
+        WinTrust::{
+            WINTRUST_ACTION_GENERIC_VERIFY_V2, WINTRUST_DATA, WINTRUST_DATA_0, WINTRUST_FILE_INFO,
+            WTD_CHOICE_FILE, WTD_REVOKE_WHOLECHAIN, WTD_STATEACTION_CLOSE, WTD_STATEACTION_VERIFY,
+            WTD_UI_NONE, WTHelperGetProvCertFromChain, WTHelperGetProvSignerFromChain,
+            WTHelperProvDataFromStateData, WinVerifyTrust,
+        },
     },
     System::{
         Memory::LocalFree,
         Pipes::GetNamedPipeClientProcessId,
-        Threading::{
-            OpenProcess, QueryFullProcessImageNameW, PROCESS_QUERY_LIMITED_INFORMATION,
-        },
+        Threading::{OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW},
     },
 };
 
@@ -64,8 +60,7 @@ use crate::{
 };
 
 const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
-const PIPE_DACL_SDDL: &str =
-    "D:P(D;;GA;;;AN)(D;;GA;;;NU)(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;IU)";
+const PIPE_DACL_SDDL: &str = "D:P(D;;GA;;;AN)(D;;GA;;;NU)(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;IU)";
 const CONNECT_POLL: Duration = Duration::from_millis(500);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const RESPONSE_TIMEOUT: Duration = Duration::from_secs(2);
@@ -151,7 +146,11 @@ fn run_service() -> Result<()> {
 
     let _ = audit.lifecycle(
         "service-stop",
-        if server_result.is_ok() { "requested" } else { "error" },
+        if server_result.is_ok() {
+            "requested"
+        } else {
+            "error"
+        },
     );
 
     status_handle
@@ -180,9 +179,7 @@ async fn run_pipe_server(
     audit: AuditLogger,
 ) -> Result<()> {
     let started = Instant::now();
-    let guard = Arc::new(Mutex::new(AbuseGuard::new(
-        config.max_requests_per_minute,
-    )));
+    let guard = Arc::new(Mutex::new(AbuseGuard::new(config.max_requests_per_minute)));
 
     while !stop.load(Ordering::Acquire) {
         let mut pipe = create_secured_pipe()?;
@@ -514,18 +511,11 @@ fn extract_signer_subject(trust_data: &WINTRUST_DATA) -> Result<String> {
     Ok(subject)
 }
 
-fn close_wintrust_state(
-    action: &mut windows_sys::core::GUID,
-    trust_data: &mut WINTRUST_DATA,
-) {
+fn close_wintrust_state(action: &mut windows_sys::core::GUID, trust_data: &mut WINTRUST_DATA) {
     trust_data.dwStateAction = WTD_STATEACTION_CLOSE;
     unsafe {
         // SAFETY: closes the WinTrust state opened by WinVerifyTrust.
-        let _ = WinVerifyTrust(
-            0,
-            action,
-            trust_data as *mut WINTRUST_DATA as *mut c_void,
-        );
+        let _ = WinVerifyTrust(0, action, trust_data as *mut WINTRUST_DATA as *mut c_void);
     }
 }
 

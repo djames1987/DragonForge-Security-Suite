@@ -3,9 +3,9 @@
 use std::env;
 use std::process::ExitCode;
 
-use dragonforge_agent::{AgentClient, AgentServer};
 #[cfg(windows)]
 use dragonforge_agent::PrivilegedServiceClient;
+use dragonforge_agent::{AgentClient, AgentServer};
 use dragonforge_core::{Component, ComponentLogger, install_safe_panic_hook};
 
 fn main() -> ExitCode {
