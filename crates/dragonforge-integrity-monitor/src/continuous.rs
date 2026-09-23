@@ -316,7 +316,12 @@ fn status_for(
 
 fn load_state_optional(path: &Path) -> IntegrityResult<Option<ContinuousState>> {
     if !path.exists() {
-        return Ok(None);
+        let backup = backup_path(path);
+        if backup.exists() {
+            fs::rename(&backup, path)?;
+        } else {
+            return Ok(None);
+        }
     }
     let bytes = fs::read(path)?;
     if bytes.len() > MAX_STATE_BYTES {
@@ -351,11 +356,23 @@ fn write_state(path: &Path, state: &ContinuousState) -> IntegrityResult<()> {
         ));
     }
     let temporary = temporary_path(path);
+    let backup = backup_path(path);
     fs::write(&temporary, bytes)?;
-    if path.exists() {
-        fs::remove_file(path)?;
+    if backup.exists() {
+        fs::remove_file(&backup)?;
     }
-    fs::rename(temporary, path)?;
+    if path.exists() {
+        fs::rename(path, &backup)?;
+    }
+    if let Err(error) = fs::rename(&temporary, path) {
+        if backup.exists() && !path.exists() {
+            let _ = fs::rename(&backup, path);
+        }
+        return Err(error.into());
+    }
+    if backup.exists() {
+        fs::remove_file(backup)?;
+    }
     Ok(())
 }
 
@@ -368,6 +385,12 @@ fn file_sha256(path: &Path) -> IntegrityResult<String> {
 fn temporary_path(path: &Path) -> PathBuf {
     let mut value = path.as_os_str().to_os_string();
     value.push(".tmp");
+    PathBuf::from(value)
+}
+
+fn backup_path(path: &Path) -> PathBuf {
+    let mut value = path.as_os_str().to_os_string();
+    value.push(".bak");
     PathBuf::from(value)
 }
 
