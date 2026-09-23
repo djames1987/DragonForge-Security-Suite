@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use dragonforge_windows_boundary::{
-    MAX_CLOCK_SKEW_SECONDS, PrivilegedRequest, PrivilegedResponse, PROTOCOL_MAJOR,
+    MAX_CLOCK_SKEW_SECONDS, PROTOCOL_MAJOR, PrivilegedRequest, PrivilegedResponse,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -250,7 +250,9 @@ impl AuditLogger {
     }
 
     fn rotate_if_needed(&self) -> Result<()> {
-        let size = fs::metadata(&self.path).map(|metadata| metadata.len()).unwrap_or(0);
+        let size = fs::metadata(&self.path)
+            .map(|metadata| metadata.len())
+            .unwrap_or(0);
         if size < self.max_bytes {
             return Ok(());
         }
