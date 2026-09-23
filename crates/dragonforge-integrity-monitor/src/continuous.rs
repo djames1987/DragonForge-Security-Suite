@@ -92,7 +92,7 @@ pub struct ContinuousMonitorStatus {
     pub next_check_ms: Option<u64>,
     pub retained_events: usize,
     pub unsuppressed_events: usize,
-    pub suppression_rules: usize,
+    pub suppression_rules: Vec<SuppressionRule>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -169,7 +169,7 @@ pub fn continuous_status(
             next_check_ms: None,
             retained_events: 0,
             unsuppressed_events: 0,
-            suppression_rules: 0,
+            suppression_rules: Vec::new(),
         }),
     }
 }
@@ -310,7 +310,7 @@ fn status_for(
         next_check_ms: state.next_check_ms,
         retained_events: state.events.len(),
         unsuppressed_events: state.events.iter().filter(|event| !event.suppressed).count(),
-        suppression_rules: state.policy.suppressions.len(),
+        suppression_rules: state.policy.suppressions.clone(),
     })
 }
 
