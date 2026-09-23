@@ -20,8 +20,9 @@ use std::time::{Duration, Instant};
 
 use dragonforge_windows_boundary::{
     BoundaryPolicy, CallerIdentity, EXPECTED_AGENT_EXE, MAX_MESSAGE_BYTES, PIPE_NAME,
-    PrivilegedPolicyDescription, PrivilegedRequest, PrivilegedResponse, PrivilegedServiceHealth,
-    SERVICE_ACCOUNT, SERVICE_NAME, ServiceCommand,
+    PrivilegedCapability, PrivilegedPolicyDescription, PrivilegedRequest, PrivilegedResponse,
+    PrivilegedServiceHealth, SERVICE_ACCOUNT, SERVICE_NAME, ServiceCommand,
+    CapabilityPolicy,
 };
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::windows::named_pipe::{NamedPipeServer, PipeMode, ServerOptions};
@@ -55,7 +56,9 @@ use windows_sys::Win32::{
 };
 
 use crate::{
-    AbuseGuard, AuditLogger, Result, ServiceConfig, ServiceError, load_config, rejected_response,
+    AbuseGuard, AuditLogger, Result, ServiceConfig, ServiceError,
+    firewall::{FirewallManager, WindowsFirewallBackend},
+    load_config, rejected_response,
 };
 
 const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
@@ -115,6 +118,10 @@ fn run_service() -> Result<()> {
     }
 
     let audit = AuditLogger::new(&paths.audit_file, config.audit_max_bytes);
+    let firewall = Arc::new(FirewallManager::new(
+        paths.firewall_state_file.clone(),
+        WindowsFirewallBackend,
+    ));
     let _ = audit.lifecycle("service-start", "starting");
 
     status_handle
@@ -141,6 +148,7 @@ fn run_service() -> Result<()> {
         policy,
         config,
         audit.clone(),
+        firewall,
     ));
 
     let _ = audit.lifecycle(
@@ -176,6 +184,7 @@ async fn run_pipe_server(
     policy: BoundaryPolicy,
     config: ServiceConfig,
     audit: AuditLogger,
+    firewall: Arc<FirewallManager<WindowsFirewallBackend>>,
 ) -> Result<()> {
     let started = Instant::now();
     let guard = Arc::new(Mutex::new(AbuseGuard::new(config.max_requests_per_minute)));
@@ -189,6 +198,7 @@ async fn run_pipe_server(
                     &policy,
                     &audit,
                     Arc::clone(&guard),
+                    Arc::clone(&firewall),
                     started,
                 )
                 .await;
@@ -211,6 +221,7 @@ async fn handle_connected_client(
     policy: &BoundaryPolicy,
     audit: &AuditLogger,
     guard: Arc<Mutex<AbuseGuard>>,
+    firewall: Arc<FirewallManager<WindowsFirewallBackend>>,
     started: Instant,
 ) -> Result<PrivilegedResponse> {
     let request = read_request(pipe).await?;
@@ -256,9 +267,12 @@ async fn handle_connected_client(
                 uptime_ms: started.elapsed().as_millis().min(u128::from(u64::MAX)) as u64,
                 service_name: SERVICE_NAME.to_owned(),
                 service_account: SERVICE_ACCOUNT.to_owned(),
-                privileged_capabilities_enabled: false,
+                privileged_capabilities_enabled: CapabilityPolicy::phase19_allows(
+                    PrivilegedCapability::FirewallPolicyMutation,
+                ),
             }),
             policy: None,
+            firewall: None,
         },
         ServiceCommand::DescribePolicy => PrivilegedResponse {
             request_id,
@@ -269,13 +283,70 @@ async fn handle_connected_client(
                 allowed_commands: vec![
                     ServiceCommand::Health.as_str().to_owned(),
                     ServiceCommand::DescribePolicy.as_str().to_owned(),
+                    ServiceCommand::FirewallStatus.as_str().to_owned(),
+                    ServiceCommand::FirewallApply.as_str().to_owned(),
+                    ServiceCommand::FirewallRemove.as_str().to_owned(),
+                    ServiceCommand::FirewallRollback.as_str().to_owned(),
                 ],
-                privileged_capabilities_enabled: false,
+                privileged_capabilities_enabled: true,
                 arbitrary_command_execution_prohibited: true,
                 generic_shell_execution_prohibited: true,
                 max_message_bytes: MAX_MESSAGE_BYTES,
             }),
+            firewall: None,
         },
+        ServiceCommand::FirewallStatus => {
+            let payload = request.firewall.as_ref().ok_or(ServiceError::RequestRejected)?;
+            let result = firewall.status(&payload.identity)?;
+            PrivilegedResponse {
+                request_id,
+                ok: true,
+                code: "ok".to_owned(),
+                health: None,
+                policy: None,
+                firewall: Some(result),
+            }
+        }
+        ServiceCommand::FirewallApply => {
+            let payload = request.firewall.clone().ok_or(ServiceError::RequestRejected)?;
+            let result = firewall.apply(payload.identity, payload.action, request.nonce_hex.clone())?;
+            PrivilegedResponse {
+                request_id,
+                ok: true,
+                code: "ok".to_owned(),
+                health: None,
+                policy: None,
+                firewall: Some(result),
+            }
+        }
+        ServiceCommand::FirewallRemove => {
+            let payload = request.firewall.clone().ok_or(ServiceError::RequestRejected)?;
+            let result = firewall.remove(payload.identity, request.nonce_hex.clone())?;
+            PrivilegedResponse {
+                request_id,
+                ok: true,
+                code: "ok".to_owned(),
+                health: None,
+                policy: None,
+                firewall: Some(result),
+            }
+        }
+        ServiceCommand::FirewallRollback => {
+            let payload = request.firewall.clone().ok_or(ServiceError::RequestRejected)?;
+            let token = payload
+                .rollback_token
+                .as_deref()
+                .ok_or(ServiceError::RequestRejected)?;
+            let result = firewall.rollback(payload.identity, token)?;
+            PrivilegedResponse {
+                request_id,
+                ok: true,
+                code: "ok".to_owned(),
+                health: None,
+                policy: None,
+                firewall: Some(result),
+            }
+        }
     };
 
     let _ = audit.request(peer.pid, &request.action, "allowed");
@@ -570,6 +641,7 @@ fn wide_null(value: &str) -> Vec<u16> {
 struct ServicePaths {
     config_file: PathBuf,
     audit_file: PathBuf,
+    firewall_state_file: PathBuf,
 }
 
 impl ServicePaths {
@@ -585,6 +657,7 @@ impl ServicePaths {
         Ok(Self {
             config_file: root.join("service-config.json"),
             audit_file: root.join("audit.jsonl"),
+            firewall_state_file: root.join("firewall-policy-v1.json"),
         })
     }
 }
