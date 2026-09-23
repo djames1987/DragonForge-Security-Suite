@@ -355,6 +355,18 @@ fn push_rollback(state: &mut FirewallStateFile, record: RollbackRecord) {
 }
 
 pub fn verify_application_identity(identity: &FirewallApplicationIdentity) -> Result<()> {
+    let file_name = identity
+        .application_path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .ok_or(ServiceError::RequestRejected)?;
+    if matches!(
+        file_name.to_ascii_lowercase().as_str(),
+        "dragonforge-agent.exe" | "dragonforge-privileged-service.exe"
+    ) {
+        return Err(ServiceError::RequestRejected);
+    }
+
     let metadata = fs::symlink_metadata(&identity.application_path).map_err(|_| ServiceError::Io)?;
     if metadata.file_type().is_symlink()
         || !metadata.is_file()
@@ -649,6 +661,15 @@ mod tests {
                 )
                 .is_err()
         );
+    }
+
+    #[test]
+    fn control_plane_binaries_are_not_eligible_for_firewall_policy() {
+        let dir = tempdir().expect("tempdir");
+        for name in ["dragonforge-agent.exe", "dragonforge-privileged-service.exe"] {
+            let identity = executable(dir.path(), name);
+            assert!(verify_application_identity(&identity).is_err());
+        }
     }
 
     #[test]
