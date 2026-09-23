@@ -113,6 +113,10 @@ impl<B: FirewallBackend> FirewallManager<B> {
             return Err(ServiceError::RequestRejected);
         }
 
+        if existing_index.is_none() && state.policies.len() >= MAX_MANAGED_POLICIES {
+            return Err(ServiceError::RequestRejected);
+        }
+
         let previous = existing_index.map(|index| state.policies[index].clone());
         let policy = FirewallPolicyState {
             rule_name: rule_name.clone(),
@@ -126,13 +130,7 @@ impl<B: FirewallBackend> FirewallManager<B> {
         self.backend.apply(&policy)?;
         match existing_index {
             Some(index) => state.policies[index] = policy.clone(),
-            None => {
-                if state.policies.len() >= MAX_MANAGED_POLICIES {
-                    let _ = self.restore_backend(previous.as_ref(), &rule_name);
-                    return Err(ServiceError::RequestRejected);
-                }
-                state.policies.push(policy.clone());
-            }
+            None => state.policies.push(policy.clone()),
         }
         push_rollback(
             &mut state,
@@ -234,6 +232,11 @@ impl<B: FirewallBackend> FirewallManager<B> {
             return Err(ServiceError::RequestRejected);
         };
         let record = state.rollbacks.remove(index);
+        let current_policy = state
+            .policies
+            .iter()
+            .find(|policy| policy.rule_name == record.rule_name)
+            .cloned();
 
         let restored_policy = match &record.previous {
             Some(previous) => {
@@ -254,7 +257,10 @@ impl<B: FirewallBackend> FirewallManager<B> {
                 None
             }
         };
-        self.save_state(&state)?;
+        if let Err(error) = self.save_state(&state) {
+            let _ = self.restore_backend(current_policy.as_ref(), &record.rule_name);
+            return Err(error);
+        }
 
         Ok(FirewallMutationResult {
             changed: true,
@@ -659,6 +665,30 @@ mod tests {
             restored.policy.as_ref().map(|policy| policy.action),
             Some(FirewallAction::Block)
         );
+    }
+
+    #[test]
+    fn interrupted_state_replacement_recovers_backup() {
+        let dir = tempdir().expect("tempdir");
+        let identity = executable(dir.path(), "test.exe");
+        let state_path = dir.path().join("firewall.json");
+        let manager = FirewallManager::new(&state_path, FakeBackend::default());
+        manager
+            .apply(
+                identity.clone(),
+                FirewallAction::Block,
+                "30112233445566778899aabbccddeeff".to_owned(),
+            )
+            .expect("apply");
+
+        let backup = state_path.with_extension("json.bak");
+        fs::rename(&state_path, &backup).expect("simulate interrupted replacement");
+        assert!(!state_path.exists());
+
+        let status = manager.status(&identity).expect("recover status");
+        assert!(status.policy.is_some());
+        assert!(state_path.exists());
+        assert!(!backup.exists());
     }
 
     #[test]
