@@ -481,6 +481,24 @@ mod tests {
     }
 
     #[test]
+    fn interrupted_state_replacement_recovers_backup() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let baseline = dir.path().join("baseline.json");
+        let state = dir.path().join("continuous.json");
+        write_baseline(&baseline, &"00".repeat(32));
+        configure_continuous_monitoring(&state, &baseline, ContinuousMonitorPolicy::default())
+            .expect("configure");
+
+        let backup = backup_path(&state);
+        fs::rename(&state, &backup).expect("simulate interrupted replacement");
+        assert!(!state.exists());
+        let status = continuous_status(&state, &baseline).expect("recover");
+        assert!(status.configured);
+        assert!(state.exists());
+        assert!(!backup.exists());
+    }
+
+    #[test]
     fn event_history_is_bounded() {
         let mut state = ContinuousState {
             version: CONTINUOUS_STATE_VERSION,
