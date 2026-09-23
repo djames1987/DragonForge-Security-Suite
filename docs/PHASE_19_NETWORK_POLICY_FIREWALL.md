@@ -16,6 +16,7 @@ Phase 19 extends the verified Phase 8 Network Guard and Phase 17 privileged-serv
 - exact executable path plus SHA-256 application identity;
 - privileged-service re-hashing immediately before mutation;
 - symbolic-link rejection and bounded executable hashing;
+- explicit refusal to target `dragonforge-agent.exe` or `dragonforge-privileged-service.exe`, preserving the local authenticated control/rollback path;
 - deterministic DragonForge rule namespace and fixed DragonForge grouping;
 - refusal to overwrite a same-name rule that is not already owned by DragonForge state;
 - bounded protected service state for at most 256 managed policies and 64 rollback records;
@@ -50,7 +51,7 @@ The phase does not change global firewall enabled state, default inbound/outboun
 
 Network Guard obtains the PID, process name, absolute executable path, and SHA-256 executable hash. The privileged service does not trust the client-supplied hash by itself. It independently verifies that the target is a regular non-symlink file, enforces the file-size ceiling, re-hashes the executable, and requires an exact SHA-256 match before any apply, remove, rollback, or status operation.
 
-Windows Firewall itself scopes this class of rule by executable path rather than continuously enforcing a file hash. DragonForge therefore records the SHA-256 as authorization and drift context, reports whether the currently observed binary still matches the recorded identity, and revalidates the current hash before each privileged policy operation. If the executable changes between client inspection and privileged execution, the operation fails closed.
+Windows Firewall itself scopes this class of rule by executable path rather than continuously enforcing a file hash. DragonForge therefore records the SHA-256 as authorization and drift context, reports whether the currently observed binary still matches the recorded identity, and revalidates the current hash before each privileged policy operation. If the executable changes between client inspection and privileged execution, the operation fails closed. The Agent and privileged-service executables themselves are ineligible for Phase 19 policy so the control/rollback plane cannot be accidentally firewalled by this feature.
 
 ## Rule ownership and rollback
 
