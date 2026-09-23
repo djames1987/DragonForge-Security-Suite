@@ -11,6 +11,7 @@ Phase 19 extends the verified Phase 8 Network Guard and Phase 17 privileged-serv
 - only `FirewallPolicyMutation` enabled as a Phase 19 privileged capability;
 - exact signed-Agent caller authorization retained from Phase 17;
 - Windows Firewall COM integration through `INetFwPolicy2`, `INetFwRules`, and `INetFwRule`;
+- fail-closed mutation when Windows reports that local firewall policy changes will not take effect (for example, Group Policy override), while read-only status remains available;
 - outbound-only rules across all Windows Firewall profiles;
 - explicit allow or block action;
 - exact executable path plus SHA-256 application identity;
@@ -45,7 +46,7 @@ The UI never receives a generic privileged command facility.
 
 Phase 19 managed rules are intentionally constrained to outbound direction, all Windows Firewall profiles, one absolute executable path, allow or block action, enabled state, and the fixed `DragonForge Security Suite` grouping with the `DragonForge Outbound ` name prefix.
 
-The phase does not change global firewall enabled state, default inbound/outbound action, notification settings, unrelated rule groups, service restrictions, or local firewall defaults.
+The phase does not change global firewall enabled state, default inbound/outbound action, notification settings, unrelated rule groups, service restrictions, or local firewall defaults. Before a mutation, the service checks `INetFwPolicy2::LocalPolicyModifyState` and refuses the operation unless Windows reports `NET_FW_MODIFY_STATE_OK`.
 
 ## Application identity
 
