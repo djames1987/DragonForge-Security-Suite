@@ -24,7 +24,9 @@ if ($Health.state -ne "healthy" -or $Health.privilegedCapabilitiesEnabled -ne $t
 $PolicyJson = & $Agent --privileged-policy
 if ($LASTEXITCODE -ne 0) { throw "Agent could not retrieve privileged service policy." }
 $Policy = ($PolicyJson -join [Environment]::NewLine) | ConvertFrom-Json
-if ($Policy.privilegedCapabilitiesEnabled -ne $true) { throw "Phase 19 firewall mutation capability is not enabled." }
+if ($Policy.privilegedCapabilitiesEnabled -ne $true -or $Policy.firewallPolicyMutationEnabled -ne $true) {
+    throw "Phase 19 firewall mutation capability is not enabled."
+}
 if ($Policy.arbitraryCommandExecutionProhibited -ne $true -or $Policy.genericShellExecutionProhibited -ne $true) {
     throw "Privileged service generic execution protections are missing."
 }
