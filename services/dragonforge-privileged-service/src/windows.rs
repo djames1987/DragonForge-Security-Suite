@@ -292,10 +292,7 @@ async fn read_request(pipe: &mut NamedPipeServer) -> Result<PrivilegedRequest> {
         .map_err(|_| ServiceError::RequestRejected)?
         .map_err(|_| ServiceError::Io)?;
 
-    if count == 0
-        || bytes.len() > MAX_MESSAGE_BYTES
-        || bytes.last().copied() != Some(b'\n')
-    {
+    if count == 0 || bytes.len() > MAX_MESSAGE_BYTES || bytes.last().copied() != Some(b'\n') {
         return Err(ServiceError::RequestRejected);
     }
     bytes.pop();
