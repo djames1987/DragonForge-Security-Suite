@@ -154,6 +154,7 @@ pub struct FirewallPolicyState {
     pub sha256_hex: String,
     pub action: FirewallAction,
     pub enabled: bool,
+    pub identity_matches: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
