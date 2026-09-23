@@ -102,6 +102,8 @@ try {
         "MAX_ROLLBACKS",
         "verify_application_identity",
         "sha256_file",
+        "json.bak",
+        "restore_backend",
         "dragonforge-agent.exe",
         "dragonforge-privileged-service.exe",
         "Grouping()",
@@ -123,6 +125,13 @@ try {
     )) {
         if ($Firewall.Contains($Forbidden)) {
             throw "Privileged firewall backend exposes a forbidden shell path: $Forbidden"
+        }
+    }
+
+    $BoundaryLower = $Boundary.ToLowerInvariant()
+    foreach ($ProtectedExe in @("dragonforge-agent.exe", "dragonforge-privileged-service.exe")) {
+        if (-not $BoundaryLower.Contains($ProtectedExe)) {
+            throw "Missing Phase 19 control-plane exclusion: $ProtectedExe"
         }
     }
 
