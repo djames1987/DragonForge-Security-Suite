@@ -17,6 +17,8 @@ pub struct SecurityCenterSettings {
     pub include_diagnostic_identifiers: bool,
     #[serde(default)]
     pub update_channel: UpdateChannel,
+    #[serde(default)]
+    pub integrity_alert_cursor: u64,
 }
 
 impl Default for SecurityCenterSettings {
@@ -27,6 +29,7 @@ impl Default for SecurityCenterSettings {
             retain_event_count: 250,
             include_diagnostic_identifiers: false,
             update_channel: UpdateChannel::Stable,
+            integrity_alert_cursor: 0,
         }
     }
 }
