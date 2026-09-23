@@ -15,14 +15,12 @@ const MAX_HEALTH_HISTORY: usize = 500;
 const MAX_HEALTH_HISTORY_BYTES: usize = 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ComponentHealthPoint {
     pub id: String,
     pub state: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct HealthHistoryEntry {
     pub timestamp_ms: u64,
     pub suite_state: String,
@@ -33,7 +31,6 @@ pub struct HealthHistoryEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct PersistedHealthHistory {
     version: u32,
     entries: VecDeque<HealthHistoryEntry>,
