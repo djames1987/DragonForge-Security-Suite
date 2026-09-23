@@ -97,6 +97,7 @@ impl HealthHistoryStore {
         })?;
         if persisted.version != HEALTH_HISTORY_VERSION
             || persisted.entries.len() > MAX_HEALTH_HISTORY
+            || persisted.entries.iter().any(|entry| !valid_entry(entry))
         {
             return Err(CoreError::new_safe(
                 ErrorCode::InvalidConfiguration,
@@ -104,12 +105,16 @@ impl HealthHistoryStore {
             ));
         }
 
+        let original_len = persisted.entries.len();
         let mut store = Self {
             entries: persisted.entries,
             capacity,
             path: Some(path),
         };
         store.trim();
+        if store.entries.len() != original_len {
+            store.persist()?;
+        }
         Ok(store)
     }
 
@@ -213,6 +218,15 @@ impl HealthHistoryStore {
         }
         replace_file(path, &encoded)
     }
+}
+
+fn valid_entry(entry: &HealthHistoryEntry) -> bool {
+    matches!(entry.suite_state.as_str(), "healthy" | "attention")
+        && entry.components.len() <= 64
+        && entry.components.iter().all(|component| {
+            component.id.len() <= 64
+                && matches!(component.state.as_str(), "active" | "integrated")
+        })
 }
 
 fn equivalent(left: &HealthHistoryEntry, right: &HealthHistoryEntry) -> bool {
