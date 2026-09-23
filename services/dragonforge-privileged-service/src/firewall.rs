@@ -432,19 +432,17 @@ impl FirewallBackend for WindowsFirewallBackend {
     }
 
     fn apply(&self, policy: &FirewallPolicyState) -> Result<()> {
+        use windows::Win32::Foundation::VARIANT_TRUE;
         use windows::Win32::NetworkManagement::WindowsFirewall::{
             INetFwRule, NET_FW_ACTION_ALLOW, NET_FW_ACTION_BLOCK, NET_FW_PROFILE2_ALL,
             NET_FW_RULE_DIR_OUT, NetFwRule,
         };
         use windows::Win32::System::Com::{CLSCTX_INPROC_SERVER, CoCreateInstance};
-        use windows::Win32::System::Variant::VARIANT_TRUE;
 
         with_rules(|rules| {
             let name = windows::core::BSTR::from(policy.rule_name.as_str());
             if unsafe { rules.Item(&name) }.is_ok() {
-                unsafe { rules.Remove(&name) }
-                    .ok()
-                    .map_err(|_| ServiceError::Platform)?;
+                unsafe { rules.Remove(&name) }.map_err(|_| ServiceError::Platform)?;
             }
 
             let rule: INetFwRule =
@@ -462,29 +460,22 @@ impl FirewallBackend for WindowsFirewallBackend {
             };
 
             unsafe {
-                rule.SetName(&name).ok().map_err(|_| ServiceError::Platform)?;
+                rule.SetName(&name).map_err(|_| ServiceError::Platform)?;
                 rule.SetDescription(&description)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetApplicationName(&path)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetDirection(NET_FW_RULE_DIR_OUT)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetProfiles(NET_FW_PROFILE2_ALL)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetGrouping(&grouping)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetEnabled(VARIANT_TRUE)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
                 rule.SetAction(action)
-                    .ok()
                     .map_err(|_| ServiceError::Platform)?;
-                rules.Add(&rule).ok().map_err(|_| ServiceError::Platform)?;
+                rules.Add(&rule).map_err(|_| ServiceError::Platform)?;
             }
 
             let current = unsafe { rules.Item(&name) }.map_err(|_| ServiceError::Platform)?;
@@ -527,9 +518,7 @@ impl FirewallBackend for WindowsFirewallBackend {
             if grouping != FIREWALL_RULE_GROUP {
                 return Err(ServiceError::RequestRejected);
             }
-            unsafe { rules.Remove(&name) }
-                .ok()
-                .map_err(|_| ServiceError::Platform)
+            unsafe { rules.Remove(&name) }.map_err(|_| ServiceError::Platform)
         })
     }
 }
@@ -540,7 +529,9 @@ fn with_rules<T>(
         &windows::Win32::NetworkManagement::WindowsFirewall::INetFwRules,
     ) -> Result<T>,
 ) -> Result<T> {
-    use windows::Win32::NetworkManagement::WindowsFirewall::{INetFwPolicy2, NetFwPolicy2};
+    use windows::Win32::NetworkManagement::WindowsFirewall::{
+        INetFwPolicy2, NET_FW_MODIFY_STATE_OK, NetFwPolicy2,
+    };
     use windows::Win32::System::Com::{
         CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx, CoUninitialize,
     };
@@ -553,6 +544,11 @@ fn with_rules<T>(
         let policy: INetFwPolicy2 =
             unsafe { CoCreateInstance(&NetFwPolicy2, None, CLSCTX_INPROC_SERVER) }
                 .map_err(|_| ServiceError::Platform)?;
+        let modify_state =
+            unsafe { policy.LocalPolicyModifyState() }.map_err(|_| ServiceError::Platform)?;
+        if modify_state != NET_FW_MODIFY_STATE_OK {
+            return Err(ServiceError::RequestRejected);
+        }
         let rules = unsafe { policy.Rules() }.map_err(|_| ServiceError::Platform)?;
         operation(&rules)
     })();
