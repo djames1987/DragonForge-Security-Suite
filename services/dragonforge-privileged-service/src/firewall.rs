@@ -235,13 +235,14 @@ impl<B: FirewallBackend> FirewallManager<B> {
         };
         let record = state.rollbacks.remove(index);
 
-        match &record.previous {
+        let restored_policy = match &record.previous {
             Some(previous) => {
                 let mut restored = previous.clone();
                 restored.sha256_hex = identity.sha256_hex.to_ascii_lowercase();
                 restored.identity_matches = true;
                 self.backend.apply(&restored)?;
-                upsert_policy(&mut state, restored)?;
+                upsert_policy(&mut state, restored.clone())?;
+                Some(restored)
             }
             None => {
                 if self.backend.exists(&record.rule_name)? {
@@ -250,14 +251,15 @@ impl<B: FirewallBackend> FirewallManager<B> {
                 state
                     .policies
                     .retain(|policy| policy.rule_name != record.rule_name);
+                None
             }
-        }
+        };
         self.save_state(&state)?;
 
         Ok(FirewallMutationResult {
             changed: true,
             rollback_token: None,
-            policy: record.previous,
+            policy: restored_policy,
         })
     }
 
@@ -446,7 +448,13 @@ impl FirewallBackend for WindowsFirewallBackend {
 
         with_rules(|rules| {
             let name = windows::core::BSTR::from(policy.rule_name.as_str());
-            if unsafe { rules.Item(&name) }.is_ok() {
+            if let Ok(existing) = unsafe { rules.Item(&name) } {
+                let grouping = unsafe { existing.Grouping() }
+                    .map_err(|_| ServiceError::Platform)?
+                    .to_string();
+                if grouping != FIREWALL_RULE_GROUP {
+                    return Err(ServiceError::RequestRejected);
+                }
                 unsafe { rules.Remove(&name) }.map_err(|_| ServiceError::Platform)?;
             }
 
