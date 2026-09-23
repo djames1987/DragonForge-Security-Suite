@@ -16,7 +16,7 @@ Only `FirewallPolicyMutation` is enabled by the Phase 19 capability policy. Ever
 
 Network Guard does not open the privileged pipe. It launches only the exact sibling DragonForge Agent using fixed CLI verbs. The existing Phase 17 pipe boundary then verifies the Agent's operating-system peer identity, exact executable path, Authenticode signature, and pinned publisher.
 
-The privileged service independently re-hashes the target executable and uses native Windows Firewall COM interfaces. It creates outbound, all-profile, application-scoped rules only in the DragonForge rule namespace/group.
+The privileged service independently re-hashes the target executable and uses native Windows Firewall COM interfaces. It creates outbound, all-profile, application-scoped rules only in the DragonForge rule namespace/group. Before mutation it requires Windows to report that local firewall policy changes are effective; Group Policy/local-policy override states fail closed, while read-only status remains available.
 
 Service-owned state tracks managed rules and bounded rollback records. Rules that collide with the deterministic DragonForge name without a corresponding ownership record are not overwritten.
 
