@@ -45,6 +45,7 @@ on:
       - "scripts/run-phase17-privileged-service-tests.ps1"
       - "scripts/run-phase18-continuous-integrity-tests.ps1"
       - "scripts/run-phase19-network-policy-firewall-tests.ps1"
+      - "scripts/run-phase20-security-center-policy-event-hub-tests.ps1"
       - "scripts/install-privileged-service.ps1"
       - "scripts/uninstall-privileged-service.ps1"
       - "scripts/test-privileged-service.ps1"
@@ -64,6 +65,8 @@ on:
       - "docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md"
       - "docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md"
       - "docs/PHASE_19_NETWORK_POLICY_FIREWALL.md"
+      - "docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md"
+      - "docs/adr/0013-security-center-policy-event-hub.md"
       - "docs/adr/0012-network-policy-firewall-boundary.md"
       - "docs/adr/0011-continuous-integrity-runtime.md"
       - "docs/adr/0010-privileged-service-runtime.md"
@@ -117,6 +120,7 @@ on:
       - "scripts/run-phase17-privileged-service-tests.ps1"
       - "scripts/run-phase18-continuous-integrity-tests.ps1"
       - "scripts/run-phase19-network-policy-firewall-tests.ps1"
+      - "scripts/run-phase20-security-center-policy-event-hub-tests.ps1"
       - "scripts/install-privileged-service.ps1"
       - "scripts/uninstall-privileged-service.ps1"
       - "scripts/test-privileged-service.ps1"
@@ -136,6 +140,8 @@ on:
       - "docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md"
       - "docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md"
       - "docs/PHASE_19_NETWORK_POLICY_FIREWALL.md"
+      - "docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md"
+      - "docs/adr/0013-security-center-policy-event-hub.md"
       - "docs/adr/0012-network-policy-firewall-boundary.md"
       - "docs/adr/0011-continuous-integrity-runtime.md"
       - "docs/adr/0010-privileged-service-runtime.md"
@@ -218,6 +224,7 @@ jobs:
             'scripts/run-phase17-privileged-service-tests.ps1',
             'scripts/run-phase18-continuous-integrity-tests.ps1',
             'scripts/run-phase19-network-policy-firewall-tests.ps1',
+            'scripts/run-phase20-security-center-policy-event-hub-tests.ps1',
             'scripts/install-privileged-service.ps1',
             'scripts/uninstall-privileged-service.ps1',
             'scripts/test-privileged-service.ps1',
@@ -236,7 +243,7 @@ jobs:
             $html = Get-Content -Raw "apps/$app/ui/index.html"
             if (-not $html.Contains('Suite Phase 14')) { throw "$app has stale suite phase metadata." }
           }
-          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md','docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md','docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md','docs/PHASE_19_NETWORK_POLICY_FIREWALL.md','docs/adr/0012-network-policy-firewall-boundary.md','docs/adr/0009-windows-privileged-service-boundary.md','docs/adr/0010-privileged-service-runtime.md','docs/adr/0011-continuous-integrity-runtime.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs','crates/dragonforge-windows-boundary/src/lib.rs')) {
+          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md','docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md','docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md','docs/PHASE_19_NETWORK_POLICY_FIREWALL.md','docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md','docs/adr/0012-network-policy-firewall-boundary.md','docs/adr/0013-security-center-policy-event-hub.md','docs/adr/0009-windows-privileged-service-boundary.md','docs/adr/0010-privileged-service-runtime.md','docs/adr/0011-continuous-integrity-runtime.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs','crates/dragonforge-windows-boundary/src/lib.rs')) {
             if (-not (Test-Path $file)) { throw "Missing release/security artifact: $file" }
           }
           $update = Get-Content -Raw 'crates/dragonforge-update/src/lib.rs'
