@@ -137,17 +137,17 @@
     const status = await invoke("get_continuous_monitor_status");
     state.continuous = status;
     document.getElementById("continuous-enabled").checked = Boolean(status.enabled);
-    document.getElementById("continuous-interval").value = String(status.interval_seconds ?? 300);
+    document.getElementById("continuous-interval").value = String(status.intervalSeconds ?? 300);
     document.getElementById("continuous-save").disabled = !state.baseline?.exists;
-    document.getElementById("continuous-suppressions").value = (status.suppression_rules ?? [])
-      .map((rule) => `${rule.surface}:${rule.key_prefix}`)
+    document.getElementById("continuous-suppressions").value = (status.suppressionRules ?? [])
+      .map((rule) => `${rule.surface}:${rule.keyPrefix}`)
       .join("\n");
     document.getElementById("continuous-seal").textContent =
-      !status.configured ? "Not configured" : status.baseline_sealed ? "Baseline sealed" : "Baseline changed";
+      !status.configured ? "Not configured" : status.baselineSealed ? "Baseline sealed" : "Baseline changed";
     document.getElementById("continuous-meta").textContent =
       !status.configured
         ? "Continuous monitoring is not configured."
-        : `${status.retained_events} retained event(s) · ${status.unsuppressed_events} unsuppressed · next ${formatTime(status.next_check_ms)}`;
+        : `${status.retainedEvents} retained event(s) · ${status.unsuppressedEvents} unsuppressed · next ${formatTime(status.nextCheckMs)}`;
 
     const events = await invoke("get_continuous_integrity_events", { afterId: 0, limit: 8 });
     const region = document.getElementById("continuous-events");
@@ -160,7 +160,7 @@
         const title = document.createElement("h3");
         title.textContent = event.summary;
         const copy = document.createElement("p");
-        copy.textContent = `${formatTime(event.timestamp_ms)} · ${event.suppressed ? "suppressed" : "alerts Security Center"}`;
+        copy.textContent = `${formatTime(event.timestampMs)} · ${event.suppressed ? "suppressed" : "alerts Security Center"}`;
         item.append(title, copy);
         return item;
       }));
