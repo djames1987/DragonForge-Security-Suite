@@ -483,7 +483,7 @@ Delivered:
 See [PHASE_15_PASSWORD_MANAGER_HARDENING.md](PHASE_15_PASSWORD_MANAGER_HARDENING.md).
 
 ## Phase 16 — Windows Security Boundary Foundation
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - dedicated `dragonforge-windows-boundary` policy crate with no privileged runtime behavior;
