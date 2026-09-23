@@ -1,6 +1,6 @@
 # Phase 17 — DragonForge Privileged Service
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 17 implements the separately reviewed Phase 16 Windows privilege boundary as a real Windows Service Control Manager (SCM) service. The phase is intentionally limited to the privileged control plane itself; it does not add firewall mutation, quarantine, protected process termination, protected registry remediation, or other product features.
 
@@ -145,3 +145,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase17-pr
 ```
 
 This verifier does not weaken the signing boundary or install an unsigned development build as a service. Full installed-service acceptance is performed with `scripts\test-privileged-service.ps1` against a signed build after explicit Administrator installation.
+
+
+## Authoritative local verification
+
+Phase 17 was verified on 2026-09-23 on DRACO (Microsoft Windows NT 10.0.26200.0) using Windows PowerShell 5.1.26100.9444 with `scripts/run-phase17-privileged-service-tests.ps1`.
+
+The verifier passed formatting, locked dependency metadata, full workspace checking, strict Clippy, the complete workspace and doc-test suite, the Phase 17 privileged-service security tests, PowerShell syntax validation, and the full Windows application build including `dragonforge-privileged-service.exe`.
+
+Final verifier marker:
+
+`PHASE 17 DRAGONFORGE PRIVILEGED SERVICE VERIFICATION: PASS`
+
+Authoritative log SHA-256:
+
+`05E32B87809B5BFB34E2A9AF0E7581428528EB180BFD2748894F481C6CCE0433`

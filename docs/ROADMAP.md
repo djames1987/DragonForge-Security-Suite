@@ -501,7 +501,7 @@ Delivered:
 See [PHASE_16_WINDOWS_SECURITY_BOUNDARY.md](PHASE_16_WINDOWS_SECURITY_BOUNDARY.md).
 
 ## Phase 17 — DragonForge Privileged Service
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - real Windows SCM service executable for the separately reviewed Phase 16 boundary;
