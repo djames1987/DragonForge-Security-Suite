@@ -200,8 +200,9 @@ impl AppState {
 
     pub fn update_settings(
         &self,
-        updated: SecurityCenterSettings,
+        mut updated: SecurityCenterSettings,
     ) -> Result<SecurityCenterSettings, String> {
+        updated.integrity_alert_cursor = self.lock_settings()?.integrity_alert_cursor;
         updated.validate().map_err(|error| error.to_string())?;
         self.settings_store
             .save(&updated)
