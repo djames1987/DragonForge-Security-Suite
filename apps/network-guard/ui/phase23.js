@@ -25,7 +25,7 @@
 
   document.documentElement.lang ||= "en";
   document.documentElement.dataset.locale = locale;
-  document.documentElement.dataset.l10nReady = "true";
+  document.documentElement.setAttribute("data-l10n-ready", "true");
 
   const liveRegion = document.createElement("div");
   liveRegion.className = "phase23-sr-only";
