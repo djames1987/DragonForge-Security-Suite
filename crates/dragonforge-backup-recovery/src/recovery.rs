@@ -146,6 +146,11 @@ pub fn create_suite_recovery_from_paths(
     if scope == RecoveryScope::FullSuite {
         collect_namespace(paths.data_root(), "data", &mut entries, &mut total_bytes)?;
     }
+    if entries.is_empty() {
+        return Err(BackupError::InvalidInput(
+            "no recoverable DragonForge state was found",
+        ));
+    }
 
     let payload = RecoveryPayloadV2 {
         schema_version: RECOVERY_SCHEMA_VERSION,
@@ -252,16 +257,26 @@ pub fn restore_suite_recovery(
                 .map_err(|_| BackupError::Io("configuration restore parent could not be created"))?;
         }
         prepare_clean_restore_root(config_root)?;
-        fs::rename(&config_stage, config_root)
-            .map_err(|_| BackupError::Io("configuration restore could not be finalized"))?;
+        if fs::rename(&config_stage, config_root).is_err() {
+            if config_root_existed && !config_root.exists() {
+                let _ = fs::create_dir_all(config_root);
+            }
+            return Err(BackupError::Io(
+                "configuration restore could not be finalized",
+            ));
+        }
 
         if let (Some(stage), Some(root)) = (&data_stage, data_root) {
-            if let Some(parent) = root.parent() {
-                fs::create_dir_all(parent)
-                    .map_err(|_| BackupError::Io("data restore parent could not be created"))?;
-            }
-            prepare_clean_restore_root(root)?;
-            if fs::rename(stage, root).is_err() {
+            let data_result = (|| {
+                if let Some(parent) = root.parent() {
+                    fs::create_dir_all(parent)
+                        .map_err(|_| BackupError::Io("data restore parent could not be created"))?;
+                }
+                prepare_clean_restore_root(root)?;
+                fs::rename(stage, root)
+                    .map_err(|_| BackupError::Io("data restore could not be finalized"))
+            })();
+            if let Err(error) = data_result {
                 let _ = fs::remove_dir_all(config_root);
                 if config_root_existed {
                     let _ = fs::create_dir_all(config_root);
@@ -269,15 +284,13 @@ pub fn restore_suite_recovery(
                 if data_root_existed && !root.exists() {
                     let _ = fs::create_dir_all(root);
                 }
-                return Err(BackupError::Io(
-                    "data restore could not be finalized; configuration restore was rolled back",
-                ));
+                return Err(error);
             }
         }
         Ok(())
     })();
 
-    if result.is_err() {
+    if let Err(error) = result {
         if config_stage.exists() {
             let _ = fs::remove_dir_all(&config_stage);
         }
@@ -286,7 +299,7 @@ pub fn restore_suite_recovery(
                 let _ = fs::remove_dir_all(stage);
             }
         }
-        return Err(result.expect_err("checked error"));
+        return Err(error);
     }
 
     let total_bytes = migrated
@@ -665,14 +678,27 @@ fn validate_restore_roots(
     config_root: &Path,
     data_root: Option<&Path>,
 ) -> Result<()> {
+    if !config_root.is_absolute() {
+        return Err(BackupError::InvalidInput(
+            "configuration recovery root must be an absolute path",
+        ));
+    }
     ensure_clean_restore_root(config_root)?;
     if payload.scope == RecoveryScope::FullSuite {
         let data_root = data_root.ok_or(BackupError::InvalidInput(
             "full-suite recovery requires a data root",
         ))?;
-        if data_root == config_root {
+        if !data_root.is_absolute() {
             return Err(BackupError::InvalidInput(
-                "configuration and data restore roots must be different",
+                "data recovery root must be an absolute path",
+            ));
+        }
+        if data_root == config_root
+            || data_root.starts_with(config_root)
+            || config_root.starts_with(data_root)
+        {
+            return Err(BackupError::InvalidInput(
+                "configuration and data recovery roots must not overlap",
             ));
         }
         ensure_clean_restore_root(data_root)?;
