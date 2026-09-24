@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 13 Beta Readiness & Release Qualification is implementation complete with local verification pending. DragonForge now has an explicit beta release gate, six-scenario Windows qualification matrix, machine-readable evidence records, and an authoritative qualification verifier that exercises the full workspace plus release-profile portable/installer packaging.
+> **Current status:** Phase 20 — Security Center Policy & Event Hub is **Verified Complete**. DragonForge now includes the verified secure update path, hardened Password Manager ecosystem, Windows privileged-service boundary, continuous integrity monitoring, controlled firewall policy integration, and a durable Security Center event/notification hub. Phase 21 — Scheduled Protection & Automation is next.
 
 ## Canonical repository
 
@@ -123,14 +123,14 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 12.5 — Crash Handling & Diagnostics: **Verified Complete**
 - Phase 12.6 — UX Consistency: **Verified Complete**
 - Phase 12.7 — Security Hardening Review: **Verified Complete**
-- Phase 13 — Beta Readiness & Release Qualification: **Implementation Complete — Local Verification Pending**
-- Phase 14 — Secure Update System: **Planned**
-- Phase 15 — Password Manager Ecosystem Production Hardening: **Planned**
-- Phase 16 — Windows Security Boundary Foundation: **Planned**
-- Phase 17 — DragonForge Privileged Service: **Planned**
-- Phase 18 — Continuous Integrity Monitoring: **Planned**
-- Phase 19 — Network Policy & Firewall Integration: **Planned**
-- Phase 20 — Security Center Policy & Event Hub: **Planned**
+- Phase 13 — Beta Readiness & Release Qualification: **Verified Complete**
+- Phase 14 — Secure Update System: **Verified Complete**
+- Phase 15 — Password Manager Ecosystem Production Hardening: **Verified Complete**
+- Phase 16 — Windows Security Boundary Foundation: **Verified Complete**
+- Phase 17 — DragonForge Privileged Service: **Verified Complete**
+- Phase 18 — Continuous Integrity Monitoring: **Verified Complete**
+- Phase 19 — Network Policy & Firewall Integration: **Verified Complete**
+- Phase 20 — Security Center Policy & Event Hub: **Verified Complete**
 - Phase 21 — Scheduled Protection & Automation: **Planned**
 - Phase 22 — Recovery, Migration & Disaster Readiness: **Planned**
 - Phase 23 — Privacy, Accessibility & Product Polish: **Planned**
