@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 21 — Scheduled Protection & Automation is **Implementation Complete — Local Verification Pending**. DragonForge now adds opt-in, capability-scoped scheduled scans/integrity checks, restart-persistent retry/missed-job handling, backup-due reminders, and Security Center automation controls without introducing a generic task runner.
+> **Current status:** Phase 21 — Scheduled Protection & Automation is **Verified Complete**. DragonForge now includes verified opt-in, capability-scoped scheduled scans/integrity checks, restart-persistent retry/missed-job handling, backup-due reminders, and Security Center automation controls without introducing a generic task runner. Phase 22 — Recovery, Migration & Disaster Readiness is next.
 
 ## Canonical repository
 
@@ -131,7 +131,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 18 — Continuous Integrity Monitoring: **Verified Complete**
 - Phase 19 — Network Policy & Firewall Integration: **Verified Complete**
 - Phase 20 — Security Center Policy & Event Hub: **Verified Complete**
-- Phase 21 — Scheduled Protection & Automation: **Implementation Complete — Local Verification Pending**
+- Phase 21 — Scheduled Protection & Automation: **Verified Complete**
 - Phase 22 — Recovery, Migration & Disaster Readiness: **Planned**
 - Phase 23 — Privacy, Accessibility & Product Polish: **Planned**
 - Phase 24 — 1.0 Security & Release Audit: **Planned**
