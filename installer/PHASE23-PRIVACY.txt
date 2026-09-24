@@ -1,0 +1,11 @@
+DragonForge Security Suite — Privacy & Data Notice
+
+DragonForge is designed to be local-first.
+
+• The installer does not upload diagnostic logs, support bundles, vault contents, credentials, recovery packages, or other private application data.
+• Signed update checks and Password Manager synchronization are separate product features and use the network only through their configured workflows.
+• Uninstall removes installed program files but intentionally preserves DragonForge user data and externally stored vault, backup, recovery, and share files so uninstalling the application does not silently destroy user security data.
+• The normal installation path is per-user. The optional DragonForge Privileged Service requires separate Administrator approval.
+• DragonForge desktop applications support keyboard navigation, visible focus, Windows high-contrast/forced-colors mode, reduced-motion preferences, and scalable text.
+
+Review the release notes and security documentation before deploying DragonForge in managed or high-assurance environments.

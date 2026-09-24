@@ -3,7 +3,9 @@
   "productName": "DragonForge Backup & Recovery",
   "version": "0.1.0",
   "identifier": "com.dragonforge.backuprecovery",
-  "build": { "frontendDist": "ui" },
+  "build": {
+    "frontendDist": "ui"
+  },
   "app": {
     "withGlobalTauri": true,
     "windows": [
@@ -23,5 +25,10 @@
       "csp": "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src ipc: http://ipc.localhost"
     }
   },
-  "bundle": { "active": false }
+  "bundle": {
+    "active": false,
+    "icon": [
+      "../../assets/branding/logos/dragonforge-backup-and-recovery.png"
+    ]
+  }
 }

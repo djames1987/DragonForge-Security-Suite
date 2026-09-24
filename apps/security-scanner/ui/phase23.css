@@ -1,0 +1,93 @@
+/* Phase 23 — suite accessibility, high-contrast, DPI and motion contract */
+.phase23-skip-link {
+  position: fixed;
+  z-index: 10000;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-180%);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f6f7fb;
+  color: #090b10;
+  font-weight: 700;
+  text-decoration: none;
+}
+.phase23-skip-link:focus { transform: translateY(0); }
+
+:where(button, a[href], input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #ffb45e;
+  outline-offset: 3px;
+}
+
+button, input, select, textarea { min-height: 40px; }
+html { text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+body { overflow-wrap: anywhere; }
+
+.phase23-first-run {
+  width: min(620px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid #353b44;
+  border-radius: 16px;
+  background: #11141b;
+  color: #f6f7fb;
+}
+.phase23-first-run::backdrop { background: rgba(0, 0, 0, 0.72); }
+.phase23-first-run-card { padding: 28px; }
+.phase23-first-run-card h2 { margin: 6px 0 12px; }
+.phase23-first-run-card p { line-height: 1.6; color: #c7ceda; }
+.phase23-first-run-continue { margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(button, a[href], input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid Highlight;
+  }
+  .phase23-first-run,
+  .panel,
+  .card,
+  .info-box,
+  .warning,
+  .warning-box {
+    border: 1px solid CanvasText !important;
+  }
+  .phase23-first-run { background: Canvas; color: CanvasText; }
+  .phase23-first-run-card p { color: CanvasText; }
+}
+
+@media (max-width: 900px) {
+  .phase23-first-run { width: calc(100vw - 20px); }
+}
+
+.phase23-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.phase23-state {
+  padding: 12px 14px;
+  border: 1px solid #353b44;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+.phase23-state-error { border-color: #ff6577; }
+.phase23-state-loading,
+.phase23-state-empty { color: #c7ceda; }
+
+@media (min-resolution: 144dpi) {
+  :root { font-size: 16px; }
+}
