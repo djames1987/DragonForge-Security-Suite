@@ -56,10 +56,10 @@ function Assert-ExecutableNotRunning {
 }
 
 try {
-    $ReleaseArgs = @()
+    $ReleaseArgs = @("--locked")
     $TargetProfile = "debug"
     if ($Profile -eq "release") {
-        $ReleaseArgs = @("--release")
+        $ReleaseArgs = @("--release", "--locked")
         $TargetProfile = "release"
     }
 
