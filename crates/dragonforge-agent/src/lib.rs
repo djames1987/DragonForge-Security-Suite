@@ -16,7 +16,11 @@ mod privileged;
 mod protocol;
 mod server;
 
-pub use automation::{AgentAutomationRuntime, AutomationEvent, AutomationJob, AutomationJobKind, AutomationStatus, AUTOMATION_STATE_VERSION, MAX_AUTOMATION_EVENTS, MAX_INTERVAL_MINUTES, MIN_INTERVAL_MINUTES};
+pub use automation::{
+    AUTOMATION_STATE_VERSION, AgentAutomationRuntime, AutomationEvent, AutomationJob,
+    AutomationJobKind, AutomationStatus, MAX_AUTOMATION_EVENTS, MAX_INTERVAL_MINUTES,
+    MIN_INTERVAL_MINUTES,
+};
 pub use client::{AgentClient, AgentHealth};
 pub use error::{AgentError, Result};
 pub use integrity::AgentIntegrityRuntime;
