@@ -11,6 +11,12 @@ if (-not $OutputPath) {
     $OutputPath = Join-Path $RepoRoot "test-logs\phase24-license-inventory-$Stamp.json"
 }
 
+$ReviewedComplexExpressions = @(
+    "Apache-2.0 WITH LLVM-exception",
+    "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+    "(MIT OR Apache-2.0) AND Unicode-3.0"
+)
+
 $Allowed = @(
     "0BSD",
     "Apache-2.0",
@@ -55,7 +61,9 @@ try {
         $IsComplex = $License -match '\bWITH\b|[()]' -or ($HasAnd -and $HasOr)
 
         if ($IsComplex) {
-            $Failures += "$($Package.name) $($Package.version): $License (complex SPDX expression requires explicit review)"
+            if ($License -notin $ReviewedComplexExpressions) {
+                $Failures += "$($Package.name) $($Package.version): $License (complex SPDX expression requires explicit review)"
+            }
         }
         else {
             $Identifiers = @([regex]::Matches($License, '[A-Za-z0-9.+-]+') | ForEach-Object { $_.Value }) |
@@ -92,6 +100,7 @@ try {
         repository = "djames1987/DragonForge-Security-Suite"
         package_count = $Rows.Count
         allowed_license_identifiers = $Allowed
+        reviewed_complex_expressions = $ReviewedComplexExpressions
         packages = $Rows
         failures = $Failures
     }
