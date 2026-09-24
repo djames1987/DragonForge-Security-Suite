@@ -2,10 +2,16 @@ pub const MAGIC: &[u8; 8] = b"DFBACKUP";
 pub const FORMAT_VERSION: u16 = 1;
 pub const BACKUP_EXTENSION: &str = "dfbackup";
 
+pub const RECOVERY_MAGIC: &[u8; 8] = b"DFRECOVR";
+pub const RECOVERY_FORMAT_VERSION: u16 = 1;
+pub const RECOVERY_SCHEMA_VERSION: u16 = 2;
+pub const RECOVERY_EXTENSION: &str = "dfrecovery";
+
 pub const SALT_LEN: usize = 16;
 pub const NONCE_LEN: usize = 12;
 pub const TAG_LEN: usize = 16;
 pub const HEADER_LEN: usize = MAGIC.len() + 2 + SALT_LEN + NONCE_LEN + 8;
+pub const RECOVERY_HEADER_LEN: usize = RECOVERY_MAGIC.len() + 2 + SALT_LEN + NONCE_LEN + 8;
 
 pub const MAX_ENTRIES: usize = 4_096;
 pub const MAX_FILE_BYTES: u64 = 64 * 1024 * 1024;
