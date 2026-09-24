@@ -37,7 +37,7 @@ The audit requires:
 - every license identifier to belong to the reviewed Phase 24 permissive/weak-copyleft allowlist;
 - a generated JSON license inventory retained with local verification evidence.
 
-The license gate is intentionally conservative. A new identifier fails the release audit until explicitly reviewed.
+The license gate is intentionally conservative. A new identifier fails the release audit until explicitly reviewed. Complex SPDX expressions also fail closed unless their exact expression has been explicitly reviewed. Phase 24 currently records three exact reviewed complex expressions already present in the locked dependency graph: `Apache-2.0 WITH LLVM-exception`, `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT`, and `(MIT OR Apache-2.0) AND Unicode-3.0`.
 
 ## Threat / crypto / format review
 
