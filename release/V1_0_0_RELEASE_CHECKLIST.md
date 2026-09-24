@@ -1,6 +1,6 @@
 # DragonForge Security Suite v1.0.0 Release Checklist
 
-- [ ] Phase 24 is Verified Complete.
+- [x] Phase 24 is Verified Complete.
 - [ ] Phase 25 readiness verifier passes on the release host after the final installer/uninstaller hardening commit.
 - [x] A pre-1.0 Windows testing release has passed a real install -> Agent start -> uninstall lifecycle test (`v1.0.0-beta.1`).
 - [x] Test-release uninstall confirms managed program files/shortcuts are removed and user data outside the install directory is preserved. Verified log SHA-256: `3CC2B2E210863C0E1308E5B8B3C9CB454AC5A0AB53CA8EB9743A64C9FAAFE107`.
