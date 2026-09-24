@@ -34,6 +34,7 @@ OutputBaseFilename=DragonForge-Security-Suite-v{#MyAppVersion}-win-x64-setup
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
+InfoBeforeFile=PHASE23-PRIVACY.txt
 UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyExeName}
 CloseApplications=yes
