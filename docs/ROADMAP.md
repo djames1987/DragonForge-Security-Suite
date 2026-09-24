@@ -648,14 +648,27 @@ Phase 23 does not claim formal WCAG certification. Hands-on keyboard, Narrator/N
 See [PHASE_23_PRIVACY_ACCESSIBILITY_PRODUCT_POLISH.md](PHASE_23_PRIVACY_ACCESSIBILITY_PRODUCT_POLISH.md).
 
 ## Phase 24 — 1.0 Security & Release Audit
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- feature freeze;
-- deployment-wide threat/crypto/format review;
-- dependency/license audit;
-- fuzzing and privilege/update/installer attack testing;
-- release reproducibility and unresolved-risk sign-off.
+Delivered:
+- active 1.0 feature-freeze policy covering formats, protocols, privileged capability scope, component scope, and update trust semantics;
+- consolidated deployment-wide threat-model review and explicit residual-risk register;
+- machine-readable release audit gate with release-blocking conditions and required evidence;
+- live RustSec dependency advisory audit;
+- locked dependency-license inventory with reviewed SPDX identifier allowlist;
+- deterministic same-commit Git source-archive reproducibility verification;
+- tracked-source private-key/update-signing-secret scan;
+- deterministic fuzz-style mutation corpus for File Vault header parsing and signed-update verification;
+- full existing hostile/truncated/tampered Backup & Recovery and Secure Share regressions retained in the workspace gate;
+- fail-closed privilege-boundary review for OS peer identity, exact Agent path, Authenticode, publisher pinning, replay/rate abuse, and fixed typed commands;
+- secure-update downgrade/channel/signature/AuthentiCode invariants;
+- stable-release signing, clean/tagged-source, checksum, timestamp, installer, and immutable-publication invariants;
+- installer privilege/optional-service review;
+- Phase 24 ADR, CI/scheduled license coverage, and authoritative Windows verifier.
+
+Phase 24 qualifies the repository to enter Phase 25; it does not publish 1.0. Bit-for-bit Windows binary reproducibility is not claimed. Stable release identity is bound through exact source/tag identity, tracked lockfiles, artifact hashes, timestamped Authenticode, and signed update metadata.
+
+See [PHASE_24_1_0_SECURITY_RELEASE_AUDIT.md](PHASE_24_1_0_SECURITY_RELEASE_AUDIT.md).
 
 ## Phase 25 — DragonForge Security Suite 1.0
 **Status: Planned**
