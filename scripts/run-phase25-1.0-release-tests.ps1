@@ -103,6 +103,11 @@ try {
         if (-not $Html.Contains("DragonForge 1.0")) {
             throw "$App does not expose the DragonForge 1.0 release marker."
         }
+
+        $MainRs = Get-Content -Raw -LiteralPath "apps/$App/src/main.rs"
+        if (-not $MainRs.Contains('#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]')) {
+            throw "$App release binary is missing the Windows GUI subsystem declaration."
+        }
     }
 
     foreach ($File in @(
