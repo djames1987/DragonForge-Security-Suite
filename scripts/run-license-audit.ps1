@@ -50,13 +50,32 @@ try {
             continue
         }
 
-        $Identifiers = @([regex]::Matches($License, '[A-Za-z0-9.+-]+') | ForEach-Object { $_.Value }) |
-            Where-Object { $_ -notin @("AND","OR","WITH") } |
-            Select-Object -Unique
+        $HasAnd = $License -match '\bAND\b'
+        $HasOr = $License -match '\bOR\b'
+        $IsComplex = $License -match '\bWITH\b|[()]' -or ($HasAnd -and $HasOr)
 
-        $Unknown = @($Identifiers | Where-Object { $_ -notin $Allowed })
-        if ($Unknown.Count -gt 0) {
-            $Failures += "$($Package.name) $($Package.version): $License (unreviewed identifiers: $($Unknown -join ', '))"
+        if ($IsComplex) {
+            $Failures += "$($Package.name) $($Package.version): $License (complex SPDX expression requires explicit review)"
+        }
+        else {
+            $Identifiers = @([regex]::Matches($License, '[A-Za-z0-9.+-]+') | ForEach-Object { $_.Value }) |
+                Where-Object { $_ -notin @("AND","OR","WITH") } |
+                Select-Object -Unique
+
+            if ($HasAnd) {
+                $Rejected = @($Identifiers | Where-Object { $_ -notin $Allowed })
+                if ($Rejected.Count -gt 0) {
+                    $Failures += "$($Package.name) $($Package.version): $License (unreviewed required identifiers: $($Rejected -join ', '))"
+                }
+            }
+            else {
+                # A single license must be reviewed. A pure SPDX OR expression
+                # is acceptable when at least one distributable branch is reviewed.
+                $Accepted = @($Identifiers | Where-Object { $_ -in $Allowed })
+                if ($Identifiers.Count -eq 0 -or $Accepted.Count -eq 0) {
+                    $Failures += "$($Package.name) $($Package.version): $License (no reviewed acceptable license option)"
+                }
+            }
         }
 
         $Rows += [ordered]@{
