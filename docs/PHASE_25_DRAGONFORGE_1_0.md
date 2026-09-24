@@ -1,6 +1,6 @@
 # Phase 25 — DragonForge Security Suite 1.0
 
-**Status: Implementation Complete — Signed Stable Release Verification Pending**
+**Status: Release Readiness Verified — Signed Stable Release Pending**
 
 Phase 25 converts the verified Phase 24 source baseline into the DragonForge Security Suite 1.0 release line.
 
@@ -62,7 +62,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-dragon
 
 The final publisher reuses the existing exact-tag build/sign/verify/update publication pipeline. It does not introduce an alternate signing or upload mechanism.
 
+## Authoritative release-readiness verification
+
+The Phase 25 verifier passed on `DRACO` (Microsoft Windows NT 10.0.26200.0) on 2026-09-24 against source commit `d5f0b819d03537cd9cf7e9d32f90894a0052a596`.
+
+Verified evidence:
+- log: `dragonforge-phase25-1.0-release-readiness-20260924-092829.log`;
+- independently verified SHA-256: `7071C7D9EA1FC4CF17CF2F33F786AEA279559C14568344370BA5A1F4E56643C5`;
+- locked dependency license inventory: 525 packages;
+- release-profile builds verified for all 11 expected DragonForge executables;
+- final marker: `PHASE 25 DRAGONFORGE SECURITY SUITE 1.0 RELEASE READINESS: PASS`.
+
 ## Completion semantics
 
-- **Implementation Complete — Signed Stable Release Verification Pending** means the repository is ready for the production signing/publishing step.
-- **Verified Complete / Released** requires the authoritative Phase 25 readiness PASS plus a successful signed `v1.0.0` publication receipt.
+- **Release Readiness Verified — Signed Stable Release Pending** means the exact 1.0 source baseline has passed the authoritative Windows readiness gate and is ready for the protected signing/tag/publication step.
+- **Verified Complete / Released** still requires a successful signed `v1.0.0` publication receipt.
