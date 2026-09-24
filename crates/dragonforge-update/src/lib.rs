@@ -411,4 +411,46 @@ mod tests {
         let json = serde_json::to_vec(&payload("0.2.0", UpdateChannel::Stable)).expect("json");
         assert!(serde_json::from_slice::<SignedUpdateManifest>(&json).is_err());
     }
+
+    #[test]
+    fn phase24_mutation_corpus_never_panics_update_verifier() {
+        let key = MlDsa65KeyPair::from_seed(&[12_u8; 32]).expect("test key");
+        let signed = sign_manifest(
+            payload("0.2.0-beta.1", UpdateChannel::Beta),
+            "test-key",
+            &key,
+        )
+        .expect("sign");
+        let original = serde_json::to_vec(&signed).expect("json");
+        let public_key = hex::encode(key.verifying_key().as_bytes());
+
+        let stride = (original.len() / 32).max(1);
+        for index in (0..original.len()).step_by(stride).take(32) {
+            let mut mutated = original.clone();
+            mutated[index] ^= 0x5A;
+            let result = std::panic::catch_unwind(|| {
+                verify_manifest(
+                    &mutated,
+                    "test-key",
+                    &public_key,
+                    "0.1.0",
+                    UpdateChannel::Beta,
+                )
+            });
+            assert!(result.is_ok(), "update verifier panicked at byte {index}");
+        }
+
+        for length in [0, 1, 8, 32, original.len() / 2, original.len().saturating_sub(1)] {
+            let result = std::panic::catch_unwind(|| {
+                verify_manifest(
+                    &original[..length],
+                    "test-key",
+                    &public_key,
+                    "0.1.0",
+                    UpdateChannel::Beta,
+                )
+            });
+            assert!(result.is_ok(), "update verifier panicked at length {length}");
+        }
+    }
 }

@@ -9,11 +9,15 @@ on:
       - '**/Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/security-audit.yml'
+      - 'scripts/run-license-audit.ps1'
+      - 'release/phase24-audit-gate.json'
   pull_request:
     paths:
       - '**/Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/security-audit.yml'
+      - 'scripts/run-license-audit.ps1'
+      - 'release/phase24-audit-gate.json'
 
 permissions:
   contents: read
@@ -24,3 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rust-lang/audit@v1
+
+  license-audit:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Locked dependency license audit
+        shell: pwsh
+        run: ./scripts/run-license-audit.ps1 -OutputPath "$env:RUNNER_TEMP/dragonforge-license-inventory.json"
