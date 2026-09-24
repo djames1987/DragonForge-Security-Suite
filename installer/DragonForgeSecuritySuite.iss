@@ -1,5 +1,5 @@
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1.0-alpha.2"
+  #define MyAppVersion "1.0.0"
 #endif
 #ifndef StageDir
   #error StageDir must be supplied by package-windows-installer.ps1
@@ -42,9 +42,9 @@ CloseApplicationsFilter=dragonforge-security-center.exe,dragonforge-desktop.exe,
 RestartApplications=no
 SetupLogging=yes
 UsePreviousAppDir=yes
-VersionInfoVersion=0.1.0.0
+VersionInfoVersion=1.0.0.0
 VersionInfoProductName={#MyAppName}
-VersionInfoProductVersion=0.1.0.0
+VersionInfoProductVersion=1.0.0.0
 VersionInfoProductTextVersion={#MyAppVersion}
 VersionInfoCompany={#MyPublisher}
 VersionInfoDescription=DragonForge Security Suite Windows installer
