@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "phase": 25,
+  "title": "DragonForge Security Suite 1.0",
+  "version": "1.0.0",
+  "tag": "v1.0.0",
+  "status": "implementation_complete_signed_release_verification_pending",
+  "phase24_verified": true,
+  "stable_release_requires_signing": true,
+  "required_publication_assets": [
+    "DragonForge-Security-Suite-v1.0.0-win-x64.zip",
+    "DragonForge-Security-Suite-v1.0.0-win-x64.zip.sha256",
+    "DragonForge-Security-Suite-v1.0.0-win-x64-setup.exe",
+    "DragonForge-Security-Suite-v1.0.0-win-x64-setup.exe.sha256",
+    "release-manifest-v1.0.0.json",
+    "release-manifest-v1.0.0.json.sha256",
+    "DragonForge-Security-Suite-update-stable.json",
+    "DragonForge-Security-Suite-update-stable.json.sha256"
+  ],
+  "release_blockers": [
+    "Phase 25 readiness verifier failure",
+    "dirty or non-tag-matching source",
+    "missing production Authenticode identity or timestamp",
+    "missing/mismatched ML-DSA update signing identity",
+    "artifact checksum/signature/timestamp verification failure",
+    "stable release marked prerelease",
+    "existing v1.0.0 release already present",
+    "unresolved release-blocking security defect"
+  ]
+}
