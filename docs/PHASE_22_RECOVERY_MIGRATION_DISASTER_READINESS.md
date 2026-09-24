@@ -1,6 +1,6 @@
 # Phase 22 — Recovery, Migration & Disaster Readiness
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 22 adds a suite-owned disaster-recovery and machine-migration layer on top of the verified Phase 9 Backup & Recovery engine. The design remains local-first, password-protected, bounded, and no-overwrite.
 
@@ -176,4 +176,22 @@ Run on Windows:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase22-recovery-migration-disaster-readiness-tests.ps1
 ```
 
-The verifier produces a transcript and SHA-256 sidecar under `test-logs`. Phase 22 remains **Implementation Complete — Local Verification Pending** until the authoritative Windows run reaches its PASS marker and the sidecar is independently verified.
+The authoritative Windows verification passed on 2026-09-23 on `DRACO` (Microsoft Windows NT 10.0.26200.0).
+
+Verified stages:
+- `cargo fmt --all --check`;
+- locked Cargo metadata;
+- `cargo check --workspace --all-targets --all-features --locked`;
+- strict `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`;
+- complete workspace tests and doc-tests;
+- Phase 22 recovery regression tests for schema migration, future-schema rejection, clean-root restore, tamper rejection, transient/session exclusion, overlapping-root refusal, explicit extension enforcement, and JSON backup repair;
+- Security Center and Backup & Recovery JavaScript syntax checks;
+- required Phase 22 artifact/invariant checks;
+- PowerShell syntax validation;
+- all expected Windows suite application builds.
+
+Verified log: `dragonforge-phase22-recovery-migration-disaster-readiness-20260923-222646.log`
+
+Verified log SHA-256: `E51144C9ED85DB6F577D06AF49CD4AE167CFDD31BB5857E29445E6AF58655837`
+
+The SHA-256 sidecar was independently verified before Phase 22 was marked **Verified Complete**.
