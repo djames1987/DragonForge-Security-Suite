@@ -580,7 +580,7 @@ Phase 20 remains local-first and normal-user. It does not add generic automation
 See [PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md](PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md).
 
 ## Phase 21 — Scheduled Protection & Automation
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - restart-persistent normal-user Agent scheduler with three fixed capabilities: Security Scanner, explicit integrity check, and encrypted-backup reminder;
@@ -593,7 +593,10 @@ Delivered:
 - automation results integrated into the Phase 20 durable event/notification hub with a persistent import cursor;
 - Security Center Automation page with schedule controls, run-now actions, last/next run state, failure count, and recent history;
 - Agent CLI automation status/configuration/manual-run diagnostics;
-- Phase 21 documentation, ADR, CI coverage, and authoritative Windows verifier.
+- Phase 21 documentation, ADR, CI coverage, and authoritative Windows verifier;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including rustfmt, locked Cargo metadata, full workspace/all-target/all-feature compile checks, strict Clippy with `-D warnings`, the complete workspace test suite, Security Center JavaScript/invariant checks, PowerShell syntax validation, and all expected Windows suite application builds;
+- verified log: `dragonforge-phase21-scheduled-protection-automation-20260923-215411.log`;
+- verified log SHA-256: `5A2477940D368CB8996FDCB3038E17F19D62DB42A5711ADC342463A0FF6FF4E9`.
 
 Phase 21 remains capability-scoped and normal-user. It does not add generic command execution, scripts, arbitrary executable paths/arguments, standing authorization for privileged actions, or silent encrypted-backup credentials.
 
