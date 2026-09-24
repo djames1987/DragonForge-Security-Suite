@@ -124,7 +124,7 @@
               <button id="stop-agent" class="secondary-button">Stop Agent</button>
             </div>
             <div class="info-box">
-              Phase 12.2 automatically starts the normal-user Agent when Security Center needs it, supports authenticated graceful shutdown/restart, reconnects after restarts, and recovers stale/crashed runtime state. Installed builds also start the per-user Agent at Windows sign-in. It remains non-elevated; privileged Windows service enforcement is not claimed.
+              DragonForge Agent runs per-user and non-elevated, with authenticated lifecycle, health, integrity, and automation coordination. When explicitly installed with Administrator approval, the separate authenticated DragonForge Privileged Service provides the narrowly scoped managed-firewall policy capability; the Agent itself does not gain generic elevated command execution.
             </div>
           </section>
         </div>
