@@ -27,6 +27,8 @@ const ARGON2_ITERATIONS: u32 = 3;
 const ARGON2_LANES: u32 = 1;
 const MIN_PASSWORD_CHARS: usize = 12;
 const MAX_REPAIR_JSON_BYTES: u64 = 4 * 1024 * 1024;
+const MAX_REPAIR_DEPTH: usize = 32;
+const MAX_REPAIR_BACKUPS: usize = 4_096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -183,6 +185,8 @@ pub fn restore_suite_recovery(
     let migrated = decode_and_migrate(&decoded)?;
     validate_payload_v2(&migrated.payload)?;
     validate_restore_roots(&migrated.payload, config_root, data_root)?;
+    let config_root_existed = config_root.exists();
+    let data_root_existed = data_root.is_some_and(Path::exists);
 
     let config_stage = temporary_sibling(config_root, "dfrestore")?;
     let data_stage = if migrated.payload.scope == RecoveryScope::FullSuite {
@@ -247,6 +251,7 @@ pub fn restore_suite_recovery(
             fs::create_dir_all(parent)
                 .map_err(|_| BackupError::Io("configuration restore parent could not be created"))?;
         }
+        prepare_clean_restore_root(config_root)?;
         fs::rename(&config_stage, config_root)
             .map_err(|_| BackupError::Io("configuration restore could not be finalized"))?;
 
@@ -255,8 +260,15 @@ pub fn restore_suite_recovery(
                 fs::create_dir_all(parent)
                     .map_err(|_| BackupError::Io("data restore parent could not be created"))?;
             }
+            prepare_clean_restore_root(root)?;
             if fs::rename(stage, root).is_err() {
                 let _ = fs::remove_dir_all(config_root);
+                if config_root_existed {
+                    let _ = fs::create_dir_all(config_root);
+                }
+                if data_root_existed && !root.exists() {
+                    let _ = fs::create_dir_all(root);
+                }
                 return Err(BackupError::Io(
                     "data restore could not be finalized; configuration restore was rolled back",
                 ));
@@ -274,7 +286,7 @@ pub fn restore_suite_recovery(
                 let _ = fs::remove_dir_all(stage);
             }
         }
-        return result.map(|()| unreachable!());
+        return Err(result.expect_err("checked error"));
     }
 
     let total_bytes = migrated
@@ -303,13 +315,22 @@ pub fn repair_recoverable_json_state(paths: &SuitePaths) -> Result<RepairSummary
     };
     for root in [paths.config_root(), paths.data_root()] {
         if root.exists() {
-            repair_directory(root, &mut summary)?;
+            repair_directory(root, &mut summary, 0)?;
         }
     }
     Ok(summary)
 }
 
-fn repair_directory(directory: &Path, summary: &mut RepairSummary) -> Result<()> {
+fn repair_directory(
+    directory: &Path,
+    summary: &mut RepairSummary,
+    depth: usize,
+) -> Result<()> {
+    if depth > MAX_REPAIR_DEPTH {
+        return Err(BackupError::InvalidInput(
+            "suite state repair exceeded the safe directory-depth limit",
+        ));
+    }
     let mut children = fs::read_dir(directory)
         .map_err(|_| BackupError::Io("suite state directory could not be inspected"))?
         .collect::<std::result::Result<Vec<_>, _>>()
@@ -324,7 +345,7 @@ fn repair_directory(directory: &Path, summary: &mut RepairSummary) -> Result<()>
             continue;
         }
         if metadata.is_dir() {
-            repair_directory(&path, summary)?;
+            repair_directory(&path, summary, depth.saturating_add(1))?;
             continue;
         }
         let name = path.file_name().and_then(|value| value.to_str()).unwrap_or("");
@@ -332,6 +353,11 @@ fn repair_directory(directory: &Path, summary: &mut RepairSummary) -> Result<()>
             continue;
         }
         summary.inspected_backups = summary.inspected_backups.saturating_add(1);
+        if summary.inspected_backups > MAX_REPAIR_BACKUPS {
+            return Err(BackupError::InvalidInput(
+                "suite state repair exceeded the safe backup-file limit",
+            ));
+        }
         if metadata.len() > MAX_REPAIR_JSON_BYTES || !valid_json_file(&path) {
             summary.skipped_invalid_backups = summary.skipped_invalid_backups.saturating_add(1);
             continue;
@@ -622,11 +648,11 @@ fn validate_destination(destination: &Path) -> Result<()> {
             "recovery package destination already exists",
         ));
     }
-    if destination
+    let valid_extension = destination
         .extension()
         .and_then(|value| value.to_str())
-        .is_some_and(|value| !value.eq_ignore_ascii_case(RECOVERY_EXTENSION))
-    {
+        .is_some_and(|value| value.eq_ignore_ascii_case(RECOVERY_EXTENSION));
+    if !valid_extension {
         return Err(BackupError::InvalidInput(
             "recovery package must use the .dfrecovery extension",
         ));
@@ -672,8 +698,14 @@ fn ensure_clean_restore_root(path: &Path) -> Result<()> {
             "recovery destination must be empty to prevent overwriting existing state",
         ));
     }
-    fs::remove_dir(path)
-        .map_err(|_| BackupError::Io("empty recovery destination could not be staged"))?;
+    Ok(())
+}
+
+fn prepare_clean_restore_root(path: &Path) -> Result<()> {
+    if path.exists() {
+        fs::remove_dir(path)
+            .map_err(|_| BackupError::Io("empty recovery destination could not be staged"))?;
+    }
     Ok(())
 }
 
