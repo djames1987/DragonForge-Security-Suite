@@ -12,6 +12,7 @@ mod state;
 mod update;
 
 use agent::AgentStatus;
+use dragonforge_agent::AutomationStatus;
 use events::DashboardEvent;
 use health_history::HealthHistoryEntry;
 use settings::SecurityCenterSettings;
@@ -144,6 +145,29 @@ fn launch_password_manager(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn automation_status(state: State<'_, AppState>) -> Result<AutomationStatus, String> {
+    state.automation_status()
+}
+
+#[tauri::command]
+fn configure_automation_job(
+    job: String,
+    enabled: bool,
+    interval_minutes: u64,
+    state: State<'_, AppState>,
+) -> Result<AutomationStatus, String> {
+    state.configure_automation_job(&job, enabled, interval_minutes)
+}
+
+#[tauri::command]
+fn run_automation_job(
+    job: String,
+    state: State<'_, AppState>,
+) -> Result<AutomationStatus, String> {
+    state.run_automation_job(&job)
+}
+
+#[tauri::command]
 fn check_updates(state: State<'_, AppState>) -> Result<UpdateStatus, String> {
     state.check_updates()
 }
@@ -198,6 +222,9 @@ pub fn run() {
             launch_backup_recovery,
             launch_file_vault,
             launch_password_manager,
+            automation_status,
+            configure_automation_job,
+            run_automation_job,
             check_updates,
             prepare_update,
             install_prepared_update,
