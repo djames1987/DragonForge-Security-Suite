@@ -56,6 +56,8 @@ pub struct SecurityCenterSettings {
     #[serde(default)]
     pub integrity_alert_cursor: u64,
     #[serde(default)]
+    pub automation_event_cursor: u64,
+    #[serde(default)]
     pub suite_policy: SuitePolicy,
 }
 
@@ -68,6 +70,7 @@ impl Default for SecurityCenterSettings {
             include_diagnostic_identifiers: false,
             update_channel: UpdateChannel::Stable,
             integrity_alert_cursor: 0,
+            automation_event_cursor: 0,
             suite_policy: SuitePolicy::default(),
         }
     }
@@ -224,12 +227,14 @@ mod tests {
         let settings = SecurityCenterSettings {
             retain_event_count: 500,
             integrity_alert_cursor: 42,
+            automation_event_cursor: 17,
             ..SecurityCenterSettings::default()
         };
         store.save(&settings).expect("save");
         let loaded = store.load().expect("load");
         assert_eq!(loaded, settings);
         assert_eq!(loaded.integrity_alert_cursor, 42);
+        assert_eq!(loaded.automation_event_cursor, 17);
     }
 
     #[test]
