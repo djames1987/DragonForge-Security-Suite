@@ -603,13 +603,23 @@ Phase 21 remains capability-scoped and normal-user. It does not add generic comm
 See [PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md](PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md).
 
 ## Phase 22 — Recovery, Migration & Disaster Readiness
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- full suite configuration export/import and machine migration;
-- encrypted recovery package;
-- format migration and cross-version compatibility tests;
-- corrupted-state recovery and clean-machine restore drills.
+Delivered:
+- encrypted `.dfrecovery` suite recovery package with independent outer-format and logical-schema versioning;
+- configuration-only export/import plus full-suite configuration + persistent-data migration;
+- Argon2id + AES-256-GCM authenticated encryption with per-entry SHA-256 verification;
+- logical config/data namespaces without persisting original absolute source roots;
+- clean-machine restore to missing or empty roots only, with staged finalization and rollback if full-suite data finalization fails;
+- explicit exclusion of Agent session/runtime credentials, locks, temporary files, backup/quarantine copies, logs, cache data, and support bundles;
+- schema v1 -> v2 compatibility migration plus future-schema fail-closed behavior;
+- bounded conservative `.json.bak` recovery for missing/corrupt state, including `.invalid` quarantine;
+- Backup & Recovery Phase 22 UI for package creation, inspection, verification/migration, clean restore, and state repair;
+- Phase 22 documentation, ADR, CI coverage, and authoritative Windows verifier.
+
+Phase 22 deliberately does not clone OS-bound credentials, privileged-service installation state, Authenticode private keys, operating-system settings, ACLs/ownership, or installed binaries. Destination-machine re-authentication/re-enrollment remains required where a feature uses OS-bound secret storage.
+
+See [PHASE_22_RECOVERY_MIGRATION_DISASTER_READINESS.md](PHASE_22_RECOVERY_MIGRATION_DISASTER_READINESS.md).
 
 ## Phase 23 — Privacy, Accessibility & Product Polish
 **Status: Planned**
