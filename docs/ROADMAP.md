@@ -636,6 +636,7 @@ Delivered:
 - explicit local-first privacy wording without introducing telemetry, analytics, remote UI resources, or automatic diagnostic uploads;
 - localization-ready Phase 23 shell string catalog, locale metadata, and key-based lookup boundary;
 - approved DragonForge branding wired into Tauri application bundle icon metadata, while preserving the migrated Password Manager icon;
+- accessible installer privacy/data-retention notice added without changing privilege or signing behavior;
 - all desktop apps advanced to visible Suite Phase 23 metadata;
 - Phase 23 documentation, ADR, CI coverage, and authoritative Windows verifier.
 
