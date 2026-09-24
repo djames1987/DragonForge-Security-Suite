@@ -440,7 +440,14 @@ mod tests {
             assert!(result.is_ok(), "update verifier panicked at byte {index}");
         }
 
-        for length in [0, 1, 8, 32, original.len() / 2, original.len().saturating_sub(1)] {
+        for length in [
+            0,
+            1,
+            8,
+            32,
+            original.len() / 2,
+            original.len().saturating_sub(1),
+        ] {
             let result = std::panic::catch_unwind(|| {
                 verify_manifest(
                     &original[..length],
@@ -450,7 +457,10 @@ mod tests {
                     UpdateChannel::Beta,
                 )
             });
-            assert!(result.is_ok(), "update verifier panicked at length {length}");
+            assert!(
+                result.is_ok(),
+                "update verifier panicked at length {length}"
+            );
         }
     }
 }
