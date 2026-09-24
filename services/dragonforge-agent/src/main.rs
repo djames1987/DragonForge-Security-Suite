@@ -292,7 +292,9 @@ fn automation_status() -> ExitCode {
 
 fn automation_run() -> ExitCode {
     let Some(job) = env::args().nth(2) else {
-        eprintln!("Automation usage: --automation-run <security_scan|integrity_check|backup_reminder>");
+        eprintln!(
+            "Automation usage: --automation-run <security_scan|integrity_check|backup_reminder>"
+        );
         return ExitCode::from(2);
     };
     let kind = match AutomationJobKind::parse(&job) {

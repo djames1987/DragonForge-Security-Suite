@@ -8,8 +8,8 @@ use dragonforge_core::{Component, SuitePaths};
 use dragonforge_security_scanner::scan_system;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{AgentError, Result};
 use crate::AgentIntegrityRuntime;
+use crate::error::{AgentError, Result};
 
 pub const AUTOMATION_STATE_VERSION: u16 = 1;
 pub const MIN_INTERVAL_MINUTES: u64 = 15;
@@ -179,11 +179,14 @@ impl AgentAutomationRuntime {
         let _guard = acquire_lock(&self.lock_path)?;
         let (mut state, _) = self.load_or_recover()?;
         let now = now_ms();
-        let job = state
-            .jobs
-            .iter_mut()
-            .find(|job| job.kind == kind)
-            .ok_or(AgentError::InvalidState("automation job policy is incomplete"))?;
+        let job =
+            state
+                .jobs
+                .iter_mut()
+                .find(|job| job.kind == kind)
+                .ok_or(AgentError::InvalidState(
+                    "automation job policy is incomplete",
+                ))?;
         job.enabled = enabled;
         job.interval_minutes = interval_minutes;
         job.next_run_ms = enabled.then_some(now);
@@ -277,12 +280,13 @@ impl AgentAutomationRuntime {
         };
 
         if job.enabled {
-            job.next_run_ms = Some(if retryable && job.consecutive_failures <= MAX_CONSECUTIVE_RETRIES
-            {
-                now.saturating_add(RETRY_DELAY_MS)
-            } else {
-                now.saturating_add(interval_ms(job.interval_minutes))
-            });
+            job.next_run_ms = Some(
+                if retryable && job.consecutive_failures <= MAX_CONSECUTIVE_RETRIES {
+                    now.saturating_add(RETRY_DELAY_MS)
+                } else {
+                    now.saturating_add(interval_ms(job.interval_minutes))
+                },
+            );
         } else {
             job.next_run_ms = None;
         }
@@ -404,7 +408,11 @@ fn validate_state(state: &PersistedAutomationState) -> Result<()> {
         ));
     }
 
-    let kinds = state.jobs.iter().map(|job| job.kind).collect::<BTreeSet<_>>();
+    let kinds = state
+        .jobs
+        .iter()
+        .map(|job| job.kind)
+        .collect::<BTreeSet<_>>();
     if kinds.len() != AutomationJobKind::ALL.len()
         || AutomationJobKind::ALL
             .iter()
@@ -437,11 +445,7 @@ fn validate_state(state: &PersistedAutomationState) -> Result<()> {
                 .any(|value| matches!(value, '\r' | '\n' | '\0'))
             || !matches!(
                 event.outcome.as_str(),
-                "success"
-                    | "attention"
-                    | "action_required"
-                    | "failed"
-                    | "missed_recovered"
+                "success" | "attention" | "action_required" | "failed" | "missed_recovered"
             )
         {
             return Err(AgentError::InvalidState(
