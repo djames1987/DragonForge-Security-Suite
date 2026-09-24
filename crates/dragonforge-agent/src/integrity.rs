@@ -63,7 +63,6 @@ impl AgentIntegrityRuntime {
     }
 }
 
-
 const INTEGRITY_LOCK_STALE_AFTER: Duration = Duration::from_secs(15 * 60);
 
 fn acquire_integrity_lock(path: &Path) -> Result<IntegrityRuntimeLock> {
