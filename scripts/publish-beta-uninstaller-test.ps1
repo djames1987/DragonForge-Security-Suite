@@ -40,6 +40,15 @@ try {
     $RemoteTag = ($RemoteTagOutput -join "").Trim()
     if ($RemoteTag) { throw "Remote tag $Tag already exists; refusing to mutate a published candidate identity." }
 
+    $LocalTagOutput = @(& git tag --list $Tag)
+    if ($LASTEXITCODE -ne 0) { throw "Unable to inspect local tag $Tag." }
+    $LocalTag = ($LocalTagOutput -join "").Trim()
+    if ($LocalTag) {
+        Write-Host "Removing stale local-only tag $Tag from a previous failed publication attempt."
+        & git tag -d $Tag
+        if ($LASTEXITCODE -ne 0) { throw "Unable to remove stale local tag $Tag." }
+    }
+
     $Previous = $ErrorActionPreference
     try {
         $ErrorActionPreference = "Continue"
@@ -153,13 +162,23 @@ try {
     Write-Host "Lifecycle log: $($LifecycleLog.FullName)"
 }
 catch {
+    $OriginalError = $_
     if ($LocalTagCreated) {
-        $Remote = (& git ls-remote --tags origin "refs/tags/$Tag").Trim()
-        if (-not $Remote) {
-            & git tag -d $Tag *> $null
+        $PreviousCleanupPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
+            $RemoteCleanupOutput = @(& git ls-remote --tags origin "refs/tags/$Tag")
+            $RemoteCleanupExit = $LASTEXITCODE
+            $RemoteCleanup = ($RemoteCleanupOutput -join "").Trim()
+            if ($RemoteCleanupExit -eq 0 -and -not $RemoteCleanup) {
+                & git tag -d $Tag *> $null
+            }
+        }
+        finally {
+            $ErrorActionPreference = $PreviousCleanupPreference
         }
     }
-    throw
+    throw $OriginalError
 }
 finally {
     Pop-Location
