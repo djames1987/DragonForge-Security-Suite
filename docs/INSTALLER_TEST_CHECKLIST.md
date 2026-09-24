@@ -59,6 +59,14 @@ From Security Center, start DragonForge Agent and launch Password Manager, File 
 
 The automated disposable lifecycle gate is `scripts/test-windows-installer-uninstall.ps1`. It performs a real silent install/uninstall on CI or an explicitly disposable local/VM system and refuses local execution unless `-AllowLocal` is deliberately supplied.
 
+For the dedicated pre-1.0 beta, run the guarded publisher from `release/v1.0.0-beta.1-uninstaller`:
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-beta-uninstaller-test.ps1
+~~~
+
+The publisher first builds an isolated-AppId installer with isolated Start Menu/Startup shortcut names, runs the full install -> Agent start -> uninstall lifecycle, then rebuilds the public beta with the normal production AppId and publishes it only after the lifecycle passes.
+
 Never attach or use production passwords, Account Secrets, recovery kits/codes, OTP seeds, sync/admin tokens, private keys, vault contents, or sensitive personal files during alpha testing.
 
 
