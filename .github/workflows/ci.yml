@@ -48,6 +48,7 @@ on:
       - "scripts/run-phase20-security-center-policy-event-hub-tests.ps1"
       - "scripts/run-phase21-scheduled-protection-automation-tests.ps1"
       - "scripts/run-phase22-recovery-migration-disaster-readiness-tests.ps1"
+      - "scripts/run-phase23-privacy-accessibility-product-polish-tests.ps1"
       - "scripts/install-privileged-service.ps1"
       - "scripts/uninstall-privileged-service.ps1"
       - "scripts/test-privileged-service.ps1"
@@ -70,9 +71,11 @@ on:
       - "docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md"
       - "docs/PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md"
       - "docs/PHASE_22_RECOVERY_MIGRATION_DISASTER_READINESS.md"
+      - "docs/PHASE_23_PRIVACY_ACCESSIBILITY_PRODUCT_POLISH.md"
       - "docs/adr/0013-security-center-policy-event-hub.md"
       - "docs/adr/0014-capability-scoped-scheduled-protection.md"
       - "docs/adr/0015-encrypted-suite-recovery-clean-restore.md"
+      - "docs/adr/0016-suite-privacy-accessibility-ui-contract.md"
       - "docs/adr/0012-network-policy-firewall-boundary.md"
       - "docs/adr/0011-continuous-integrity-runtime.md"
       - "docs/adr/0010-privileged-service-runtime.md"
@@ -129,6 +132,7 @@ on:
       - "scripts/run-phase20-security-center-policy-event-hub-tests.ps1"
       - "scripts/run-phase21-scheduled-protection-automation-tests.ps1"
       - "scripts/run-phase22-recovery-migration-disaster-readiness-tests.ps1"
+      - "scripts/run-phase23-privacy-accessibility-product-polish-tests.ps1"
       - "scripts/install-privileged-service.ps1"
       - "scripts/uninstall-privileged-service.ps1"
       - "scripts/test-privileged-service.ps1"
@@ -151,9 +155,11 @@ on:
       - "docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md"
       - "docs/PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md"
       - "docs/PHASE_22_RECOVERY_MIGRATION_DISASTER_READINESS.md"
+      - "docs/PHASE_23_PRIVACY_ACCESSIBILITY_PRODUCT_POLISH.md"
       - "docs/adr/0013-security-center-policy-event-hub.md"
       - "docs/adr/0014-capability-scoped-scheduled-protection.md"
       - "docs/adr/0015-encrypted-suite-recovery-clean-restore.md"
+      - "docs/adr/0016-suite-privacy-accessibility-ui-contract.md"
       - "docs/adr/0012-network-policy-firewall-boundary.md"
       - "docs/adr/0011-continuous-integrity-runtime.md"
       - "docs/adr/0010-privileged-service-runtime.md"
@@ -216,6 +222,15 @@ jobs:
           node --check apps/network-guard/ui/app.js
           node --check apps/backup-recovery/ui/app.js
           node --check apps/secure-share/ui/app.js
+          node --check apps/security-center/ui/phase23.js
+          node --check apps/password-manager/ui/phase23.js
+          node --check apps/file-vault/ui/phase23.js
+          node --check apps/authenticator/ui/phase23.js
+          node --check apps/security-scanner/ui/phase23.js
+          node --check apps/integrity-monitor/ui/phase23.js
+          node --check apps/network-guard/ui/phase23.js
+          node --check apps/backup-recovery/ui/phase23.js
+          node --check apps/secure-share/ui/phase23.js
           node --check extensions/password-manager-browser/src/core.js
           node --check extensions/password-manager-browser/src/background.js
           node --check extensions/password-manager-browser/ui/popup.js
@@ -239,6 +254,7 @@ jobs:
             'scripts/run-phase20-security-center-policy-event-hub-tests.ps1',
             'scripts/run-phase21-scheduled-protection-automation-tests.ps1',
             'scripts/run-phase22-recovery-migration-disaster-readiness-tests.ps1',
+            'scripts/run-phase23-privacy-accessibility-product-polish-tests.ps1',
             'scripts/install-privileged-service.ps1',
             'scripts/uninstall-privileged-service.ps1',
             'scripts/test-privileged-service.ps1',
@@ -255,10 +271,10 @@ jobs:
           $apps = @('security-center','password-manager','file-vault','authenticator','security-scanner','integrity-monitor','network-guard','backup-recovery','secure-share')
           foreach ($app in $apps) {
             $html = Get-Content -Raw "apps/$app/ui/index.html"
-            $expectedPhase = if ($app -eq 'security-center') { 'Suite Phase 22' } else { 'Suite Phase 14' }
+            $expectedPhase = 'Suite Phase 23'
             if (-not $html.Contains($expectedPhase)) { throw "$app has stale suite phase metadata." }
           }
-          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md','docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md','docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md','docs/PHASE_19_NETWORK_POLICY_FIREWALL.md','docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md','docs/PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md','docs/PHASE_22_RECOVERY_MIGRATION_DISASTER_READINESS.md','docs/adr/0012-network-policy-firewall-boundary.md','docs/adr/0013-security-center-policy-event-hub.md','docs/adr/0014-capability-scoped-scheduled-protection.md','docs/adr/0015-encrypted-suite-recovery-clean-restore.md','docs/adr/0009-windows-privileged-service-boundary.md','docs/adr/0010-privileged-service-runtime.md','docs/adr/0011-continuous-integrity-runtime.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs','crates/dragonforge-windows-boundary/src/lib.rs')) {
+          foreach ($file in @('docs/PHASE_13_BETA_READINESS.md','docs/BETA_QUALIFICATION_MATRIX.md','docs/BETA_RELEASE_GATE.md','docs/PHASE_14_SECURE_UPDATE.md','docs/PHASE_15_PASSWORD_MANAGER_HARDENING.md','docs/PHASE_16_WINDOWS_SECURITY_BOUNDARY.md','docs/PHASE_17_DRAGONFORGE_PRIVILEGED_SERVICE.md','docs/PHASE_18_CONTINUOUS_INTEGRITY_MONITORING.md','docs/PHASE_19_NETWORK_POLICY_FIREWALL.md','docs/PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md','docs/PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md','docs/PHASE_22_RECOVERY_MIGRATION_DISASTER_READINESS.md','docs/PHASE_23_PRIVACY_ACCESSIBILITY_PRODUCT_POLISH.md','docs/adr/0012-network-policy-firewall-boundary.md','docs/adr/0013-security-center-policy-event-hub.md','docs/adr/0014-capability-scoped-scheduled-protection.md','docs/adr/0015-encrypted-suite-recovery-clean-restore.md','docs/adr/0016-suite-privacy-accessibility-ui-contract.md','docs/adr/0009-windows-privileged-service-boundary.md','docs/adr/0010-privileged-service-runtime.md','docs/adr/0011-continuous-integrity-runtime.md','docs/PASSWORD_MANAGER_SYNC_COMPATIBILITY.md','crates/dragonforge-update/src/lib.rs','crates/dragonforge-windows-boundary/src/lib.rs')) {
             if (-not (Test-Path $file)) { throw "Missing release/security artifact: $file" }
           }
           $update = Get-Content -Raw 'crates/dragonforge-update/src/lib.rs'
