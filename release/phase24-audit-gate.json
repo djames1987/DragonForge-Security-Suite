@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "phase": 24,
+  "title": "1.0 Security & Release Audit",
+  "status": "implementation_complete_local_verification_pending",
+  "release_decision": "pending_authoritative_windows_verification",
+  "blockers": [
+    "workspace regression failure",
+    "strict clippy warning",
+    "applicable RustSec advisory",
+    "unreviewed dependency license",
+    "committed private key/signing secret",
+    "generic privileged command execution",
+    "weakened privileged caller identity/signature/publisher gate",
+    "unsigned stable release path",
+    "update downgrade/channel/signature fail-open",
+    "dirty or non-tag-matching release source",
+    "artifact checksum/signature verification bypass",
+    "unresolved critical/high security defect without mitigation"
+  ],
+  "required_evidence": [
+    "phase24 verifier PASS",
+    "phase24 verifier SHA256 sidecar",
+    "dependency license inventory",
+    "source reproducibility PASS",
+    "complete workspace tests/doc-tests",
+    "all Windows suite app builds PASS"
+  ],
+  "binary_reproducibility_claim": false,
+  "source_archive_reproducibility_required": true
+}
