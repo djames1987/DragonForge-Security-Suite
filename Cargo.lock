@@ -1083,6 +1083,7 @@ name = "dragonforge-backup-recovery-app"
 version = "0.1.0"
 dependencies = [
  "dragonforge-backup-recovery",
+ "dragonforge-core",
  "serde",
  "tauri",
  "tauri-build",
