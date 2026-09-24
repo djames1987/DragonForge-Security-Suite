@@ -241,11 +241,14 @@ impl AgentAutomationRuntime {
         missed: bool,
     ) -> Result<()> {
         let result = self.execute(kind);
-        let job = state
-            .jobs
-            .iter_mut()
-            .find(|job| job.kind == kind)
-            .ok_or(AgentError::InvalidState("automation job policy is incomplete"))?;
+        let job =
+            state
+                .jobs
+                .iter_mut()
+                .find(|job| job.kind == kind)
+                .ok_or(AgentError::InvalidState(
+                    "automation job policy is incomplete",
+                ))?;
         job.last_run_ms = Some(now);
 
         let (outcome, summary, retryable) = match result {
