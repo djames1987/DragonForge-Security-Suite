@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="dark">
   <title>DragonForge Backup & Recovery</title>
   <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="phase23.css">
 </head>
 <body>
   <div id="toast" class="toast" hidden></div>
@@ -18,7 +19,7 @@
       <button class="nav" data-view="recovery">Suite Recovery</button>
       <button class="nav" data-view="about">About</button>
       <div class="note">Backups are encrypted. Restore never overwrites an existing destination. Passwords are command-scoped and are not stored by this app.</div>
-      <div class="phase">Suite Phase 14</div>
+      <div class="phase">Suite Phase 23</div>
     </aside>
     <main>
       <header><div><div class="eyebrow">DragonForge Security Suite</div><h1 id="title">Create encrypted backup</h1></div></header>
@@ -114,10 +115,11 @@
       </section>
 
       <section id="view-about" class="view">
-        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Backup & Recovery</h2><p>Phase 9 creates encrypted, authenticated .dfbackup packages for selected suite data and user files. Phase 22 adds encrypted .dfrecovery packages for configuration export/import, full-suite machine migration, versioned recovery-schema migration, conservative state repair, and clean-machine restore drills.</p><p>The format is independent from Password Manager and File Vault formats. Backups reject symbolic links and traversal-like paths, use bounded archive limits, and restore through a temporary sibling directory before an atomic-style rename.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p></div>
+        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Backup & Recovery</h2><p>Phase 9 creates encrypted, authenticated .dfbackup packages for selected suite data and user files. Phase 22 adds encrypted .dfrecovery packages for configuration export/import, full-suite machine migration, versioned recovery-schema migration, conservative state repair, and clean-machine restore drills.</p><p>The format is independent from Password Manager and File Vault formats. Backups reject symbolic links and traversal-like paths, use bounded archive limits, and restore through a temporary sibling directory before an atomic-style rename.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 23 · Security Center is the recommended suite entry point.</p></div>
       </section>
     </main>
   </div>
   <script src="app.js"></script>
+  <script src="phase23.js"></script>
 </body>
 </html>
