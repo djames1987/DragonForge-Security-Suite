@@ -50,13 +50,30 @@ try {
             continue
         }
 
-        $Identifiers = @([regex]::Matches($License, '[A-Za-z0-9.+-]+') | ForEach-Object { $_.Value }) |
-            Where-Object { $_ -notin @("AND","OR","WITH") } |
-            Select-Object -Unique
+        if ($License -match '\bWITH\b') {
+            $Failures += "$($Package.name) $($Package.version): $License (SPDX exception expressions require explicit review)"
+        }
+        else {
+            # SPDX OR means the distributor may choose any one branch. For each
+            # AND-conjunct, require at least one reviewed acceptable OR option.
+            # Parentheses are stripped because current Cargo metadata expressions
+            # are simple license-choice expressions; complex/nested exceptions
+            # still fail closed above.
+            $Normalized = $License.Replace("(", "").Replace(")", "")
+            $AndGroups = @($Normalized -split '\s+AND\s+')
+            $RejectedGroups = @()
 
-        $Unknown = @($Identifiers | Where-Object { $_ -notin $Allowed })
-        if ($Unknown.Count -gt 0) {
-            $Failures += "$($Package.name) $($Package.version): $License (unreviewed identifiers: $($Unknown -join ', '))"
+            foreach ($Group in $AndGroups) {
+                $Alternatives = @($Group -split '\s+OR\s+' | ForEach-Object { $_.Trim() }) |
+                    Where-Object { $_ }
+                if ($Alternatives.Count -eq 0 -or -not ($Alternatives | Where-Object { $_ -in $Allowed })) {
+                    $RejectedGroups += $Group.Trim()
+                }
+            }
+
+            if ($RejectedGroups.Count -gt 0) {
+                $Failures += "$($Package.name) $($Package.version): $License (no reviewed acceptable option in: $($RejectedGroups -join '; '))"
+            }
         }
 
         $Rows += [ordered]@{
