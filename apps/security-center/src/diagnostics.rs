@@ -9,8 +9,8 @@ use serde_json::json;
 use crate::logging::SafeLogger;
 use crate::state::DashboardSnapshot;
 
-const PHASE: &str = "14";
-const RELEASE_CHANNEL: &str = "alpha-external-test";
+const PHASE: &str = "25";
+const RELEASE_CHANNEL: &str = "stable";
 
 #[derive(Debug, Serialize)]
 struct DiagnosticReport<'a> {
@@ -242,9 +242,11 @@ mod tests {
         );
         let report = super::render(&state.snapshot().expect("snapshot")).expect("report");
 
-        assert!(report.contains("\"phase\": \"14\""));
-        assert!(report.contains("\"package_version\": \"0.1.0\""));
-        assert!(report.contains("\"version\": \"0.1.0\""));
+        assert!(report.contains("\"phase\": \"25\""));
+        assert!(report.contains("\"release_channel\": \"stable\""));
+        let version = env!("CARGO_PKG_VERSION");
+        assert!(report.contains(&format!("\"package_version\": \"{version}\"")));
+        assert!(report.contains(&format!("\"version\": \"{version}\"")));
         assert!(!report.contains("Security Center started"));
         assert!(!report.contains("sync_token"));
         assert!(!report.contains("account_secret"));
