@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 22 — Recovery, Migration & Disaster Readiness is **Implementation Complete — Local Verification Pending**. DragonForge now adds encrypted suite recovery packages, configuration/full-suite migration, versioned recovery-schema compatibility, conservative corrupted-state repair, and clean-machine no-overwrite restore semantics.
+> **Current status:** Phase 22 — Recovery, Migration & Disaster Readiness is **Verified Complete**. DragonForge now includes verified encrypted suite recovery packages, configuration/full-suite migration, versioned recovery-schema compatibility, conservative corrupted-state repair, and clean-machine no-overwrite restore semantics. Phase 23 — Privacy, Accessibility & Product Polish is next.
 
 ## Canonical repository
 
@@ -132,7 +132,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 19 — Network Policy & Firewall Integration: **Verified Complete**
 - Phase 20 — Security Center Policy & Event Hub: **Verified Complete**
 - Phase 21 — Scheduled Protection & Automation: **Verified Complete**
-- Phase 22 — Recovery, Migration & Disaster Readiness: **Implementation Complete — Local Verification Pending**
+- Phase 22 — Recovery, Migration & Disaster Readiness: **Verified Complete**
 - Phase 23 — Privacy, Accessibility & Product Polish: **Planned**
 - Phase 24 — 1.0 Security & Release Audit: **Planned**
 - Phase 25 — DragonForge Security Suite 1.0: **Planned**
