@@ -4,7 +4,9 @@ param(
     [string]$ExpectedCommit,
     [string]$ReleaseTag,
     [switch]$SignRelease,
-    [string]$InstallerAppId
+    [string]$InstallerAppId,
+    [string]$InstallerGroupName,
+    [string]$InstallerStartupName
 )
 
 $ErrorActionPreference = "Stop"
@@ -119,6 +121,12 @@ Code signing: $(if ($SignRelease) { "Authenticode SHA-256 + RFC 3161 timestamp" 
     )
     if ($InstallerAppId) {
         $Arguments = @("/DMyAppId=$InstallerAppId") + $Arguments
+    }
+    if ($InstallerGroupName) {
+        $Arguments = @("/DMyGroupName=$InstallerGroupName") + $Arguments
+    }
+    if ($InstallerStartupName) {
+        $Arguments = @("/DMyStartupName=$InstallerStartupName") + $Arguments
     }
     Write-Host ""
     Write-Host ">>> $Iscc $($Arguments -join ' ')"
