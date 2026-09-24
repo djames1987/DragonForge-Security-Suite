@@ -1,7 +1,9 @@
 param(
     [Parameter(Mandatory = $true)] [string]$Version,
     [string]$InstallerPath,
-    [switch]$AllowLocal
+    [switch]$AllowLocal,
+    [string]$StartMenuGroupName = "DragonForge Security Suite",
+    [string]$StartupShortcutName = "DragonForge Agent"
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,8 +30,8 @@ $TestRoot = Join-Path ([IO.Path]::GetTempPath()) ("dragonforge-uninstall-" + [gu
 $InstallRoot = Join-Path $TestRoot "DragonForge Security Suite"
 $PreserveRoot = Join-Path $TestRoot "preserved-user-data"
 $PreserveSentinel = Join-Path $PreserveRoot "must-survive-uninstall.txt"
-$StartMenuGroup = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\DragonForge Security Suite"
-$StartupShortcut = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup\DragonForge Agent.lnk"
+$StartMenuGroup = Join-Path $env:APPDATA ("Microsoft\Windows\Start Menu\Programs\" + $StartMenuGroupName)
+$StartupShortcut = Join-Path $env:APPDATA ("Microsoft\Windows\Start Menu\Programs\Startup\" + $StartupShortcutName + ".lnk")
 $AgentProcess = $null
 
 function Require-File([string]$Path) {

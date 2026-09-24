@@ -3,7 +3,10 @@ param(
     [switch]$SkipBuild,
     [string]$ExpectedCommit,
     [string]$ReleaseTag,
-    [switch]$SignRelease
+    [switch]$SignRelease,
+    [string]$InstallerAppId,
+    [string]$InstallerGroupName,
+    [string]$InstallerStartupName
 )
 
 $ErrorActionPreference = "Stop"
@@ -116,6 +119,15 @@ Code signing: $(if ($SignRelease) { "Authenticode SHA-256 + RFC 3161 timestamp" 
         "/DBuildCommit=$Commit",
         $IssPath
     )
+    if ($InstallerAppId) {
+        $Arguments = @("/DMyAppId=$InstallerAppId") + $Arguments
+    }
+    if ($InstallerGroupName) {
+        $Arguments = @("/DMyGroupName=$InstallerGroupName") + $Arguments
+    }
+    if ($InstallerStartupName) {
+        $Arguments = @("/DMyStartupName=$InstallerStartupName") + $Arguments
+    }
     Write-Host ""
     Write-Host ">>> $Iscc $($Arguments -join ' ')"
     & $Iscc @Arguments

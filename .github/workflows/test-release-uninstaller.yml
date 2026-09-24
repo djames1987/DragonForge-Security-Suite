@@ -1,9 +1,7 @@
 name: DragonForge 1.0 Beta Uninstaller Test Release
 
 on:
-  push:
-    branches:
-      - "release/v1.0.0-beta.1-uninstaller"
+  workflow_dispatch:
 
 permissions:
   contents: write
