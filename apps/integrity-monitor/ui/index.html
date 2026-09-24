@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="dark">
   <title>DragonForge Integrity Monitor</title>
   <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="phase23.css">
 </head>
 <body>
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
@@ -23,7 +24,7 @@
         <strong>Continuous change detection</strong>
         <span>The Agent can compare selected Windows persistence and configuration fingerprints on a restart-persistent schedule. Changes are review signals, not malware verdicts.</span>
       </div>
-      <div class="phase">Suite Phase 14</div>
+      <div class="phase">Suite Phase 23</div>
     </aside>
 
     <main>
@@ -111,11 +112,12 @@
           <h2>Integrity Monitor</h2>
           <p>Phase 7 fingerprints selected Windows startup, persistence, service, scheduled-task, hosts-file, and security-configuration surfaces and compares them against a local baseline.</p>
           <p>The baseline stores identifiers and SHA-256 fingerprints, not command contents or monitored file contents. A detected change is evidence for review, not proof of malicious activity.</p>
-          <p>Phase 18 adds restart-persistent Agent scheduling, a baseline integrity seal, bounded event history, suppression rules, and Security Center alerts. The seal detects unexpected baseline changes but is not claimed to resist an attacker who already controls the same user account and can rewrite all local state.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p>
+          <p>Phase 18 adds restart-persistent Agent scheduling, a baseline integrity seal, bounded event history, suppression rules, and Security Center alerts. The seal detects unexpected baseline changes but is not claimed to resist an attacker who already controls the same user account and can rewrite all local state.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 23 · Security Center is the recommended suite entry point.</p>
         </div>
       </section>
     </main>
   </div>
   <script src="app.js"></script>
+  <script src="phase23.js"></script>
 </body>
 </html>
