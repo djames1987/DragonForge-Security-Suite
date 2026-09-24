@@ -22,6 +22,7 @@ Phase 23 makes privacy, accessibility, localization readiness, and consistent pr
 - localization-ready Phase 23 shell string catalog and declared `en-US` locale metadata;
 - approved DragonForge branding paths integrated into Tauri application bundle metadata;
 - migrated Password Manager icon preserved rather than replacing its existing identity;
+- accessible installer privacy/data-retention notice shown before installation;
 - suite-wide visible milestone metadata advanced to Suite Phase 23;
 - Phase 23 CI coverage and an authoritative Windows verifier.
 
@@ -121,6 +122,12 @@ Phase 23 connects product artwork to Tauri bundle icon metadata:
 Password Manager keeps its migrated `apps/password-manager/icons/icon.png` because the branding source README explicitly calls for preserving that existing product logo.
 
 The suite-wide and Agent logos remain available for installer/suite and background-service branding where a square/icon-specific derivative is appropriate. Phase 23 does not distort the horizontal source artwork or fabricate new emblem crops.
+
+## Installer polish
+
+The Inno Setup flow now presents `installer/PHASE23-PRIVACY.txt` before installation. It explains the local-first model, preserved user data on uninstall, optional privileged-service approval, and suite accessibility behavior.
+
+The installer continues to use its existing executable/icon and signing pipeline. The suite-wide source logo is currently a PNG horizontal lockup rather than an installer-ready ICO, so Phase 23 does not silently manufacture a distorted installer icon.
 
 ## Security boundary
 
