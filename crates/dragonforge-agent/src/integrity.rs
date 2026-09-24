@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use dragonforge_core::{Component, SuitePaths};
 use dragonforge_integrity_monitor::{
     ContinuousCheckOutcome, ContinuousIntegrityEvent, ContinuousMonitorStatus, continuous_events,
-    continuous_status, run_continuous_check_if_due,
+    continuous_status, run_continuous_check_if_due, run_continuous_check_now,
 };
 
 use crate::error::{AgentError, Result};
@@ -39,6 +39,11 @@ impl AgentIntegrityRuntime {
     pub fn tick(&self) -> Result<ContinuousCheckOutcome> {
         run_continuous_check_if_due(&self.state_path, &self.baseline_path)
             .map_err(|_| AgentError::InvalidState("continuous integrity monitoring failed"))
+    }
+
+    pub fn run_now(&self) -> Result<ContinuousCheckOutcome> {
+        run_continuous_check_now(&self.state_path, &self.baseline_path)
+            .map_err(|_| AgentError::InvalidState("scheduled integrity check failed"))
     }
 
     pub fn status(&self) -> Result<ContinuousMonitorStatus> {
