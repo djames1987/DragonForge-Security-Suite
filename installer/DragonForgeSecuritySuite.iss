@@ -17,6 +17,12 @@
 #ifndef MyAppId
   #define MyAppId "{{7AFC6539-9A42-42E5-9A8F-1DB127C5AD31}"
 #endif
+#ifndef MyGroupName
+  #define MyGroupName "DragonForge Security Suite"
+#endif
+#ifndef MyStartupName
+  #define MyStartupName "DragonForge Agent"
+#endif
 
 [Setup]
 AppId={#MyAppId}
@@ -25,7 +31,7 @@ AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyPublisher}
 DefaultDirName={localappdata}\Programs\DragonForge Security Suite
-DefaultGroupName=DragonForge Security Suite
+DefaultGroupName={#MyGroupName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
@@ -60,14 +66,14 @@ Name: "privilegedservice"; Description: "Install DragonForge Privileged Service 
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{userprograms}\DragonForge Security Suite\DragonForge Security Center"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"
-Name: "{userprograms}\DragonForge Security Suite\Check prerequisites"; Filename: "{app}\Check-Prerequisites.cmd"; WorkingDir: "{app}"
-Name: "{userprograms}\DragonForge Security Suite\External test checklist"; Filename: "{app}\EXTERNAL-TEST-CHECKLIST.md"; WorkingDir: "{app}"
-Name: "{userprograms}\DragonForge Security Suite\Install Privileged Service (Administrator)"; Filename: "{app}\install-privileged-service.cmd"; WorkingDir: "{app}"
-Name: "{userprograms}\DragonForge Security Suite\Remove Privileged Service (Administrator)"; Filename: "{app}\uninstall-privileged-service.cmd"; WorkingDir: "{app}"
-Name: "{userprograms}\DragonForge Security Suite\Uninstall DragonForge Security Suite"; Filename: "{uninstallexe}"
+Name: "{userprograms}\{#MyGroupName}\DragonForge Security Center"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"
+Name: "{userprograms}\{#MyGroupName}\Check prerequisites"; Filename: "{app}\Check-Prerequisites.cmd"; WorkingDir: "{app}"
+Name: "{userprograms}\{#MyGroupName}\External test checklist"; Filename: "{app}\EXTERNAL-TEST-CHECKLIST.md"; WorkingDir: "{app}"
+Name: "{userprograms}\{#MyGroupName}\Install Privileged Service (Administrator)"; Filename: "{app}\install-privileged-service.cmd"; WorkingDir: "{app}"
+Name: "{userprograms}\{#MyGroupName}\Remove Privileged Service (Administrator)"; Filename: "{app}\uninstall-privileged-service.cmd"; WorkingDir: "{app}"
+Name: "{userprograms}\{#MyGroupName}\Uninstall DragonForge Security Suite"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\DragonForge Security Center"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
-Name: "{userstartup}\DragonForge Agent"; Filename: "{app}\dragonforge-agent.exe"; Parameters: "--serve"; WorkingDir: "{app}"
+Name: "{userstartup}\{#MyStartupName}"; Filename: "{app}\dragonforge-agent.exe"; Parameters: "--serve"; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\install-privileged-service.cmd"; Description: "Install DragonForge Privileged Service"; WorkingDir: "{app}"; Tasks: privilegedservice; Flags: runhidden waituntilterminated
