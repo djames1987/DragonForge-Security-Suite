@@ -1,6 +1,6 @@
 # Phase 20 — Security Center Policy & Event Hub
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 20 turns Security Center's original in-memory activity list into a persistent, bounded suite event hub and adds a narrow coordinated policy layer for Security Center presentation/retention behavior. It does not introduce generic automation, arbitrary remediation, or a new privileged command surface.
 
@@ -65,4 +65,12 @@ Run on Windows:
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase20-security-center-policy-event-hub-tests.ps1
 
-The verifier writes a transcript and matching SHA-256 sidecar under test-logs. Phase 20 remains **Implementation Complete — Local Verification Pending** until the authoritative Windows verifier reaches its PASS marker and the sidecar is independently verified.
+The verifier writes a transcript and matching SHA-256 sidecar under test-logs.
+
+Authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0) on 2026-09-23. The run completed rustfmt, locked Cargo metadata, full workspace/all-target/all-feature compile checks, strict Clippy with `-D warnings`, the complete workspace test suite, Security Center JavaScript validation, Phase 20 invariant checks, PowerShell syntax validation, and all expected Windows test application builds.
+
+Verified log: `dragonforge-phase20-security-center-policy-event-hub-20260923-211911.log`
+
+Verified log SHA-256: `CACA365D94B6DC9D273183BA7787152AAA47C6420F5839B82F2BCD8FD7E7568A`
+
+The uploaded SHA-256 sidecar was independently verified against the authoritative log before Phase 20 was marked **Verified Complete**.
