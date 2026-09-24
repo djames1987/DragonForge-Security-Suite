@@ -15,6 +15,7 @@
       <button class="nav active" data-view="create">Create Backup</button>
       <button class="nav" data-view="verify">Verify / Inspect</button>
       <button class="nav" data-view="restore">Restore</button>
+      <button class="nav" data-view="recovery">Suite Recovery</button>
       <button class="nav" data-view="about">About</button>
       <div class="note">Backups are encrypted. Restore never overwrites an existing destination. Passwords are command-scoped and are not stored by this app.</div>
       <div class="phase">Suite Phase 14</div>
@@ -58,8 +59,62 @@
         <div id="restore-result" class="result" hidden></div>
       </section>
 
+
+      <section id="view-recovery" class="view">
+        <div class="panel">
+          <div class="eyebrow">Phase 22</div>
+          <h2>Recovery, migration & disaster readiness</h2>
+          <p class="muted">Create an encrypted DragonForge recovery package for configuration-only migration or the full suite state. Runtime credentials, locks, temporary files, quarantined copies, logs, and support bundles are excluded.</p>
+          <div class="form-grid">
+            <label><span>Recovery scope</span>
+              <select id="recovery-scope">
+                <option value="full_suite">Full suite configuration + persistent data</option>
+                <option value="configuration">Configuration only</option>
+              </select>
+            </label>
+            <label><span>Recovery package destination</span><input id="recovery-create-path" placeholder="D:\Backups\dragonforge.dfrecovery"></label>
+            <label><span>Recovery password</span><input id="recovery-create-password" type="password" autocomplete="new-password" placeholder="At least 12 characters"></label>
+            <label><span>Confirm password</span><input id="recovery-create-confirm" type="password" autocomplete="new-password"></label>
+            <button id="create-recovery" class="primary">Create recovery package</button>
+          </div>
+          <div id="recovery-create-result" class="result" hidden></div>
+        </div>
+
+        <div class="panel">
+          <div class="eyebrow">Verify / migrate</div>
+          <h2>Inspect recovery package</h2>
+          <div class="form-grid">
+            <label><span>Recovery package</span><input id="recovery-verify-path" placeholder="D:\Backups\dragonforge.dfrecovery"></label>
+            <label><span>Password</span><input id="recovery-verify-password" type="password" autocomplete="current-password"></label>
+            <div class="button-row"><button id="inspect-recovery" class="secondary">Inspect</button><button id="verify-recovery" class="primary">Verify & migrate schema</button></div>
+          </div>
+          <div id="recovery-verify-result" class="result" hidden></div>
+        </div>
+
+        <div class="warning">Clean-machine restore is intentionally no-overwrite. Configuration and data roots must be missing or empty; existing state is never merged silently.</div>
+        <div class="panel">
+          <div class="section-head"><div><div class="eyebrow">Clean-machine restore</div><h2>Restore suite state</h2></div><button id="discover-recovery-roots" class="secondary">Use current suite roots</button></div>
+          <div class="form-grid">
+            <label><span>Recovery package</span><input id="recovery-restore-path" placeholder="D:\Backups\dragonforge.dfrecovery"></label>
+            <label><span>Configuration root</span><input id="recovery-config-root" placeholder="C:\Users\you\AppData\Roaming\DragonForge"></label>
+            <label><span>Data root (required for full-suite packages)</span><input id="recovery-data-root" placeholder="C:\Users\you\AppData\Local\DragonForge"></label>
+            <label><span>Password</span><input id="recovery-restore-password" type="password" autocomplete="current-password"></label>
+            <button id="restore-recovery" class="danger">Verify and restore to clean roots</button>
+          </div>
+          <div id="recovery-restore-result" class="result" hidden></div>
+        </div>
+
+        <div class="panel">
+          <div class="eyebrow">Interrupted-state repair</div>
+          <h2>Recover valid JSON backups</h2>
+          <p class="muted">Scans DragonForge configuration/data roots for valid <code>.json.bak</code> recovery copies. Missing primaries are restored; corrupt primaries are quarantined to <code>.invalid</code> only when the backup parses as valid JSON.</p>
+          <button id="repair-suite-state" class="secondary">Repair recoverable state</button>
+          <div id="repair-result" class="result" hidden></div>
+        </div>
+      </section>
+
       <section id="view-about" class="view">
-        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Backup & Recovery</h2><p>Phase 9 creates encrypted, authenticated .dfbackup packages for selected suite data and user files. Each restored file is checked against its encrypted SHA-256 manifest before the restore is finalized.</p><p>The format is independent from Password Manager and File Vault formats. Backups reject symbolic links and traversal-like paths, use bounded archive limits, and restore through a temporary sibling directory before an atomic-style rename.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p></div>
+        <div class="about"><div class="mark large">DF</div><div class="eyebrow">DragonForge Security Suite</div><h2>Backup & Recovery</h2><p>Phase 9 creates encrypted, authenticated .dfbackup packages for selected suite data and user files. Phase 22 adds encrypted .dfrecovery packages for configuration export/import, full-suite machine migration, versioned recovery-schema migration, conservative state repair, and clean-machine restore drills.</p><p>The format is independent from Password Manager and File Vault formats. Backups reject symbolic links and traversal-like paths, use bounded archive limits, and restore through a temporary sibling directory before an atomic-style rename.</p><p class="suite-version"><strong>Version 0.1.0</strong> · Suite Phase 14 · Security Center is the recommended suite entry point.</p></div>
       </section>
     </main>
   </div>
