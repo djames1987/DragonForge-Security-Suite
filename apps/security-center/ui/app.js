@@ -17,6 +17,7 @@
     components: "Suite components",
     activity: "Activity history",
     notifications: "Notification center",
+    automation: "Protection automation",
     updates: "Secure updates",
     settings: "Security Center settings",
     about: "About Security Center",
@@ -52,6 +53,9 @@
     }
     if (name === "notifications") {
       loadNotificationCenter();
+    }
+    if (name === "automation") {
+      loadAutomation();
     }
   }
   
@@ -497,6 +501,120 @@
   }
   
 
+  function automationJobLabel(kind) {
+    return {
+      security_scan: "Security Scanner",
+      integrity_check: "Integrity check",
+      backup_reminder: "Encrypted backup reminder",
+    }[kind] ?? kind;
+  }
+
+  function automationJobDescription(kind) {
+    return {
+      security_scan: "Runs the fixed read-only Security Scanner probes under the normal-user Agent.",
+      integrity_check: "Runs an explicit integrity comparison using the existing sealed baseline and suppression policy.",
+      backup_reminder: "Raises an actionable backup-due notification without storing a backup password.",
+    }[kind] ?? "";
+  }
+
+  function renderAutomation(status) {
+    const jobsTarget = document.getElementById("automation-jobs");
+    const historyTarget = document.getElementById("automation-history");
+    if (!jobsTarget || !historyTarget) return;
+
+    jobsTarget.innerHTML = (status.jobs ?? []).map((job) => `
+      <article class="automation-job">
+        <div class="automation-job-heading">
+          <div>
+            <strong>${escapeHtml(automationJobLabel(job.kind))}</strong>
+            <p>${escapeHtml(automationJobDescription(job.kind))}</p>
+          </div>
+          <label class="automation-toggle">
+            <span>Enabled</span>
+            <input type="checkbox" data-automation-enabled="${escapeHtml(job.kind)}" ${job.enabled ? "checked" : ""}>
+          </label>
+        </div>
+        <div class="automation-controls">
+          <label>
+            <span>Interval (minutes)</span>
+            <input type="number" min="15" max="10080" step="1" value="${Number(job.interval_minutes)}" data-automation-interval="${escapeHtml(job.kind)}">
+          </label>
+          <button class="secondary-button" data-automation-save="${escapeHtml(job.kind)}">Save schedule</button>
+          <button class="secondary-button" data-automation-run="${escapeHtml(job.kind)}">Run now</button>
+        </div>
+        <div class="automation-meta">
+          <span>Last: ${job.last_run_ms ? escapeHtml(new Date(Number(job.last_run_ms)).toLocaleString()) : "never"}</span>
+          <span>Next: ${job.next_run_ms ? escapeHtml(new Date(Number(job.next_run_ms)).toLocaleString()) : "not scheduled"}</span>
+          <span>Failures: ${Number(job.consecutive_failures)}</span>
+        </div>
+      </article>
+    `).join("");
+
+    const history = status.history ?? [];
+    historyTarget.innerHTML = history.length
+      ? history.slice(0, 100).map((event) => `
+          <div class="event-row">
+            <time>${escapeHtml(formatTime(event.timestamp_ms))}</time>
+            <div>
+              <strong>${escapeHtml(automationJobLabel(event.job))}</strong>
+              <p>${escapeHtml(event.summary)} · ${escapeHtml(event.outcome)}</p>
+            </div>
+            <span class="severity ${event.outcome === "failed" ? "severity-critical" : event.outcome === "success" ? "severity-info" : "severity-warning"}"></span>
+          </div>
+        `).join("")
+      : '<div class="empty-message">No scheduled automation has run yet.</div>';
+
+    document.querySelectorAll("[data-automation-save]").forEach((button) => {
+      button.addEventListener("click", () => saveAutomationJob(button.dataset.automationSave));
+    });
+    document.querySelectorAll("[data-automation-run]").forEach((button) => {
+      button.addEventListener("click", () => runAutomationJob(button.dataset.automationRun));
+    });
+  }
+
+  async function loadAutomation() {
+    try {
+      const status = await invoke("automation_status");
+      renderAutomation(status);
+    } catch (error) {
+      const target = document.getElementById("automation-history");
+      if (target) target.innerHTML = '<div class="empty-message">Scheduled automation is unavailable.</div>';
+      toast(String(error), true);
+    }
+  }
+
+  async function saveAutomationJob(job) {
+    const enabled = document.querySelector(`[data-automation-enabled="${job}"]`)?.checked ?? false;
+    const interval = Number(document.querySelector(`[data-automation-interval="${job}"]`)?.value);
+    if (!Number.isInteger(interval) || interval < 15 || interval > 10080) {
+      toast("Automation interval must be between 15 and 10,080 minutes.", true);
+      return;
+    }
+    try {
+      const status = await invoke("configure_automation_job", {
+        job,
+        enabled,
+        intervalMinutes: interval,
+      });
+      renderAutomation(status);
+      await loadSnapshot();
+      toast("Scheduled protection policy saved.");
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
+  async function runAutomationJob(job) {
+    try {
+      const status = await invoke("run_automation_job", { job });
+      renderAutomation(status);
+      await loadSnapshot();
+      toast("Protection job completed.");
+    } catch (error) {
+      toast(String(error), true);
+    }
+  }
+
   function renderUpdateStatus(status) {
     const target = document.getElementById("update-status");
     const version = document.getElementById("update-version");
@@ -602,6 +720,7 @@
     document.getElementById("clear-events").addEventListener("click", clearActivity);
     document.getElementById("ack-all-notifications")
       .addEventListener("click", acknowledgeAllNotifications);
+    document.getElementById("refresh-automation")?.addEventListener("click", loadAutomation);
     document.getElementById("check-updates")?.addEventListener("click", checkUpdates);
     document.getElementById("prepare-update")?.addEventListener("click", prepareUpdate);
     document.getElementById("install-update")?.addEventListener("click", installUpdate);

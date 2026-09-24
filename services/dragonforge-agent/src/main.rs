@@ -3,7 +3,9 @@
 use std::env;
 use std::process::ExitCode;
 
-use dragonforge_agent::{AgentClient, AgentIntegrityRuntime, AgentServer};
+use dragonforge_agent::{
+    AgentAutomationRuntime, AgentClient, AgentIntegrityRuntime, AgentServer, AutomationJobKind,
+};
 #[cfg(windows)]
 use dragonforge_agent::{
     FirewallAction, FirewallApplicationIdentity, FirewallMutationResult, PrivilegedServiceClient,
@@ -19,6 +21,9 @@ fn main() -> ExitCode {
         Some("--stop") => stop(),
         Some("--integrity-status") => integrity_status(),
         Some("--integrity-events") => integrity_events(),
+        Some("--automation-status") => automation_status(),
+        Some("--automation-run") => automation_run(),
+        Some("--automation-configure") => automation_configure(),
         #[cfg(windows)]
         Some("--privileged-health") => privileged_health(),
         #[cfg(windows)]
@@ -36,7 +41,7 @@ fn main() -> ExitCode {
         Some("--serve") | None => serve(),
         Some(_) => {
             eprintln!(
-                "Usage: dragonforge-agent [--serve|--health|--stop|--integrity-status|--integrity-events|--privileged-health|--privileged-policy|--firewall-status|--firewall-allow|--firewall-block|--firewall-remove|--firewall-rollback]"
+                "Usage: dragonforge-agent [--serve|--health|--stop|--integrity-status|--integrity-events|--automation-status|--automation-run <job>|--automation-configure <job> <on|off> <minutes>|--privileged-health|--privileged-policy|--firewall-status|--firewall-allow|--firewall-block|--firewall-remove|--firewall-rollback]"
             );
             ExitCode::from(2)
         }
@@ -260,4 +265,121 @@ fn integrity_events() -> ExitCode {
             ExitCode::from(1)
         }
     }
+}
+
+fn automation_status() -> ExitCode {
+    let runtime = match AgentAutomationRuntime::discover() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Scheduled automation runtime is unavailable: {error}");
+            return ExitCode::from(1);
+        }
+    };
+    match runtime.status() {
+        Ok(status) => match serde_json::to_string_pretty(&status) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("Scheduled automation status is unavailable: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+fn automation_run() -> ExitCode {
+    let Some(job) = env::args().nth(2) else {
+        eprintln!("Automation usage: --automation-run <security_scan|integrity_check|backup_reminder>");
+        return ExitCode::from(2);
+    };
+    let kind = match AutomationJobKind::parse(&job) {
+        Ok(kind) => kind,
+        Err(error) => {
+            eprintln!("{error}");
+            return ExitCode::from(2);
+        }
+    };
+    let runtime = match AgentAutomationRuntime::discover() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Scheduled automation runtime is unavailable: {error}");
+            return ExitCode::from(1);
+        }
+    };
+    match runtime.run_now(kind) {
+        Ok(status) => match serde_json::to_string_pretty(&status) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("Scheduled automation run failed: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+fn automation_configure() -> ExitCode {
+    let mut args = env::args().skip(2);
+    let Some(job) = args.next() else {
+        return automation_configure_usage();
+    };
+    let Some(enabled) = args.next() else {
+        return automation_configure_usage();
+    };
+    let Some(interval) = args.next() else {
+        return automation_configure_usage();
+    };
+    if args.next().is_some() {
+        return automation_configure_usage();
+    }
+
+    let kind = match AutomationJobKind::parse(&job) {
+        Ok(kind) => kind,
+        Err(error) => {
+            eprintln!("{error}");
+            return ExitCode::from(2);
+        }
+    };
+    let enabled = match enabled.as_str() {
+        "on" => true,
+        "off" => false,
+        _ => return automation_configure_usage(),
+    };
+    let interval_minutes = match interval.parse::<u64>() {
+        Ok(value) => value,
+        Err(_) => return automation_configure_usage(),
+    };
+    let runtime = match AgentAutomationRuntime::discover() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Scheduled automation runtime is unavailable: {error}");
+            return ExitCode::from(1);
+        }
+    };
+    match runtime.configure_job(kind, enabled, interval_minutes) {
+        Ok(status) => match serde_json::to_string_pretty(&status) {
+            Ok(encoded) => {
+                println!("{encoded}");
+                ExitCode::SUCCESS
+            }
+            Err(_) => ExitCode::from(1),
+        },
+        Err(error) => {
+            eprintln!("Scheduled automation configuration failed: {error}");
+            ExitCode::from(1)
+        }
+    }
+}
+
+fn automation_configure_usage() -> ExitCode {
+    eprintln!(
+        "Automation usage: --automation-configure <security_scan|integrity_check|backup_reminder> <on|off> <minutes>"
+    );
+    ExitCode::from(2)
 }

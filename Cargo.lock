@@ -1011,6 +1011,7 @@ dependencies = [
  "base64 0.22.1",
  "dragonforge-core",
  "dragonforge-integrity-monitor",
+ "dragonforge-security-scanner",
  "dragonforge-windows-boundary",
  "hmac",
  "rand_core 0.6.4",

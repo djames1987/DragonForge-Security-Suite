@@ -193,13 +193,21 @@ pub fn run_continuous_check_if_due(
     state_path: &Path,
     baseline_path: &Path,
 ) -> IntegrityResult<ContinuousCheckOutcome> {
-    run_continuous_check_at(state_path, baseline_path, now_ms())
+    run_continuous_check_at(state_path, baseline_path, now_ms(), false)
+}
+
+pub fn run_continuous_check_now(
+    state_path: &Path,
+    baseline_path: &Path,
+) -> IntegrityResult<ContinuousCheckOutcome> {
+    run_continuous_check_at(state_path, baseline_path, now_ms(), true)
 }
 
 fn run_continuous_check_at(
     state_path: &Path,
     baseline_path: &Path,
     now: u64,
+    force: bool,
 ) -> IntegrityResult<ContinuousCheckOutcome> {
     let Some(mut state) = load_state_optional(state_path)? else {
         return Ok(ContinuousCheckOutcome {
@@ -209,7 +217,7 @@ fn run_continuous_check_at(
         });
     };
     state.policy.validate()?;
-    if !state.policy.enabled || state.next_check_ms.is_some_and(|next| now < next) {
+    if !state.policy.enabled || (!force && state.next_check_ms.is_some_and(|next| now < next)) {
         return Ok(ContinuousCheckOutcome {
             ran: false,
             new_events: 0,
@@ -476,7 +484,7 @@ mod tests {
             .expect("configure");
         write_baseline(&baseline, &"11".repeat(32));
 
-        let outcome = run_continuous_check_at(&state, &baseline, now_ms() + 1).expect("run");
+        let outcome = run_continuous_check_at(&state, &baseline, now_ms() + 1, false).expect("run");
         assert!(outcome.ran);
         assert_eq!(outcome.new_events, 1);
         assert!(!outcome.status.baseline_sealed);

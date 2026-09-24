@@ -26,6 +26,7 @@ const MAX_REPLAY_NONCES: usize = 4_096;
 pub struct AgentServer {
     paths: AgentPaths,
     integrity: crate::AgentIntegrityRuntime,
+    automation: crate::AgentAutomationRuntime,
 }
 
 impl AgentServer {
@@ -35,13 +36,30 @@ impl AgentServer {
             paths.root().join("continuous-integrity-v1.json"),
             paths.root().join("integrity-baseline-v1.json"),
         );
-        Self { paths, integrity }
+        let automation = crate::AgentAutomationRuntime::from_paths(
+            paths.root().join("scheduled-automation-v1.json"),
+            paths.root().join("scheduled-automation-v1.lock"),
+            integrity.clone(),
+        );
+        Self {
+            paths,
+            integrity,
+            automation,
+        }
     }
 
     pub fn discover() -> Result<Self> {
+        let paths = AgentPaths::discover()?;
+        let integrity = crate::AgentIntegrityRuntime::discover()?;
+        let automation = crate::AgentAutomationRuntime::from_paths(
+            paths.root().join("scheduled-automation-v1.json"),
+            paths.root().join("scheduled-automation-v1.lock"),
+            integrity.clone(),
+        );
         Ok(Self {
-            paths: AgentPaths::discover()?,
-            integrity: crate::AgentIntegrityRuntime::discover()?,
+            paths,
+            integrity,
+            automation,
         })
     }
 
@@ -77,10 +95,20 @@ impl AgentServer {
         let mut replay = ReplayCache::default();
         let mut handled = 0_usize;
         let mut next_integrity_poll = Instant::now();
+        let mut next_automation_poll = Instant::now();
         loop {
             if Instant::now() >= next_integrity_poll {
                 let _ = self.integrity.tick();
                 next_integrity_poll = Instant::now() + Duration::from_secs(5);
+            }
+            if Instant::now() >= next_automation_poll {
+                let automation = self.automation.clone();
+                let _ = std::thread::Builder::new()
+                    .name("dragonforge-automation".to_owned())
+                    .spawn(move || {
+                        let _ = automation.tick();
+                    });
+                next_automation_poll = Instant::now() + Duration::from_secs(15);
             }
             match listener.accept() {
                 Ok((mut stream, _)) => {
@@ -225,6 +253,7 @@ fn health_capabilities() -> Vec<String> {
         "graceful-shutdown".to_owned(),
         "restartable-session".to_owned(),
         "continuous-integrity-monitoring".to_owned(),
+        "scheduled-protection-automation".to_owned(),
     ];
     #[cfg(windows)]
     capabilities.push("privileged-service-client".to_owned());

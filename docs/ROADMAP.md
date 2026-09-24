@@ -580,12 +580,24 @@ Phase 20 remains local-first and normal-user. It does not add generic automation
 See [PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md](PHASE_20_SECURITY_CENTER_POLICY_EVENT_HUB.md).
 
 ## Phase 21 — Scheduled Protection & Automation
-**Status: Planned**
+**Status: Implementation Complete — Local Verification Pending**
 
-Goals:
-- safe recurring backups, scans, integrity checks, and retention policies;
-- retry/missed-job recovery and user notifications;
-- narrow capability-scoped automation instead of generic task execution.
+Delivered:
+- restart-persistent normal-user Agent scheduler with three fixed capabilities: Security Scanner, explicit integrity check, and encrypted-backup reminder;
+- opt-in schedules bounded from 15 minutes through 7 days;
+- persisted last/next run state, bounded 250-event history, atomic replacement, backup recovery, invalid-state quarantine, and stale-lock recovery;
+- overdue-job recovery plus bounded one-minute retries before returning to the configured cadence;
+- Security Scanner jobs isolated from authenticated Agent IPC on a dedicated worker thread;
+- explicit Phase 21 integrity-check entry point that preserves the existing Phase 18 sealed-baseline and suppression policy;
+- backup scheduling that raises an actionable notification without persisting a backup password or weakening the encrypted backup boundary;
+- automation results integrated into the Phase 20 durable event/notification hub with a persistent import cursor;
+- Security Center Automation page with schedule controls, run-now actions, last/next run state, failure count, and recent history;
+- Agent CLI automation status/configuration/manual-run diagnostics;
+- Phase 21 documentation, ADR, CI coverage, and authoritative Windows verifier.
+
+Phase 21 remains capability-scoped and normal-user. It does not add generic command execution, scripts, arbitrary executable paths/arguments, standing authorization for privileged actions, or silent encrypted-backup credentials.
+
+See [PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md](PHASE_21_SCHEDULED_PROTECTION_AUTOMATION.md).
 
 ## Phase 22 — Recovery, Migration & Disaster Readiness
 **Status: Planned**
