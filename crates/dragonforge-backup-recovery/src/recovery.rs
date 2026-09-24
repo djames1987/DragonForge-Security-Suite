@@ -1070,6 +1070,51 @@ mod tests {
     }
 
     #[test]
+    fn recovery_package_requires_explicit_extension() {
+        let dir = tempdir().expect("tempdir");
+        let paths = test_paths(dir.path());
+        fs::create_dir_all(paths.config_root()).expect("config");
+        fs::write(paths.config_root().join("settings.json"), b"{}").expect("write");
+        assert!(
+            create_suite_recovery_from_paths(
+                &paths,
+                &dir.path().join("suite.backup"),
+                PASSWORD,
+                RecoveryScope::Configuration,
+                "0.1.0",
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn full_suite_restore_rejects_overlapping_roots() {
+        let dir = tempdir().expect("tempdir");
+        let paths = test_paths(dir.path());
+        fs::create_dir_all(paths.config_root()).expect("config");
+        fs::create_dir_all(paths.data_root()).expect("data");
+        fs::write(paths.config_root().join("settings.json"), b"{}").expect("config file");
+        fs::write(paths.data_root().join("state.json"), b"{}").expect("data file");
+
+        let package = dir.path().join("suite.dfrecovery");
+        create_suite_recovery_from_paths(
+            &paths,
+            &package,
+            PASSWORD,
+            RecoveryScope::FullSuite,
+            "0.1.0",
+        )
+        .expect("create");
+
+        let config = dir.path().join("restore");
+        let nested_data = config.join("data");
+        assert!(
+            restore_suite_recovery(&package, PASSWORD, &config, Some(&nested_data)).is_err()
+        );
+        assert!(!config.exists());
+    }
+
+    #[test]
     fn corrupted_ciphertext_is_rejected_before_restore() {
         let dir = tempdir().expect("tempdir");
         let paths = test_paths(dir.path());
