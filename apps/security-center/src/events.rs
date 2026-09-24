@@ -87,6 +87,7 @@ impl EventStore {
         }
     }
 
+    #[cfg(test)]
     pub fn from_dir(directory: impl Into<PathBuf>, capacity: usize) -> CoreResult<Self> {
         Self::from_path(directory.into().join(EVENT_HUB_FILE), capacity)
     }
@@ -503,6 +504,8 @@ fn invalid_path(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use dragonforge_core::{Component, EventKind, Severity};
     use tempfile::tempdir;
 
