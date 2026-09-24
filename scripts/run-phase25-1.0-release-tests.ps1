@@ -141,7 +141,7 @@ try {
         "Privileged service",
         "Update manifest",
         "schema 1",
-        "Sync API protocol",
+        "Password Manager sync API",
         "Browser/native messaging"
     )
     Require-Text "SECURITY.md" @(
