@@ -14,7 +14,9 @@
 #define MyAppName "DragonForge Security Suite"
 #define MyPublisher "DragonForge"
 #define MyExeName "dragonforge-security-center.exe"
-#define MyAppId "{{7AFC6539-9A42-42E5-9A8F-1DB127C5AD31}"
+#ifndef MyAppId
+  #define MyAppId "{{7AFC6539-9A42-42E5-9A8F-1DB127C5AD31}"
+#endif
 
 [Setup]
 AppId={#MyAppId}
