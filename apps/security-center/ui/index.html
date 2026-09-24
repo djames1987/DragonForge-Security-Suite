@@ -24,6 +24,7 @@
         <button class="nav-item" data-view="components"><span>▦</span>Components</button>
         <button class="nav-item" data-view="activity"><span>≋</span>Activity</button>
         <button class="nav-item" data-view="notifications"><span>!</span>Notifications</button>
+        <button class="nav-item" data-view="automation"><span>⏱</span>Automation</button>
         <button class="nav-item" data-view="updates"><span>↻</span>Updates</button>
         <button class="nav-item" data-view="settings"><span>⚙</span>Settings</button>
         <button class="nav-item" data-view="about"><span>◇</span>About</button>
@@ -37,7 +38,7 @@
           <span id="sidebar-agent-detail">Checking authenticated local agent.</span>
         </div>
       </div>
-      <div class="phase-badge">Suite Phase 20</div>
+      <div class="phase-badge">Suite Phase 21</div>
     </aside>
 
     <main class="content">
@@ -184,6 +185,41 @@
         </div>
       </section>
 
+
+      <section id="view-automation" class="view">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">Scheduled Protection</div>
+            <h2>Protection automation</h2>
+            <p>Opt-in, fixed-capability jobs only. No scripts, shell commands, arbitrary executables, or silent privileged remediation.</p>
+          </div>
+          <button id="refresh-automation" class="secondary-button">Refresh</button>
+        </div>
+        <div class="automation-grid">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <div class="eyebrow">Approved jobs</div>
+                <h2>Schedules</h2>
+              </div>
+            </div>
+            <div id="automation-jobs" class="automation-jobs"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <div class="eyebrow">Execution history</div>
+                <h2>Recent automation</h2>
+              </div>
+            </div>
+            <div id="automation-history" class="event-list full"></div>
+          </section>
+        </div>
+        <div class="info-box">
+          Scheduled Security Scanner runs and integrity checks execute locally under the normal-user Agent. Backup scheduling is deliberately a reminder requiring the user to open Backup & Recovery; Phase 21 does not persist a backup password or silently create recoverable encrypted archives.
+        </div>
+      </section>
+
       <section id="view-updates" class="view">
         <div class="section-heading">
           <div>
@@ -302,12 +338,12 @@
           <p>
             The unified visibility and orchestration surface for DragonForge security products.
             Security Center provides the dashboard, component registry, persistent bounded event aggregation, acknowledgement/notification history, coordinated suite policy,
-            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, secure signed-update verification, consistent suite UX conventions, and external-test diagnostics.
+            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, scheduled protection automation, secure signed-update verification, consistent suite UX conventions, and external-test diagnostics.
           </p>
           <div class="about-meta">
             <span>Version 0.1.0</span>
             <span>•</span>
-            <span>Suite Phase 20</span>
+            <span>Suite Phase 21</span>
             <span>•</span>
             <span>Rust + Tauri</span>
             <span>•</span>
