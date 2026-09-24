@@ -325,11 +325,11 @@ impl AgentAutomationRuntime {
             }
             AutomationJobKind::IntegrityCheck => {
                 let outcome = self.integrity.run_now()?;
-                if !outcome.status.configured {
+                if !outcome.status.configured || !outcome.status.enabled || !outcome.ran {
                     return Ok(ExecutionResult {
                         outcome: "attention".to_owned(),
                         summary:
-                            "Scheduled integrity check needs an Integrity Monitor baseline and policy."
+                            "Scheduled integrity check needs an enabled Integrity Monitor baseline and policy."
                                 .to_owned(),
                     });
                 }
