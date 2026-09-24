@@ -22,6 +22,7 @@ This is an automated DragonForge release-engineering note generated from reposit
 - DragonForge Backup & Recovery
 - DragonForge Secure Share
 - DragonForge Agent
+- DragonForge Privileged Service (optional, administrator-approved installation)
 
 ## Changes since previous tag
 
@@ -34,4 +35,4 @@ This is an automated DragonForge release-engineering note generated from reposit
 - The release pipeline supports Authenticode signing with SHA-256 and RFC 3161 timestamping when a signing identity is configured.
 - Stable releases require signing; prerelease/development builds may remain explicitly unsigned.
 - Authenticode does not guarantee immediate SmartScreen reputation, although signed builds provide publisher identity and integrity verification.
-- DragonForge Agent remains per-user and non-elevated.
+- DragonForge Agent remains per-user and non-elevated. Privileged firewall policy mutation, when explicitly installed, is isolated behind the separately authenticated and publisher-pinned DragonForge Privileged Service boundary.
