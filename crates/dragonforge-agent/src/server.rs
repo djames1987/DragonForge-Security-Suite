@@ -102,7 +102,12 @@ impl AgentServer {
                 next_integrity_poll = Instant::now() + Duration::from_secs(5);
             }
             if Instant::now() >= next_automation_poll {
-                let _ = self.automation.tick();
+                let automation = self.automation.clone();
+                let _ = std::thread::Builder::new()
+                    .name("dragonforge-automation".to_owned())
+                    .spawn(move || {
+                        let _ = automation.tick();
+                    });
                 next_automation_poll = Instant::now() + Duration::from_secs(15);
             }
             match listener.accept() {
