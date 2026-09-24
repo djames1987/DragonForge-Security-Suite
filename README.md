@@ -2,7 +2,7 @@
 
 DragonForge Security Suite is a security-focused Rust workspace hosting a family of interoperable applications and shared security components.
 
-> **Current status:** Phase 24 — 1.0 Security & Release Audit is **Implementation Complete — Local Verification Pending**. DragonForge is now under a 1.0 feature freeze with a consolidated threat/residual-risk review, live advisory and license gates, source reproducibility and secret scans, deterministic mutation testing, and fail-closed privilege/update/installer/release audit invariants.
+> **Current status:** Phase 24 — 1.0 Security & Release Audit is **Verified Complete**. The 1.0 feature freeze, consolidated threat/residual-risk review, RustSec and 525-package license gates, exact-source reproducibility, tracked-secret scan, deterministic mutation tests, privilege/update/installer/release invariants, and complete Windows suite builds have passed authoritative verification. Phase 25 — DragonForge Security Suite 1.0 is next.
 
 ## Canonical repository
 
@@ -134,7 +134,7 @@ The Password Manager's multi-device sync backend lives under `services/password-
 - Phase 21 — Scheduled Protection & Automation: **Verified Complete**
 - Phase 22 — Recovery, Migration & Disaster Readiness: **Verified Complete**
 - Phase 23 — Privacy, Accessibility & Product Polish: **Verified Complete**
-- Phase 24 — 1.0 Security & Release Audit: **Implementation Complete — Local Verification Pending**
+- Phase 24 — 1.0 Security & Release Audit: **Verified Complete**
 - Phase 25 — DragonForge Security Suite 1.0: **Planned**
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
