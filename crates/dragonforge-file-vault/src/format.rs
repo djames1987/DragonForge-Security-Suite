@@ -113,4 +113,25 @@ mod tests {
         assert!(Header::decode(&bytes).is_err());
         assert!(Header::decode(&bytes[..bytes.len() - 1]).is_err());
     }
+
+    #[test]
+    fn phase24_mutation_corpus_never_panics_header_parser() {
+        let original = Header {
+            salt: [7; SALT_LEN],
+            nonce: [9; NONCE_LEN],
+        }
+        .encode();
+
+        for index in 0..original.len() {
+            let mut mutated = original.clone();
+            mutated[index] ^= 0xA5;
+            let result = std::panic::catch_unwind(|| Header::decode(&mutated));
+            assert!(result.is_ok(), "header parser panicked at byte {index}");
+        }
+
+        for length in 0..original.len() {
+            let result = std::panic::catch_unwind(|| Header::decode(&original[..length]));
+            assert!(result.is_ok(), "header parser panicked at length {length}");
+        }
+    }
 }
