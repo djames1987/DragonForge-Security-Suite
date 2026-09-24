@@ -62,6 +62,7 @@ impl HealthHistoryStore {
         }
     }
 
+    #[cfg(test)]
     pub fn from_dir(directory: impl Into<PathBuf>, capacity: usize) -> CoreResult<Self> {
         Self::from_path(directory.into().join(HEALTH_HISTORY_FILE), capacity)
     }
@@ -118,6 +119,7 @@ impl HealthHistoryStore {
         Ok(store)
     }
 
+    #[cfg(test)]
     #[must_use]
     pub fn new(capacity: usize) -> Self {
         let capacity = capacity.clamp(10, MAX_HEALTH_HISTORY);
