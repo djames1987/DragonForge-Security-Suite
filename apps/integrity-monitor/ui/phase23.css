@@ -65,3 +65,29 @@ body { overflow-wrap: anywhere; }
 @media (max-width: 900px) {
   .phase23-first-run { width: calc(100vw - 20px); }
 }
+
+.phase23-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.phase23-state {
+  padding: 12px 14px;
+  border: 1px solid #353b44;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+.phase23-state-error { border-color: #ff6577; }
+.phase23-state-loading,
+.phase23-state-empty { color: #c7ceda; }
+
+@media (min-resolution: 144dpi) {
+  :root { font-size: 16px; }
+}
