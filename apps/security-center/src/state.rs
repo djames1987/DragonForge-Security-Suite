@@ -2,6 +2,7 @@ use std::sync::{Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use dragonforge_agent::{AgentAutomationRuntime, AutomationJobKind, AutomationStatus};
 use dragonforge_core::{
     Component, ComponentLogger, CoreError, CoreResult, ErrorCode, EventKind, Platform, Severity,
     SuitePaths,
@@ -49,6 +50,7 @@ pub struct AppState {
     agent: AgentClient,
     agent_auto_start_suppressed: Mutex<bool>,
     updater: UpdateManager,
+    automation: Option<AgentAutomationRuntime>,
 }
 
 impl AppState {
@@ -95,6 +97,7 @@ impl AppState {
             agent: AgentClient::discover(),
             agent_auto_start_suppressed: Mutex::new(false),
             updater,
+            automation: AgentAutomationRuntime::discover().ok(),
         };
         let _ = state
             .logger
@@ -117,11 +120,13 @@ impl AppState {
             agent: AgentClient::unavailable(),
             agent_auto_start_suppressed: Mutex::new(false),
             updater: UpdateManager::new().expect("test update manager"),
+            automation: None,
         }
     }
 
     pub fn snapshot(&self) -> Result<DashboardSnapshot, String> {
         let _ = self.sync_integrity_events();
+        let _ = self.sync_automation_events();
         let agent = self.agent.status();
         let mut components = self.registry.all().to_vec();
         let mut health = self.registry.health_summary();
@@ -262,7 +267,9 @@ impl AppState {
         &self,
         mut updated: SecurityCenterSettings,
     ) -> Result<SecurityCenterSettings, String> {
-        updated.integrity_alert_cursor = self.lock_settings()?.integrity_alert_cursor;
+        let current = self.lock_settings()?.clone();
+        updated.integrity_alert_cursor = current.integrity_alert_cursor;
+        updated.automation_event_cursor = current.automation_event_cursor;
         updated.validate().map_err(|error| error.to_string())?;
         self.settings_store
             .save(&updated)
@@ -389,6 +396,97 @@ impl AppState {
             }
             thread::sleep(Duration::from_millis(100));
         }
+    }
+
+    pub fn automation_status(&self) -> Result<AutomationStatus, String> {
+        self.automation
+            .as_ref()
+            .ok_or_else(|| "Scheduled automation runtime is unavailable.".to_owned())?
+            .status()
+            .map_err(|error| error.to_string())
+    }
+
+    pub fn configure_automation_job(
+        &self,
+        job: &str,
+        enabled: bool,
+        interval_minutes: u64,
+    ) -> Result<AutomationStatus, String> {
+        let kind = AutomationJobKind::parse(job).map_err(|error| error.to_string())?;
+        let status = self
+            .automation
+            .as_ref()
+            .ok_or_else(|| "Scheduled automation runtime is unavailable.".to_owned())?
+            .configure_job(kind, enabled, interval_minutes)
+            .map_err(|error| error.to_string())?;
+        self.record_event(
+            Component::SecurityCenter,
+            EventKind::Configuration,
+            Severity::Info,
+            "security-center.automation-policy-updated",
+            "Scheduled protection automation policy updated",
+        )?;
+        Ok(status)
+    }
+
+    pub fn run_automation_job(&self, job: &str) -> Result<AutomationStatus, String> {
+        let kind = AutomationJobKind::parse(job).map_err(|error| error.to_string())?;
+        let status = self
+            .automation
+            .as_ref()
+            .ok_or_else(|| "Scheduled automation runtime is unavailable.".to_owned())?
+            .run_now(kind)
+            .map_err(|error| error.to_string())?;
+        let _ = self.sync_automation_events();
+        Ok(status)
+    }
+
+    fn sync_automation_events(&self) -> Result<(), String> {
+        let Some(runtime) = &self.automation else {
+            return Ok(());
+        };
+        let status = runtime.status().map_err(|error| error.to_string())?;
+        let after_id = self.lock_settings()?.automation_event_cursor;
+        let mut events = status
+            .history
+            .into_iter()
+            .filter(|event| event.id > after_id)
+            .collect::<Vec<_>>();
+        if events.is_empty() {
+            return Ok(());
+        }
+        events.sort_by_key(|event| event.id);
+
+        let mut newest = after_id;
+        for event in events {
+            newest = newest.max(event.id);
+            let severity = match event.outcome.as_str() {
+                "failed" => Severity::Critical,
+                "attention" | "action_required" => Severity::Warning,
+                "missed_recovered" => Severity::Notice,
+                _ => Severity::Info,
+            };
+            self.record_event(
+                Component::Agent,
+                EventKind::Security,
+                severity,
+                format!(
+                    "automation.{}.{}",
+                    event.job.as_str(),
+                    event.outcome.replace('_', "-")
+                ),
+                event.summary,
+            )?;
+        }
+
+        let updated = {
+            let mut settings = self.lock_settings()?;
+            settings.automation_event_cursor = newest;
+            settings.clone()
+        };
+        self.settings_store
+            .save(&updated)
+            .map_err(|error| error.to_string())
     }
 
     fn sync_integrity_events(&self) -> Result<(), String> {
