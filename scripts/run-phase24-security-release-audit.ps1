@@ -187,7 +187,7 @@ try {
     Require-Text "scripts/build-tagged-windows-release.ps1" @(
         "Stable releases must be Authenticode-signed",
         "Refusing to build a tagged release from a dirty working tree",
-        "HEAD $Head is not the tagged release commit",
+        'HEAD $Head is not the tagged release commit',
         "Cargo.lock must be tracked for release builds"
     )
     Require-Text "scripts/verify-release-artifacts.ps1" @(
