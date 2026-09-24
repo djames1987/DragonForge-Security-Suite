@@ -106,6 +106,18 @@ try {
         Select-Object -First 1
     if (-not $LifecycleLog) { throw "Lifecycle evidence log was not produced." }
 
+    $PostLifecycleDirty = @(& git status --porcelain)
+    if ($LASTEXITCODE -ne 0) { throw "Unable to inspect working tree after lifecycle verification." }
+    if ($PostLifecycleDirty.Count -gt 0) {
+        Write-Host ""
+        Write-Host "Tracked/untracked working-tree changes detected after beta build/lifecycle:"
+        $PostLifecycleDirty | ForEach-Object { Write-Host "  $_" }
+        Write-Host ""
+        & git diff --stat
+        & git diff -- Cargo.lock
+        throw "Beta build/lifecycle modified the working tree; refusing to create a release tag."
+    }
+
     $Head = (& git rev-parse HEAD).Trim()
     & git tag -a $Tag -m "DragonForge Security Suite $Tag uninstaller test release" $Head
     if ($LASTEXITCODE -ne 0) { throw "Unable to create local annotated tag $Tag." }
