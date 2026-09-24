@@ -1006,7 +1006,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-agent"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "dragonforge-core",
@@ -1023,7 +1023,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-agent-service"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-agent",
  "dragonforge-core",
@@ -1032,7 +1032,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-authenticator"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -1052,7 +1052,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-authenticator-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-authenticator",
  "dragonforge-core",
@@ -1064,7 +1064,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-backup-recovery"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -1080,7 +1080,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-backup-recovery-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-backup-recovery",
  "dragonforge-core",
@@ -1091,11 +1091,11 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-core"
-version = "0.1.0"
+version = "1.0.0"
 
 [[package]]
 name = "dragonforge-crypto"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -1114,7 +1114,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-desktop"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "axum",
  "dragonforge-crypto",
@@ -1140,7 +1140,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-file-vault"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -1151,7 +1151,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-file-vault-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-file-vault",
  "serde",
@@ -1162,7 +1162,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-integrity-monitor"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -1172,7 +1172,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-integrity-monitor-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-core",
  "dragonforge-integrity-monitor",
@@ -1183,7 +1183,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-network-guard"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "sha2",
@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-network-guard-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-network-guard",
  "dragonforge-windows-boundary",
@@ -1203,7 +1203,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-privileged-service"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-windows-boundary",
  "serde",
@@ -1220,7 +1220,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-secure-share"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -1235,7 +1235,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-secure-share-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-secure-share",
  "serde",
@@ -1245,7 +1245,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-security-center"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-agent",
  "dragonforge-core",
@@ -1262,14 +1262,14 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-security-scanner"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "dragonforge-security-scanner-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-security-scanner",
  "serde",
@@ -1279,7 +1279,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-sync-server"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -1301,7 +1301,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-update"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-crypto",
  "hex",
@@ -1314,7 +1314,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-vault"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "dragonforge-crypto",
  "serde",
@@ -1327,7 +1327,7 @@ dependencies = [
 
 [[package]]
 name = "dragonforge-windows-boundary"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
 ]

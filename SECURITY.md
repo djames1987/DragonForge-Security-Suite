@@ -4,11 +4,13 @@ DragonForge Security Suite is security-sensitive software. Security reports shou
 
 ## Supported status
 
-The suite is currently in pre-release architecture development. No production security guarantees are made yet.
+DragonForge Security Suite 1.0 establishes the first stable support line. The repository may contain a 1.0 release-candidate baseline before the signed `v1.0.0` artifacts are published; stable support begins with that immutable signed release.
+
+The current stable 1.x line receives security/correctness fixes according to [docs/SUPPORT_POLICY.md](docs/SUPPORT_POLICY.md). Compatibility commitments are documented in [docs/1_0_COMPATIBILITY_POLICY.md](docs/1_0_COMPATIBILITY_POLICY.md).
 
 ## Reporting a vulnerability
 
-Please report suspected vulnerabilities privately to the repository owner through an appropriate private GitHub contact/security channel. Do not include secrets, real credentials, recovery keys, or production vault data in reports.
+Please report suspected vulnerabilities privately to the repository owner through an appropriate private GitHub contact/security channel. Do not include secrets, real credentials, recovery keys, or production vault data in reports. The coordinated response process is documented in [docs/VULNERABILITY_RESPONSE.md](docs/VULNERABILITY_RESPONSE.md).
 
 A useful report includes:
 

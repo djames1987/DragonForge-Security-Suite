@@ -1,10 +1,12 @@
 #![forbid(unsafe_code)]
 
-//! Authenticated local IPC, background runtime, and Phase 12.2 lifecycle controls for DragonForge Agent.
+//! Authenticated local IPC, background runtime, lifecycle, integrity, automation,
+//! and narrow privileged-service coordination for DragonForge Agent.
 //!
-//! The Agent remains intentionally per-user and non-elevated. It establishes
-//! a real authenticated local boundary without claiming a privileged Windows
-//! service or durable enforcement capability.
+//! The Agent remains intentionally per-user and non-elevated. Optional privileged
+//! firewall policy mutation is delegated to the separately authenticated,
+//! publisher-pinned DragonForge Privileged Service; generic elevated execution
+//! remains prohibited.
 
 mod automation;
 mod client;
