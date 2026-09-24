@@ -1,6 +1,6 @@
 # Phase 24 — 1.0 Security & Release Audit
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 24 is the release-decision gate for DragonForge Security Suite 1.0. It introduces no new end-user capability. Instead it freezes the 1.0 feature set, composes prior security evidence into one authoritative audit, and makes unresolved-risk acceptance explicit.
 
@@ -103,4 +103,17 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase24-se
 
 The verifier writes a timestamped transcript, SHA-256 sidecar, and dependency-license JSON inventory under `test-logs`.
 
-Phase 24 remains **Implementation Complete — Local Verification Pending** until the authoritative Windows run reaches its PASS marker.
+Authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0) on 2026-09-24.
+
+Verified evidence:
+- log: `dragonforge-phase24-security-release-audit-20260924-084326.log`;
+- independently verified log SHA-256: `F09EC68A5C63C37B8B60C5B38DB62513F6ECA0FE27D33C9CD2738B8B549FE18E`;
+- RustSec dependency audit: PASS;
+- dependency license audit: PASS across 525 external packages;
+- exact-commit source reproducibility: PASS for commit `2c2453451927d9c805e613dc4f2d408e23cea23d`;
+- tracked-source secret scan: PASS;
+- Phase 24 release/security invariant checks: PASS;
+- PowerShell syntax validation for release/audit scripts: PASS;
+- all expected Windows suite executables built and verified: PASS.
+
+Phase 24 is therefore **Verified Complete** and the repository is qualified to enter Phase 25.
