@@ -1,6 +1,7 @@
 (() => {
   "use strict";
 
+  const locale = "en-US";
   const strings = Object.freeze({
     skip: "Skip to main content",
     firstRunTitle: "DragonForge privacy & accessibility",
@@ -10,6 +11,9 @@
       "Keyboard navigation, visible focus, reduced-motion preferences, Windows high-contrast/forced-colors mode, and screen-reader status announcements are supported across the desktop suite.",
     firstRunContinue: "Continue",
     privacyLabel: "Privacy guidance",
+    empty: "No items to display.",
+    loading: "Loading…",
+    error: "Something went wrong.",
   });
 
   const t = (key) => strings[key] ?? key;
@@ -20,8 +24,50 @@
     document.querySelector("[role='main']");
 
   document.documentElement.lang ||= "en";
-  document.documentElement.dataset.locale = "en-US";
+  document.documentElement.dataset.locale = locale;
   document.documentElement.dataset.l10nReady = "true";
+
+  const liveRegion = document.createElement("div");
+  liveRegion.className = "phase23-sr-only";
+  liveRegion.id = "phase23-live-region";
+  liveRegion.setAttribute("aria-live", "polite");
+  liveRegion.setAttribute("aria-atomic", "true");
+  document.body.appendChild(liveRegion);
+
+  const announce = (message, urgent = false) => {
+    liveRegion.setAttribute("aria-live", urgent ? "assertive" : "polite");
+    liveRegion.textContent = "";
+    window.requestAnimationFrame(() => {
+      liveRegion.textContent = String(message ?? "");
+    });
+  };
+
+  const setBusy = (element, busy, message = t("loading")) => {
+    if (!element) return;
+    element.setAttribute("aria-busy", busy ? "true" : "false");
+    if (busy) announce(message);
+  };
+
+  const renderState = (host, kind, message) => {
+    if (!host) return;
+    const safeKind = ["empty", "loading", "error", "status"].includes(kind) ? kind : "status";
+    host.replaceChildren();
+    const state = document.createElement("div");
+    state.className = `phase23-state phase23-state-${safeKind}`;
+    state.setAttribute("role", safeKind === "error" ? "alert" : "status");
+    state.setAttribute("aria-live", safeKind === "error" ? "assertive" : "polite");
+    state.textContent = message || t(safeKind);
+    host.appendChild(state);
+  };
+
+  window.DragonForgeUX = Object.freeze({
+    locale,
+    strings,
+    t,
+    announce,
+    setBusy,
+    renderState,
+  });
 
   if (main) {
     main.id ||= "phase23-main-content";
