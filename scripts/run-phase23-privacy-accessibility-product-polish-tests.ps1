@@ -166,6 +166,7 @@ try {
     foreach ($File in @(
         "assets/branding/logos/dragonforge-security-suite.png",
         "assets/branding/logos/dragonforge-agent.png",
+        "installer/PHASE23-PRIVACY.txt",
         "docs/PHASE_23_PRIVACY_ACCESSIBILITY_PRODUCT_POLISH.md",
         "docs/adr/0016-suite-privacy-accessibility-ui-contract.md"
     )) {
@@ -173,6 +174,11 @@ try {
             throw "Missing Phase 23 branding/documentation artifact: $File"
         }
         Write-Host "OK  $File"
+    }
+
+    $Installer = Get-Content -Raw "installer/DragonForgeSecuritySuite.iss"
+    if (-not $Installer.Contains("InfoBeforeFile=PHASE23-PRIVACY.txt")) {
+        throw "Installer does not display the Phase 23 privacy notice."
     }
 
     foreach ($File in @(
