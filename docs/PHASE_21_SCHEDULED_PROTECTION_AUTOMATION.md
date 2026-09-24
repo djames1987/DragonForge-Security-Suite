@@ -1,6 +1,6 @@
 # Phase 21 — Scheduled Protection & Automation
 
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Phase 21 adds restart-persistent, capability-scoped scheduling to the normal-user DragonForge Agent. It deliberately does not introduce a generic task runner, shell surface, arbitrary executable launch API, or silent privileged remediation.
 
@@ -121,4 +121,20 @@ Run on Windows:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-phase21-scheduled-protection-automation-tests.ps1
 ```
 
-The verifier produces a transcript and SHA-256 sidecar under `test-logs`. Phase 21 remains **Implementation Complete — Local Verification Pending** until the authoritative Windows run reaches its PASS marker and its sidecar is independently verified.
+The authoritative Windows verification passed on 2026-09-23 on `DRACO` (Microsoft Windows NT 10.0.26200.0).
+
+Verified stages:
+- `cargo fmt --all --check`;
+- locked Cargo metadata;
+- `cargo check --workspace --all-targets --all-features --locked`;
+- strict `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`;
+- complete workspace tests and doc-tests;
+- Security Center JavaScript and Phase 21 invariant checks;
+- PowerShell syntax validation;
+- all expected Windows suite application builds.
+
+Verified log: `dragonforge-phase21-scheduled-protection-automation-20260923-215411.log`
+
+Verified log SHA-256: `5A2477940D368CB8996FDCB3038E17F19D62DB42A5711ADC342463A0FF6FF4E9`
+
+The SHA-256 sidecar was independently checked before Phase 21 was marked **Verified Complete**.
