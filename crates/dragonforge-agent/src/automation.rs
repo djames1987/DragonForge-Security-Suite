@@ -18,7 +18,7 @@ pub const MAX_AUTOMATION_EVENTS: usize = 250;
 const MAX_AUTOMATION_STATE_BYTES: usize = 1024 * 1024;
 const RETRY_DELAY_MS: u64 = 60_000;
 const MAX_CONSECUTIVE_RETRIES: u8 = 3;
-const LOCK_STALE_AFTER: Duration = Duration::from_secs(30);
+const LOCK_STALE_AFTER: Duration = Duration::from_secs(15 * 60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
