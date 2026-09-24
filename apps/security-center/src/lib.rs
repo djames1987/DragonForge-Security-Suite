@@ -160,10 +160,7 @@ fn configure_automation_job(
 }
 
 #[tauri::command]
-fn run_automation_job(
-    job: String,
-    state: State<'_, AppState>,
-) -> Result<AutomationStatus, String> {
+fn run_automation_job(job: String, state: State<'_, AppState>) -> Result<AutomationStatus, String> {
     state.run_automation_job(&job)
 }
 
