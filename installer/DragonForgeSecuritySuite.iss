@@ -72,7 +72,8 @@ Filename: "{app}\install-privileged-service.cmd"; Description: "Install DragonFo
 Filename: "{app}\{#MyExeName}"; Description: "Launch DragonForge Security Center"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{app}\uninstall-privileged-service.cmd"; RunOnceId: "DragonForgePrivilegedServiceRemove"; Flags: runhidden waituntilterminated
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Stop-DragonForge-Agent.ps1"""; WorkingDir: "{app}"; RunOnceId: "DragonForgeAgentStop"; Flags: runhidden waituntilterminated skipifdoesntexist
+Filename: "{app}\uninstall-privileged-service.cmd"; RunOnceId: "DragonForgePrivilegedServiceRemove"; Flags: runhidden waituntilterminated skipifdoesntexist
 
 [Code]
 function ContainsText(const Haystack, Needle: String): Boolean;
