@@ -676,14 +676,24 @@ Verified log SHA-256: `F09EC68A5C63C37B8B60C5B38DB62513F6ECA0FE27D33C9CD2738B8B5
 See [PHASE_24_1_0_SECURITY_RELEASE_AUDIT.md](PHASE_24_1_0_SECURITY_RELEASE_AUDIT.md).
 
 ## Phase 25 — DragonForge Security Suite 1.0
-**Status: Planned**
+**Status: Implementation Complete — Signed Stable Release Verification Pending**
 
-Goals:
-- signed stable installer and portable package;
-- verified update channel;
-- stable format/protocol compatibility commitments;
-- support, migration, and vulnerability-response policy;
-- final public 1.0 documentation and release.
+Delivered:
+- DragonForge suite/workspace/Tauri/installer source baseline stamped to `1.0.0`;
+- all nine desktop application release markers updated to DragonForge 1.0;
+- stable 1.x encrypted-format, IPC, privileged-service, update, sync, recovery, and browser/native compatibility commitments;
+- 1.0 migration/rollback guide;
+- stable support policy and coordinated vulnerability-response policy;
+- Phase 24 machine-readable audit gate finalized as verified;
+- public Security Center/Agent/release-note privilege-boundary language aligned with the Phase 19 architecture;
+- machine-readable Phase 25 release gate and final stable release checklist;
+- authoritative Phase 25 Windows release-readiness verifier;
+- fail-closed production `v1.0.0` publisher that requires Authenticode + RFC 3161 timestamping + ML-DSA update signing and post-validates the published GitHub release/assets;
+- CI coverage for the 1.0 baseline and release documentation.
+
+The repository-side implementation is complete. Final **Verified Complete / Released** status requires the protected Windows release environment to pass the Phase 25 readiness verifier, tag the exact release commit as `v1.0.0`, sign and timestamp all stable artifacts, generate the signed stable update manifest, publish the immutable GitHub release, and retain the generated release receipt.
+
+See [PHASE_25_DRAGONFORGE_1_0.md](PHASE_25_DRAGONFORGE_1_0.md).
 
 ## Later research
 
