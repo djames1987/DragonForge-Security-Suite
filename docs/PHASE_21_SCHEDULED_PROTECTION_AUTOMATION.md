@@ -71,7 +71,7 @@ Hard limits:
 
 State writes use temporary + backup replacement. A missing primary file recovers from `.bak`. Malformed state is quarantined to `.invalid` before a safe default state is created.
 
-A short-lived create-new lock coordinates Agent scheduler ticks with Security Center policy/manual-run operations. A lock older than 30 seconds is treated as stale and may be recovered.
+A create-new lock coordinates Agent scheduler ticks with Security Center policy/manual-run operations. A lock older than 15 minutes is treated as stale and may be recovered, avoiding overlap with legitimately long scanner or integrity runs.
 
 ## Retry and missed-job behavior
 
