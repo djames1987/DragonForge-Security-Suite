@@ -35,7 +35,9 @@ try {
 
     & git fetch origin --tags
     if ($LASTEXITCODE -ne 0) { throw "Unable to refresh Git tags." }
-    $RemoteTag = (& git ls-remote --tags origin "refs/tags/$Tag").Trim()
+    $RemoteTagOutput = @(& git ls-remote --tags origin "refs/tags/$Tag")
+    if ($LASTEXITCODE -ne 0) { throw "Unable to inspect remote tag $Tag." }
+    $RemoteTag = ($RemoteTagOutput -join "").Trim()
     if ($RemoteTag) { throw "Remote tag $Tag already exists; refusing to mutate a published candidate identity." }
 
     $Previous = $ErrorActionPreference
