@@ -881,7 +881,7 @@ fn normalize_relative_path(path: &Path) -> Result<String> {
         .ok_or(BackupError::InvalidInput(
             "recovery path could not be represented safely",
         ))?
-        .replace('\', "/");
+        .replace('\\', "/");
     validated_relative_path(&text)?;
     Ok(text)
 }
