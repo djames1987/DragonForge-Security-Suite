@@ -50,29 +50,31 @@ try {
             continue
         }
 
-        if ($License -match '\bWITH\b') {
-            $Failures += "$($Package.name) $($Package.version): $License (SPDX exception expressions require explicit review)"
+        $HasAnd = $License -match '\bAND\b'
+        $HasOr = $License -match '\bOR\b'
+        $IsComplex = $License -match '\bWITH\b|[()]' -or ($HasAnd -and $HasOr)
+
+        if ($IsComplex) {
+            $Failures += "$($Package.name) $($Package.version): $License (complex SPDX expression requires explicit review)"
         }
         else {
-            # SPDX OR means the distributor may choose any one branch. For each
-            # AND-conjunct, require at least one reviewed acceptable OR option.
-            # Parentheses are stripped because current Cargo metadata expressions
-            # are simple license-choice expressions; complex/nested exceptions
-            # still fail closed above.
-            $Normalized = $License.Replace("(", "").Replace(")", "")
-            $AndGroups = @($Normalized -split '\s+AND\s+')
-            $RejectedGroups = @()
+            $Identifiers = @([regex]::Matches($License, '[A-Za-z0-9.+-]+') | ForEach-Object { $_.Value }) |
+                Where-Object { $_ -notin @("AND","OR","WITH") } |
+                Select-Object -Unique
 
-            foreach ($Group in $AndGroups) {
-                $Alternatives = @($Group -split '\s+OR\s+' | ForEach-Object { $_.Trim() }) |
-                    Where-Object { $_ }
-                if ($Alternatives.Count -eq 0 -or -not ($Alternatives | Where-Object { $_ -in $Allowed })) {
-                    $RejectedGroups += $Group.Trim()
+            if ($HasAnd) {
+                $Rejected = @($Identifiers | Where-Object { $_ -notin $Allowed })
+                if ($Rejected.Count -gt 0) {
+                    $Failures += "$($Package.name) $($Package.version): $License (unreviewed required identifiers: $($Rejected -join ', '))"
                 }
             }
-
-            if ($RejectedGroups.Count -gt 0) {
-                $Failures += "$($Package.name) $($Package.version): $License (no reviewed acceptable option in: $($RejectedGroups -join '; '))"
+            else {
+                # A single license must be reviewed. A pure SPDX OR expression
+                # is acceptable when at least one distributable branch is reviewed.
+                $Accepted = @($Identifiers | Where-Object { $_ -in $Allowed })
+                if ($Identifiers.Count -eq 0 -or $Accepted.Count -eq 0) {
+                    $Failures += "$($Package.name) $($Package.version): $License (no reviewed acceptable license option)"
+                }
             }
         }
 
