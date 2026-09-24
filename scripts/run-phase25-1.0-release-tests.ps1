@@ -149,6 +149,11 @@ try {
         "docs/SUPPORT_POLICY.md",
         "docs/VULNERABILITY_RESPONSE.md"
     )
+    Require-Text "apps/security-center/src/diagnostics.rs" @(
+        'const PHASE: &str = "25";',
+        'const RELEASE_CHANNEL: &str = "stable";',
+        'env!("CARGO_PKG_VERSION")'
+    )
     Require-Text "scripts/build-tagged-windows-release.ps1" @(
         "Stable releases must be Authenticode-signed",
         'HEAD $Head is not the tagged release commit'
