@@ -6,6 +6,7 @@
 //! a real authenticated local boundary without claiming a privileged Windows
 //! service or durable enforcement capability.
 
+mod automation;
 mod client;
 mod error;
 mod integrity;
@@ -15,6 +16,7 @@ mod privileged;
 mod protocol;
 mod server;
 
+pub use automation::{AgentAutomationRuntime, AutomationEvent, AutomationJob, AutomationJobKind, AutomationStatus, AUTOMATION_STATE_VERSION, MAX_AUTOMATION_EVENTS, MAX_INTERVAL_MINUTES, MIN_INTERVAL_MINUTES};
 pub use client::{AgentClient, AgentHealth};
 pub use error::{AgentError, Result};
 pub use integrity::AgentIntegrityRuntime;
