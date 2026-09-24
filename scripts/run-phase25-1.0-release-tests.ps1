@@ -197,7 +197,8 @@ try {
         "scripts/publish-windows-release.ps1",
         "scripts/verify-release-artifacts.ps1",
         "scripts/generate-signed-update-manifest.ps1",
-        "scripts/sign-windows-artifact.ps1",
+        "scripts/sign-windows-files.ps1",
+        "scripts/verify-authenticode.ps1",
         "scripts/run-license-audit.ps1",
         "scripts/verify-source-reproducibility.ps1"
     )) {
