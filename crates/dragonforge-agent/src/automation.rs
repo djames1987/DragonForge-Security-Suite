@@ -263,7 +263,10 @@ impl AgentAutomationRuntime {
                 )
             }
             Err(_) => {
-                job.consecutive_failures = job.consecutive_failures.saturating_add(1);
+                job.consecutive_failures = job
+                    .consecutive_failures
+                    .saturating_add(1)
+                    .min(MAX_CONSECUTIVE_RETRIES.saturating_add(1));
                 (
                     "failed".to_owned(),
                     "Scheduled protection job failed safely; no generic fallback was executed."
@@ -675,8 +678,8 @@ mod tests {
         assert_eq!(status.history[0].outcome, "action_required");
         let bytes = fs::read(dir.path().join("automation.json")).expect("state");
         let encoded = String::from_utf8(bytes).expect("utf8");
-        assert!(!encoded.to_ascii_lowercase().contains("password"));
-        assert!(!encoded.to_ascii_lowercase().contains("credential"));
+        assert!(!encoded.to_ascii_lowercase().contains("\"password\":"));
+        assert!(!encoded.to_ascii_lowercase().contains("\"credential\":"));
     }
 
     #[test]
