@@ -559,7 +559,7 @@ Delivered:
 See [PHASE_19_NETWORK_POLICY_FIREWALL.md](PHASE_19_NETWORK_POLICY_FIREWALL.md).
 
 ## Phase 20 — Security Center Policy & Event Hub
-**Status: Implementation Complete — Local Verification Pending**
+**Status: Verified Complete**
 
 Delivered:
 - versioned persistent bounded Security Center event hub with monotonic IDs;
@@ -570,7 +570,10 @@ Delivered:
 - coordinated Security Center suite policy for event retention, notification threshold, health-history retention, and signed update channel;
 - crash-recoverable event/health state replacement and invalid-state quarantine;
 - existing Agent, update, component-launch, support-bundle, and Phase 18 integrity events routed into the durable hub;
-- Phase 20 Security Center UI, documentation, ADR, CI coverage, and Windows verifier.
+- Phase 20 Security Center UI, documentation, ADR, CI coverage, and Windows verifier;
+- authoritative Windows verification passed on `DRACO` (Windows NT 10.0.26200.0), including rustfmt, locked Cargo metadata, full workspace/all-target/all-feature compile checks, strict Clippy with `-D warnings`, the complete workspace test suite, Security Center JavaScript validation, Phase 20 invariant checks, PowerShell syntax validation, and all expected Windows test application builds;
+- verified log: `dragonforge-phase20-security-center-policy-event-hub-20260923-211911.log`;
+- verified log SHA-256: `CACA365D94B6DC9D273183BA7787152AAA47C6420F5839B82F2BCD8FD7E7568A`.
 
 Phase 20 remains local-first and normal-user. It does not add generic automation, automatic remediation, or privileged-service commands.
 
