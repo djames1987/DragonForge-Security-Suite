@@ -45,7 +45,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a $env:TAG $env:GITHUB_SHA -m "DragonForge Security Suite $env:TAG uninstaller test release"
+          git tag -a $env:TAG -m "DragonForge Security Suite $env:TAG uninstaller test release" $env:GITHUB_SHA
 
       - name: Build exact tagged Windows prerelease
         shell: powershell
