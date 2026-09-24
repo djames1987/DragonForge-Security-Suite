@@ -26,6 +26,9 @@
     }
   },
   "bundle": {
-    "active": false
+    "active": false,
+    "icon": [
+      "../../assets/branding/logos/dragonforge-file-vault.png"
+    ]
   }
 }
