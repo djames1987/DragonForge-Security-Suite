@@ -1,0 +1,96 @@
+name: DragonForge 1.0 Beta Uninstaller Test Release
+
+on:
+  push:
+    branches:
+      - "release/v1.0.0-beta.1-uninstaller"
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-publish:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      VERSION: 1.0.0-beta.1
+      TAG: v1.0.0-beta.1
+
+    steps:
+      - name: Checkout exact release candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup -y --no-progress
+
+      - name: Verify committed beta version stamp
+        shell: powershell
+        run: .\scripts\set-release-version.ps1 -Version $env:VERSION -CheckOnly
+
+      - name: Verify workspace
+        shell: powershell
+        run: |
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-features --locked
+
+      - name: Create local annotated test tag
+        shell: powershell
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $env:TAG -m "DragonForge Security Suite $env:TAG uninstaller test release" $env:GITHUB_SHA
+
+      - name: Build exact tagged Windows prerelease
+        shell: powershell
+        run: .\scripts\build-tagged-windows-release.ps1 -Tag $env:TAG
+
+      - name: Exercise real installer and uninstaller
+        shell: powershell
+        run: .\scripts\test-windows-installer-uninstall.ps1 -Version $env:VERSION
+
+      - name: Push verified prerelease tag
+        shell: powershell
+        run: git push origin "refs/tags/$env:TAG"
+
+      - name: Publish GitHub prerelease
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $dist = Join-Path $env:GITHUB_WORKSPACE "dist"
+          $base = "DragonForge-Security-Suite-v$env:VERSION-win-x64"
+          $notes = Join-Path $dist "release-notes-$env:TAG.md"
+          $life = Get-ChildItem .\test-logs\dragonforge-installer-uninstall-$env:VERSION-*.log | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $life) { throw "Uninstall lifecycle evidence log not found." }
+          @(
+            "",
+            "## Testing focus",
+            "",
+            "This unsigned prerelease is specifically for validating installation, upgrade behavior, and the complete uninstaller before DragonForge Security Suite 1.0.",
+            "",
+            "The disposable Windows release job completed a real silent install, started the exact installed DragonForge Agent, ran the generated uninstaller, verified Agent shutdown, verified installer-managed directory/shortcut removal, and verified data outside the installation directory was preserved.",
+            "",
+            "**This is not the signed stable release and is not eligible for the stable update channel.**"
+          ) | Add-Content -LiteralPath $notes
+
+          gh release create $env:TAG `
+            (Join-Path $dist "$base.zip") `
+            (Join-Path $dist "$base.zip.sha256") `
+            (Join-Path $dist "$base-setup.exe") `
+            (Join-Path $dist "$base-setup.exe.sha256") `
+            (Join-Path $dist "release-manifest-$env:TAG.json") `
+            (Join-Path $dist "release-manifest-$env:TAG.json.sha256") `
+            $life.FullName `
+            ($life.FullName + ".sha256") `
+            --repo "$env:GITHUB_REPOSITORY" `
+            --title "DragonForge Security Suite $env:TAG - Uninstaller Test" `
+            --notes-file $notes `
+            --verify-tag `
+            --prerelease

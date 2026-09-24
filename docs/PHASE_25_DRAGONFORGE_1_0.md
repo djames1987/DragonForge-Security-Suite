@@ -1,6 +1,6 @@
 # Phase 25 — DragonForge Security Suite 1.0
 
-**Status: Release Readiness Verified — Signed Stable Release Pending**
+**Status: Installer/Uninstaller Release-Candidate Validation Pending**
 
 Phase 25 converts the verified Phase 24 source baseline into the DragonForge Security Suite 1.0 release line.
 
@@ -65,6 +65,8 @@ The final publisher reuses the existing exact-tag build/sign/verify/update publi
 ## Authoritative release-readiness verification
 
 The Phase 25 verifier passed on `DRACO` (Microsoft Windows NT 10.0.26200.0) on 2026-09-24 against source commit `d5f0b819d03537cd9cf7e9d32f90894a0052a596`.
+
+Before stable publication, installer/uninstaller hardening was intentionally added after that verified commit. The prior evidence remains valid for its recorded source commit, but the new final source must pass the Phase 25 readiness verifier again after the testing prerelease validates the complete uninstall lifecycle.
 
 Verified evidence:
 - log: `dragonforge-phase25-1.0-release-readiness-20260924-092829.log`;

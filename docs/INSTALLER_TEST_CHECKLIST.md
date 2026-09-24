@@ -45,12 +45,19 @@ From Security Center, start DragonForge Agent and launch Password Manager, File 
 
 ## Uninstall
 
+- Start the installed DragonForge Agent before uninstalling so shutdown behavior is exercised.
 - Uninstall DragonForge Security Suite from Windows Settings or the Start Menu uninstall shortcut.
-- Confirm the installed program directory is removed.
-- Confirm DragonForge shortcuts are removed.
+- Confirm the exact installed Agent process is stopped before its executable is removed.
+- Confirm the generated Inno Setup uninstaller exits successfully.
+- Confirm the installed program directory and installer-managed files are removed.
+- Confirm the Start Menu group and DragonForge Agent Startup shortcut are removed.
+- If the optional privileged service was never installed, confirm uninstall does not request unnecessary Administrator elevation.
+- If the optional privileged service was installed, confirm uninstall requests Administrator approval and removes the managed service/binary while preserving its data unless explicit data removal was requested.
 - Confirm user-created DragonForge data outside the installation directory remains intact.
 - Confirm Password Manager vaults stored elsewhere are not deleted.
 - Confirm Windows Credential Manager sync credentials are not intentionally removed by uninstall.
+
+The automated disposable lifecycle gate is `scripts/test-windows-installer-uninstall.ps1`. It performs a real silent install/uninstall on CI or an explicitly disposable local/VM system and refuses local execution unless `-AllowLocal` is deliberately supplied.
 
 Never attach or use production passwords, Account Secrets, recovery kits/codes, OTP seeds, sync/admin tokens, private keys, vault contents, or sensitive personal files during alpha testing.
 
