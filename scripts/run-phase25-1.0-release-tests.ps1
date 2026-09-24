@@ -139,7 +139,7 @@ try {
         "Agent",
         "1.1",
         "Privileged service",
-        "Update manifest",
+        "Secure update manifest",
         "schema 1",
         "Password Manager sync API",
         "Browser/native messaging"
