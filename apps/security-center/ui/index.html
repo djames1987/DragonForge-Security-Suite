@@ -329,6 +329,29 @@
             <button type="submit" class="primary-button">Save settings</button>
           </div>
         </form>
+
+        <section class="panel phase23-privacy-panel" aria-labelledby="phase23-privacy-title">
+          <div class="eyebrow">Privacy & accessibility</div>
+          <h2 id="phase23-privacy-title">Local-first by default</h2>
+          <p>
+            DragonForge does not automatically upload support bundles, diagnostic logs, vault contents,
+            recovery packages, credentials, or other private application data. Network activity is
+            limited to features that explicitly require it, such as signed update checks and configured
+            Password Manager synchronization.
+          </p>
+          <div class="info-box">
+            <strong>Diagnostics privacy</strong>
+            <p>Support diagnostics are redaction-safe and exclude vault contents, credentials, paths, event contents, and security secrets. Export remains an explicit user action.</p>
+          </div>
+          <div class="info-box">
+            <strong>Accessibility contract</strong>
+            <p>Suite navigation supports keyboard focus, skip-to-content, arrow-key navigation, reduced-motion preferences, Windows forced-colors/high-contrast mode, scalable text, and screen-reader status announcements.</p>
+          </div>
+          <div class="info-box">
+            <strong>Language readiness</strong>
+            <p>The Phase 23 shared UI layer declares its locale and keeps new suite-shell copy in a string catalog so additional locales can be introduced without changing security logic.</p>
+          </div>
+        </section>
       </section>
 
       <section id="view-about" class="view">
@@ -339,7 +362,7 @@
           <p>
             The unified visibility and orchestration surface for DragonForge security products.
             Security Center provides the dashboard, component registry, persistent bounded event aggregation, acknowledgement/notification history, coordinated suite policy,
-            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, scheduled protection automation, encrypted suite recovery/migration readiness, secure signed-update verification, consistent suite UX conventions, and external-test diagnostics.
+            settings persistence, rotating safe logs, crash diagnostics, support bundles, strict sibling-app orchestration, authenticated Agent integration, scheduled protection automation, encrypted suite recovery/migration readiness, secure signed-update verification, privacy/accessibility guidance, consistent suite UX conventions, and external-test diagnostics.
           </p>
           <div class="about-meta">
             <span>Version 0.1.0</span>
