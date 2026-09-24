@@ -255,8 +255,9 @@ pub fn restore_suite_recovery(
         }
 
         if let Some(parent) = config_root.parent() {
-            fs::create_dir_all(parent)
-                .map_err(|_| BackupError::Io("configuration restore parent could not be created"))?;
+            fs::create_dir_all(parent).map_err(|_| {
+                BackupError::Io("configuration restore parent could not be created")
+            })?;
         }
         prepare_clean_restore_root(config_root)?;
         if fs::rename(&config_stage, config_root).is_err() {
@@ -359,7 +360,10 @@ fn repair_directory(directory: &Path, summary: &mut RepairSummary, depth: usize)
             repair_directory(&path, summary, depth.saturating_add(1))?;
             continue;
         }
-        let name = path.file_name().and_then(|value| value.to_str()).unwrap_or("");
+        let name = path
+            .file_name()
+            .and_then(|value| value.to_str())
+            .unwrap_or("");
         if !name.ends_with(".json.bak") {
             continue;
         }
@@ -391,8 +395,9 @@ fn repair_directory(directory: &Path, summary: &mut RepairSummary, depth: usize)
 
         let invalid = append_suffix(&primary, ".invalid");
         if invalid.exists() {
-            fs::remove_file(&invalid)
-                .map_err(|_| BackupError::Io("stale suite state quarantine could not be removed"))?;
+            fs::remove_file(&invalid).map_err(|_| {
+                BackupError::Io("stale suite state quarantine could not be removed")
+            })?;
         }
         fs::rename(&primary, &invalid)
             .map_err(|_| BackupError::Io("corrupt suite state could not be quarantined"))?;
@@ -461,13 +466,7 @@ fn collect_recovery_directory(
         if metadata.is_dir() {
             collect_recovery_directory(root, &path, namespace, entries, total_bytes)?;
         } else if metadata.is_file() {
-            collect_recovery_file(
-                &path,
-                namespace,
-                &normalized,
-                entries,
-                total_bytes,
-            )?;
+            collect_recovery_file(&path, namespace, &normalized, entries, total_bytes)?;
         }
     }
     Ok(())
@@ -494,7 +493,9 @@ fn collect_recovery_file(
     }
     let next_total = total_bytes
         .checked_add(metadata.len())
-        .ok_or(BackupError::InvalidInput("recovery package size overflowed"))?;
+        .ok_or(BackupError::InvalidInput(
+            "recovery package size overflowed",
+        ))?;
     if next_total > MAX_TOTAL_BYTES {
         return Err(BackupError::InvalidInput(
             "recovery package exceeds the safe total file-size limit",
@@ -764,7 +765,10 @@ fn write_encrypted_recovery(destination: &Path, password: &str, plaintext: &[u8]
         )
         .map_err(|_| BackupError::Crypto("recovery encryption failed"))?;
 
-    if let Some(parent) = destination.parent().filter(|path| !path.as_os_str().is_empty()) {
+    if let Some(parent) = destination
+        .parent()
+        .filter(|path| !path.as_os_str().is_empty())
+    {
         fs::create_dir_all(parent)
             .map_err(|_| BackupError::Io("recovery destination directory could not be created"))?;
     }
@@ -821,9 +825,7 @@ fn decrypt_recovery(path: &Path, password: &str) -> Result<Vec<u8>> {
             .map_err(|_| BackupError::Format("recovery length is malformed"))?,
     );
     if cipher_len as usize != bytes.len() - RECOVERY_HEADER_LEN {
-        return Err(BackupError::Format(
-            "recovery ciphertext length is invalid",
-        ));
+        return Err(BackupError::Format("recovery ciphertext length is invalid"));
     }
 
     let key = derive_key(password, &salt)?;
@@ -965,11 +967,7 @@ mod tests {
     const PASSWORD: &str = "correct horse battery staple";
 
     fn test_paths(root: &Path) -> SuitePaths {
-        SuitePaths::from_roots(
-            root.join("config"),
-            root.join("data"),
-            root.join("cache"),
-        )
+        SuitePaths::from_roots(root.join("config"), root.join("data"), root.join("cache"))
     }
 
     #[test]
@@ -996,8 +994,7 @@ mod tests {
         assert!(created.verified);
 
         let restore = dir.path().join("clean-config");
-        let restored =
-            restore_suite_recovery(&package, PASSWORD, &restore, None).expect("restore");
+        let restored = restore_suite_recovery(&package, PASSWORD, &restore, None).expect("restore");
         assert_eq!(restored.entries, 1);
         assert_eq!(
             fs::read(restore.join("security-center/settings.json")).expect("read"),
@@ -1016,14 +1013,18 @@ mod tests {
             b"{}",
         )
         .expect("settings");
-        fs::write(paths.data_root().join("agent/scheduled-automation-v1.json"), b"{}")
-            .expect("automation");
-        fs::write(paths.data_root().join("agent/agent-session.key"), b"secret")
-            .expect("session");
-        fs::write(paths.data_root().join("agent/agent-runtime.json"), b"runtime")
-            .expect("runtime");
-        fs::write(paths.data_root().join("agent/state.json.tmp"), b"temp")
-            .expect("temp");
+        fs::write(
+            paths.data_root().join("agent/scheduled-automation-v1.json"),
+            b"{}",
+        )
+        .expect("automation");
+        fs::write(paths.data_root().join("agent/agent-session.key"), b"secret").expect("session");
+        fs::write(
+            paths.data_root().join("agent/agent-runtime.json"),
+            b"runtime",
+        )
+        .expect("runtime");
+        fs::write(paths.data_root().join("agent/state.json.tmp"), b"temp").expect("temp");
 
         let package = dir.path().join("suite.dfrecovery");
         let created = create_suite_recovery_from_paths(
@@ -1108,9 +1109,7 @@ mod tests {
 
         let config = dir.path().join("restore");
         let nested_data = config.join("data");
-        assert!(
-            restore_suite_recovery(&package, PASSWORD, &config, Some(&nested_data)).is_err()
-        );
+        assert!(restore_suite_recovery(&package, PASSWORD, &config, Some(&nested_data)).is_err());
         assert!(!config.exists());
     }
 
