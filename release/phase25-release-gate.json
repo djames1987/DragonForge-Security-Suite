@@ -4,7 +4,7 @@
   "title": "DragonForge Security Suite 1.0",
   "version": "1.0.0",
   "tag": "v1.0.0",
-  "status": "release_readiness_verified_signed_release_pending",
+  "status": "beta_installer_uninstaller_qualified_final_readiness_rerun_pending",
   "phase24_verified": true,
   "stable_release_requires_signing": true,
   "required_publication_assets": [
@@ -27,8 +27,8 @@
     "existing v1.0.0 release already present",
     "unresolved release-blocking security defect"
   ],
-  "release_readiness_verified": true,
-  "release_readiness_verification": {
+  "release_readiness_verified": false,
+  "prior_release_readiness_verification": {
     "host": "DRACO",
     "windows": "Microsoft Windows NT 10.0.26200.0",
     "date": "2026-09-24",
@@ -38,5 +38,16 @@
     "license_inventory": "dragonforge-phase25-license-inventory-20260924-092829.json",
     "package_count": 525,
     "final_marker": "PHASE 25 DRAGONFORGE SECURITY SUITE 1.0 RELEASE READINESS: PASS"
+  },
+  "beta_installer_uninstaller_qualification": {
+    "tag": "v1.0.0-beta.1",
+    "source_commit": "18d1ad8fb8f940c49213ac499411051b1655b557",
+    "release_kind": "prerelease",
+    "host": "DRACO",
+    "date": "2026-09-24",
+    "lifecycle_log": "dragonforge-installer-uninstall-1.0.0-beta.1-20260924-102957.log",
+    "lifecycle_log_sha256": "3CC2B2E210863C0E1308E5B8B3C9CB454AC5A0AB53CA8EB9743A64C9FAAFE107",
+    "final_marker": "DRAGONFORGE INSTALLER/UNINSTALLER LIFECYCLE: PASS",
+    "qualified": true
   }
 }
