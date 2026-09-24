@@ -206,8 +206,9 @@ pub fn restore_suite_recovery(
     };
 
     if config_stage.exists() {
-        fs::remove_dir_all(&config_stage)
-            .map_err(|_| BackupError::Io("stale configuration restore stage could not be removed"))?;
+        fs::remove_dir_all(&config_stage).map_err(|_| {
+            BackupError::Io("stale configuration restore stage could not be removed")
+        })?;
     }
     fs::create_dir_all(&config_stage)
         .map_err(|_| BackupError::Io("configuration restore stage could not be created"))?;
@@ -237,8 +238,9 @@ pub fn restore_suite_recovery(
             };
             let target = base.join(relative);
             if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent)
-                    .map_err(|_| BackupError::Io("recovery restore directory could not be created"))?;
+                fs::create_dir_all(parent).map_err(|_| {
+                    BackupError::Io("recovery restore directory could not be created")
+                })?;
             }
             let bytes = BASE64
                 .decode(&entry.data_b64)
@@ -334,11 +336,7 @@ pub fn repair_recoverable_json_state(paths: &SuitePaths) -> Result<RepairSummary
     Ok(summary)
 }
 
-fn repair_directory(
-    directory: &Path,
-    summary: &mut RepairSummary,
-    depth: usize,
-) -> Result<()> {
+fn repair_directory(directory: &Path, summary: &mut RepairSummary, depth: usize) -> Result<()> {
     if depth > MAX_REPAIR_DEPTH {
         return Err(BackupError::InvalidInput(
             "suite state repair exceeded the safe directory-depth limit",
@@ -1117,7 +1115,8 @@ mod tests {
     fn future_schema_fails_closed() {
         let dir = tempdir().expect("tempdir");
         let package = dir.path().join("future.dfrecovery");
-        let encoded = br#"{"schemaVersion":999,"createdAtMs":1,"scope":"configuration","entries":[]}"#;
+        let encoded =
+            br#"{"schemaVersion":999,"createdAtMs":1,"scope":"configuration","entries":[]}"#;
         write_encrypted_recovery(&package, PASSWORD, encoded).expect("write");
         assert!(verify_suite_recovery(&package, PASSWORD).is_err());
     }
