@@ -1,11 +1,11 @@
 # DragonForge Security Suite v1.0.0 Release Checklist
 
 - [x] Phase 24 is Verified Complete.
-- [ ] Phase 25 readiness verifier passes on the release host after the final installer/uninstaller hardening commit.
+- [x] Phase 25 readiness verifier passes on the release host after the final installer/uninstaller hardening commit. Verified on `de39b05888708df2de9b3156226463aada0551d8`; log SHA-256: `EA7867BCFE370FF5D8B3828F7B7969BAC143F374B2C0D8EA3D92BE5295DCC61F`.
 - [x] A pre-1.0 Windows testing release has passed a real install -> Agent start -> uninstall lifecycle test (`v1.0.0-beta.1`).
 - [x] Test-release uninstall confirms managed program files/shortcuts are removed and user data outside the install directory is preserved. Verified log SHA-256: `3CC2B2E210863C0E1308E5B8B3C9CB454AC5A0AB53CA8EB9743A64C9FAAFE107`.
-- [ ] Working tree is clean.
-- [ ] Exact release commit is pushed to `main`.
+- [x] Working tree was clean for the authoritative Phase 25 readiness run.
+- [x] Exact verified readiness source commit `de39b05888708df2de9b3156226463aada0551d8` was pushed to `main` before the authoritative run.
 - [ ] Annotated tag `v1.0.0` points to that exact commit.
 - [ ] Authenticode signing identity is provisioned outside the repository.
 - [ ] RFC 3161 timestamp service is configured.

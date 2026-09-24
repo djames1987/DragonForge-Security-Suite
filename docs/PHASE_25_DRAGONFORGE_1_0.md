@@ -1,6 +1,6 @@
 # Phase 25 — DragonForge Security Suite 1.0
 
-**Status: Beta Installer/Uninstaller Qualified — Final Stable Readiness Rerun Pending**
+**Status: Release Readiness Verified — Signed Stable Release Pending**
 
 Phase 25 converts the verified Phase 24 source baseline into the DragonForge Security Suite 1.0 release line.
 
@@ -64,9 +64,19 @@ The final publisher reuses the existing exact-tag build/sign/verify/update publi
 
 ## Authoritative release-readiness verification
 
-The Phase 25 verifier passed on `DRACO` (Microsoft Windows NT 10.0.26200.0) on 2026-09-24 against source commit `d5f0b819d03537cd9cf7e9d32f90894a0052a596`.
+The final authoritative Phase 25 verifier passed on `DRACO` (Microsoft Windows NT 10.0.26200.0) on 2026-09-24 against the post-uninstaller-hardening source commit `de39b05888708df2de9b3156226463aada0551d8`.
 
-Before stable publication, installer/uninstaller hardening was intentionally added after that verified commit. The prior evidence remains valid for its recorded source commit, but the new final source must pass the Phase 25 readiness verifier again after the testing prerelease validates the complete uninstall lifecycle.
+Final verified evidence:
+- log: `dragonforge-phase25-1.0-release-readiness-20260924-103700.log`;
+- independently verified SHA-256: `EA7867BCFE370FF5D8B3828F7B7969BAC143F374B2C0D8EA3D92BE5295DCC61F`;
+- locked dependency license inventory: 525 packages;
+- exact-commit source reproducibility: PASS for `de39b05888708df2de9b3156226463aada0551d8`;
+- stable signing fail-closed checks: PASS;
+- PowerShell syntax checks: PASS;
+- release-profile builds verified for all 11 expected DragonForge executables with `--locked`;
+- final marker: `PHASE 25 DRAGONFORGE SECURITY SUITE 1.0 RELEASE READINESS: PASS`.
+
+The earlier pre-uninstaller readiness result remains historical evidence only.
 
 ## Beta installer/uninstaller qualification
 
@@ -84,14 +94,7 @@ The guarded DRACO publisher completed a real isolated install -> Agent start -> 
 
 The beta release includes the installer, portable ZIP, their SHA-256 sidecars, release manifest + sidecar, and lifecycle log + sidecar.
 
-Verified evidence:
-- log: `dragonforge-phase25-1.0-release-readiness-20260924-092829.log`;
-- independently verified SHA-256: `7071C7D9EA1FC4CF17CF2F33F786AEA279559C14568344370BA5A1F4E56643C5`;
-- locked dependency license inventory: 525 packages;
-- release-profile builds verified for all 11 expected DragonForge executables;
-- final marker: `PHASE 25 DRAGONFORGE SECURITY SUITE 1.0 RELEASE READINESS: PASS`.
-
 ## Completion semantics
 
-- **Beta Installer/Uninstaller Qualified — Final Stable Readiness Rerun Pending** means the pre-1.0 installer/uninstaller lifecycle has passed and the final post-hardening `main` commit must now rerun the authoritative Phase 25 readiness verifier before stable tagging.
+- **Release Readiness Verified — Signed Stable Release Pending** means the final post-uninstaller-hardening 1.0 source baseline has passed the authoritative Windows readiness gate and is ready for the protected signing/tag/publication step.
 - **Verified Complete / Released** still requires a successful signed `v1.0.0` publication receipt.
