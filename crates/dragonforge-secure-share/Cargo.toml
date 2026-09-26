@@ -9,7 +9,7 @@ description = "Encrypted recipient-oriented secure share engine for DragonForge 
 
 [dependencies]
 aes-gcm = "0.10.3"
-argon2 = "0.5.3"
+argon2 = "0.6.0"
 base64 = "0.22.1"
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 serde = { version = "1.0", features = ["derive"] }
