@@ -10,7 +10,7 @@ description = "Encrypted backup and recovery engine for DragonForge Security Sui
 [dependencies]
 aes-gcm = "0.10.3"
 argon2 = "0.5.3"
-base64 = "0.22.1"
+base64 = "0.23.1"
 dragonforge-core = { path = "../dragonforge-core" }
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 serde = { version = "1.0", features = ["derive"] }

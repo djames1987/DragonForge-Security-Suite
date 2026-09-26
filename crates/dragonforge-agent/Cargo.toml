@@ -8,7 +8,7 @@ publish = false
 description = "Authenticated local DragonForge Agent IPC and background runtime"
 
 [dependencies]
-base64 = "0.22.1"
+base64 = "0.23.1"
 dragonforge-core = { path = "../dragonforge-core" }
 dragonforge-integrity-monitor = { path = "../dragonforge-integrity-monitor" }
 dragonforge-security-scanner = { path = "../dragonforge-security-scanner" }
