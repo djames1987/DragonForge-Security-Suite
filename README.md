@@ -1,8 +1,14 @@
 # DragonForge Security Suite
 
+<p align="center">
+  <img src="docs/assets/readme/phase-05-hero.svg" alt="DragonForge Security Suite banner showing Security Center connected to focused apps, product crates, and services" width="100%">
+</p>
+
 DragonForge Security Suite is a Windows-first security platform built as a Rust workspace of focused desktop applications, shared security libraries, background services, and supporting integrations. The goal is to keep security-sensitive behavior in narrow native components while giving users one place—**Security Center**—to understand and operate the suite.
 
 > **Status:** 1.0 release readiness has been verified, but the signed stable `v1.0.0` release is still pending. Additional Windows uninstall hardening is being validated before the final release gate is rerun.
+
+The Phase 5 banner above is new first-party SVG geometry created specifically for this repository and contains no external artwork. Existing suite logos/icons remain excluded from the public landing page while visual provenance gate `DF-P3-ASSET-001` is unresolved.
 
 ## What is in the suite
 
@@ -34,6 +40,20 @@ Key trust rules include:
 - diagnostic/event output is designed to be bounded and redaction-safe;
 - privileged Windows operations are isolated behind a separate service boundary.
 
+### Architecture at a glance
+
+```mermaid
+flowchart TB
+    UI[Security Center / user-facing apps] --> Native[Product-owned native Rust boundaries]
+    UI --> Agent[Authenticated DragonForge Agent]
+    Native --> Shared[Shared non-cryptographic suite primitives]
+    Native --> Formats[Product-owned crypto / formats / policy]
+    Agent --> Priv[Privileged Service\nscoped Windows operations]
+    PM[Password Manager] --> Sync[Zero-knowledge sync service]
+    Browser[Browser extension] --> PM
+    Sync --> Cipher[Opaque encrypted vault state]
+```
+
 See [Architecture](docs/ARCHITECTURE.md) and [Security Model](docs/SECURITY_MODEL.md) for the detailed design.
 
 ## Technology
@@ -49,6 +69,10 @@ assets/      DragonForge branding/application assets
 docs/        architecture, security, release, roadmap, and engineering history
 scripts/     validation, packaging, release, and migration tooling
 ```
+
+### Screenshots
+
+No application screenshot is fabricated in this phase. Genuine public-ready captures require a clean Windows demo environment that is not available through the repository connector. The exact synthetic-data capture set and sanitization checks are recorded in [Public Screenshot Capture](docs/PUBLIC_SCREENSHOT_CAPTURE.md).
 
 ## Evaluate the project
 
@@ -87,6 +111,7 @@ Please report security issues using [SECURITY.md](SECURITY.md). Do not place cre
 - [External Test Checklist](docs/EXTERNAL_TEST_CHECKLIST.md) — external validation guidance
 - [Beta Qualification Matrix](docs/BETA_QUALIFICATION_MATRIX.md) — qualification coverage and evidence expectations
 - [Password Manager migration record](docs/password-manager/MIGRATION_RECORD.md) — source provenance and migration mapping
+- [Public Screenshot Capture](docs/PUBLIC_SCREENSHOT_CAPTURE.md) — synthetic-data screenshot requirements and sanitization checks
 - [Third-party notices](THIRD_PARTY_NOTICES.md) — dependency and asset-license obligations
 - [`docs/`](docs/) — phase records, release engineering, installer, support, recovery, and product-specific detail
 
