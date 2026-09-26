@@ -1008,7 +1008,7 @@ dependencies = [
 name = "dragonforge-agent"
 version = "1.0.0"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "dragonforge-core",
  "dragonforge-integrity-monitor",
  "dragonforge-security-scanner",
@@ -1068,7 +1068,7 @@ version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
- "base64 0.22.1",
+ "base64 0.23.1",
  "dragonforge-core",
  "rand_core 0.6.4",
  "serde",
@@ -1213,7 +1213,7 @@ dependencies = [
  "thiserror 2.0.20",
  "tokio",
  "widestring",
- "windows 0.61.3",
+ "windows",
  "windows-service",
  "windows-sys 0.59.0",
 ]
@@ -1224,7 +1224,7 @@ version = "1.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",
- "base64 0.22.1",
+ "base64 0.23.1",
  "rand_core 0.6.4",
  "serde",
  "serde_json",
