@@ -502,3 +502,11 @@ Phase 11 local verification result: **PASS**
 Verified log SHA-256: `171A70C3496BA8FFADAD42597E23D44E39F66078457982EB0933C0BC069E38BE`
 
 See [docs/PHASE_11_DRAGONFORGE_AGENT.md](docs/PHASE_11_DRAGONFORGE_AGENT.md).
+
+## License
+
+Copyright © 2026 David James. All rights reserved.
+
+This repository is source-visible for evaluation, portfolio review, security review, and reference, but it is **not open source**. Except for rights expressly required by GitHub's Terms of Service for public repositories, no general license is granted to use, copy, modify, redistribute, sublicense, sell, commercially exploit, or incorporate original DragonForge material into another work.
+
+See [LICENSE](LICENSE) for the governing notice. Third-party components remain subject to their own licenses and independent rights.
