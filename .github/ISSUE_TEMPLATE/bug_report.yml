@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible non-security DragonForge Security Suite defect
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, Account Secrets, OTP seeds, recovery material, vault contents, tokens, keys, personal data, or exploit details. Use SECURITY.md for vulnerabilities.
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      placeholder: Security Center, Password Manager, File Vault, Agent, etc.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows version and relevant runtime information; omit machine-unique or sensitive identifiers.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic/demo data only.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true

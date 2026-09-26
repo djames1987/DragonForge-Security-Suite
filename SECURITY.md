@@ -10,12 +10,18 @@ The current stable 1.x line receives security/correctness fixes according to [do
 
 ## Reporting a vulnerability
 
-Please report suspected vulnerabilities privately to the repository owner through an appropriate private GitHub contact/security channel. Do not include secrets, real credentials, recovery keys, or production vault data in reports. The coordinated response process is documented in [docs/VULNERABILITY_RESPONSE.md](docs/VULNERABILITY_RESPONSE.md).
+Use GitHub's private security-advisory reporting flow when available:
 
-A useful report includes:
+`https://github.com/djames1987/DragonForge-Security-Suite/security/advisories/new`
+
+If that private flow is unavailable, contact the repository owner through a private GitHub channel. Do **not** open a public issue containing exploit details or sensitive evidence. The coordinated response process is documented in [docs/VULNERABILITY_RESPONSE.md](docs/VULNERABILITY_RESPONSE.md).
+
+Do not include real credentials, recovery keys, Account Secrets, OTP seeds, private signing keys, production vaults, tokens, personal data, or other live secrets. Use synthetic test material and sanitized evidence.
+
+A useful private report includes:
 
 - affected component and version/commit;
-- reproduction steps;
+- reproduction steps using synthetic data;
 - expected versus observed behavior;
 - security impact;
 - relevant logs with sensitive values removed;
