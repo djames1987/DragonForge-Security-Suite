@@ -10,7 +10,7 @@ description = "Local integrity baseline and change-detection engine for DragonFo
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-sha2 = "0.10"
+sha2 = "0.11"
 
 [dev-dependencies]
 tempfile = "3"
