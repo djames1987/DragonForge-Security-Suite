@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">DragonForge Security Suite</title>
+  <desc id="desc">A dark geometric DragonForge banner showing Security Center connected to focused security applications and services.</desc>
+  <rect width="1200" height="300" rx="28" fill="#090b10"/>
+  <rect x="22" y="22" width="1156" height="256" rx="22" fill="#11141b" stroke="#202632" stroke-width="2"/>
+  <path d="M86 74 L130 48 L174 74 L174 124 C174 159 152 181 130 193 C108 181 86 159 86 124 Z" fill="none" stroke="#ff8a2b" stroke-width="8"/>
+  <path d="M109 111 L130 88 L151 111 L139 111 L139 145 L121 145 L121 111 Z" fill="#ff8a2b"/>
+  <text x="220" y="102" fill="#f6f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700">DragonForge Security Suite</text>
+  <text x="220" y="144" fill="#8d96a8" font-family="Segoe UI, Arial, sans-serif" font-size="22">Modular Windows security platform • Rust • Tauri • explicit trust boundaries</text>
+  <rect x="220" y="181" width="176" height="48" rx="10" fill="#171b24" stroke="#ff8a2b"/>
+  <text x="308" y="211" text-anchor="middle" fill="#f6f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="17">Security Center</text>
+  <path d="M396 205 H470" stroke="#8d96a8" stroke-width="3"/>
+  <rect x="470" y="181" width="176" height="48" rx="10" fill="#171b24"/>
+  <text x="558" y="211" text-anchor="middle" fill="#f6f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="17">Focused Apps</text>
+  <path d="M646 205 H720" stroke="#8d96a8" stroke-width="3"/>
+  <rect x="720" y="181" width="176" height="48" rx="10" fill="#171b24"/>
+  <text x="808" y="211" text-anchor="middle" fill="#f6f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="17">Product Crates</text>
+  <path d="M896 205 H970" stroke="#8d96a8" stroke-width="3"/>
+  <rect x="970" y="181" width="154" height="48" rx="10" fill="#171b24"/>
+  <text x="1047" y="211" text-anchor="middle" fill="#f6f7fb" font-family="Segoe UI, Arial, sans-serif" font-size="17">Services</text>
+</svg>
